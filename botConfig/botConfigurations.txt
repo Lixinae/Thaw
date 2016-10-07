@@ -1,0 +1,5 @@
+# Usage 
+# [Name of the bot] : [configuration file]
+git-bot:mlv.properties
+rss-bot:
+github-bot:
