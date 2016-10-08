@@ -8,4 +8,7 @@ public class GitHubBot implements Bot {
     /*
     TODO
  */
+
+    public GitHubBot() {
+    }
 }

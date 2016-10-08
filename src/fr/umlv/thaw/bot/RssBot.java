@@ -8,4 +8,7 @@ public class RssBot implements Bot {
     /*
     TODO
  */
+
+    public RssBot() {
+    }
 }
