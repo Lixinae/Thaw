@@ -37,4 +37,26 @@ public class Configuration {
                     .collect(Collectors.toMap(tokens -> tokens[0], tokens -> tokens[1]));
         }
     }
+
+    /*
+        -> http://stackoverflow.com/questions/1318347/how-to-use-java-property-files#1318391
+
+        How to use properties format from "java.util.Properties"
+
+        Properties properties = new Properties();
+        try {
+            properties.load(new FileInputStream("path/filename"));
+        } catch (IOException e) {
+            ...
+        }
+
+
+        for(String key : properties.stringPropertyNames()) {
+            String value = properties.getProperty(key);
+            System.out.println(key + " => " + value);
+        }
+
+
+
+     */
 }
