@@ -1,4 +1,5 @@
-# Usage 
+# Lines with # are ignored
+# Usage
 # [Name of the bot] : [configuration file]
 git-bot:mlv.properties
 rss-bot:
