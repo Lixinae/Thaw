@@ -3,7 +3,7 @@ package fr.umlv.thaw.channel;
 import fr.umlv.thaw.message.Message;
 import fr.umlv.thaw.user.User;
 import fr.umlv.thaw.user.bot.Bot;
-import fr.umlv.thaw.user.userHuman.UserHuman;
+import fr.umlv.thaw.user.humanUser.UserHuman;
 
 import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
@@ -14,7 +14,7 @@ public class ChannelImpl implements Channel {
     private final ConcurrentLinkedQueue<Bot> bots;
     private final String chanName;
     private final UserHuman creator;
-    /*On prend un String nickname ou on prend l'userHuman tel quel ?*/
+    /*On prend un String nickname ou on prend l'humanUser tel quel ?*/
 //    private final ConcurrentHashMap<UserHuman, ConcurrentMap<Long, String>> messagesQueue;
     private final ConcurrentHashMap<UserHuman,Message> messagesQueue;
 

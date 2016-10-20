@@ -1,4 +1,4 @@
-package fr.umlv.thaw.user.userHuman;
+package fr.umlv.thaw.user.humanUser;
 
 import fr.umlv.thaw.channel.Channel;
 

@@ -1,6 +1,6 @@
 package fr.umlv.thaw.message;
 
-import fr.umlv.thaw.user.userHuman.UserHuman;
+import fr.umlv.thaw.user.humanUser.UserHuman;
 
 /**
  * Project :Thaw

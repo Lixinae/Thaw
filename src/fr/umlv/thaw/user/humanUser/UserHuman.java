@@ -1,13 +1,13 @@
-package fr.umlv.thaw.user.userHuman;
+package fr.umlv.thaw.user.humanUser;
 
 import fr.umlv.thaw.channel.Channel;
 
 public interface UserHuman {
     /**
-     * This method allow a userHuman to send a message to a specific channel.
+     * This method allow a humanUser to send a message to a specific channel.
      *
      * @param date
-     *            a long that represent when the userHuman send the message
+     *            a long that represent when the humanUser send the message
      * @param message
      *            a String that represent the message to send
      * @param chan
@@ -17,10 +17,10 @@ public interface UserHuman {
     boolean sendMessage(long date, String message, Channel chan);
 
     /**
-     * This method allow a userHuman to join a channel that exist
+     * This method allow a humanUser to join a channel that exist
      *
      * @param chan
-     *            a channel that the userHuman want to join
+     *            a channel that the humanUser want to join
      * @return true if he has been authorized to join the channel in the other
      *         cases return false
      */
@@ -30,13 +30,13 @@ public interface UserHuman {
      *
      * @param chan
      *            the channel to quit
-     * @return true if the userHuman has been remove from the channel, false
+     * @return true if the humanUser has been remove from the channel, false
      *         otherwise
      */
     boolean quitChannel(Channel chan);
 
     /**
-     * Create a channel in which the userHuman will be the master
+     * Create a channel in which the humanUser will be the master
      *
      * @param chan
      *            the channel to create
