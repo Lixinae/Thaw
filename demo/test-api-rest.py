@@ -1,3 +1,5 @@
+# -*- coding: cp1252 -*-
+#!/usr/bin/python
 
 # Asks the user where
 def askMachineName():
@@ -40,4 +42,4 @@ if __name__ == '__main__':
     numberMessage = askNumberMessage()
     
     l = fetchMessage(machineName,channelName,numberMessage)
-    print (l.join("\n)")       
+    print (l.join("\n)"))

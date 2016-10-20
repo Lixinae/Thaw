@@ -1,9 +1,9 @@
 package fr.umlv.thaw.user;
 
+import fr.umlv.thaw.channel.Channel;
+
 import java.util.Objects;
 import java.util.concurrent.ConcurrentLinkedQueue;
-
-import fr.umlv.thaw.channel.Channel;
 
 public class UserImpl implements User {
 
@@ -12,7 +12,7 @@ public class UserImpl implements User {
 
     public UserImpl(String nickname) {
         this.nickname = Objects.requireNonNull(nickname);
-        channels = new ConcurrentLinkedQueue<Channel>();
+        channels = new ConcurrentLinkedQueue<>();
     }
 
     @Override
