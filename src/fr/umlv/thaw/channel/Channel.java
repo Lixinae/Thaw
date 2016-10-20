@@ -8,12 +8,9 @@ public interface Channel {
     /**
      * This method add a message that has been wrote by a user in a certain date
      *
-     * @param nickname
-     *            the nickname of the User
-     * @param date
-     *            the date in which the message has been received
-     * @param message
-     *            the message that must been add
+     * @param nickname the nickname of the User
+     * @param date     the date in which the message has been received
+     * @param message  the message that must been add
      * @return true if the message has been sent false otherwise
      */
     boolean addMessageToQueue(String nickname, long date, String message);
@@ -21,10 +18,8 @@ public interface Channel {
     /**
      * Delete a message from the channel from the author at a certain instant
      *
-     * @param nickname
-     *            the name of the author
-     * @param date
-     *            the date in which the message has been sent
+     * @param nickname the name of the author
+     * @param date     the date in which the message has been sent
      * @return true if the message has been removed, false otherwise
      */
     boolean delMessageFromQueue(String nickname, long date);
@@ -32,8 +27,7 @@ public interface Channel {
     /**
      * Add a user to the channel
      *
-     * @param user
-     *            the user that must been add in the channel
+     * @param user the user that must been add in the channel
      * @return true if the user has been added, false otherwise
      */
     boolean addUserToChan(User user);
@@ -41,8 +35,7 @@ public interface Channel {
     /**
      * Remove a user from the channel
      *
-     * @param user
-     *            the user to remove from the channel
+     * @param user the user to remove from the channel
      * @return true if the user has been removed, false otherwise
      */
     boolean removeUserFromChan(User user);
@@ -51,8 +44,7 @@ public interface Channel {
      * Add a bot in the channel. That method could be called only by someone who
      * got enough privilege to add a bot in this channel
      *
-     * @param bot
-     *            the bot to add in the channel
+     * @param bot the bot to add in the channel
      * @return true if the bot has been added, false otherwise
      */
     boolean addBot(Bot bot);
@@ -61,8 +53,7 @@ public interface Channel {
      * Remove a bot from the channel. That method must be call by someone who
      * got enough privilege to remove a bot from the current channel.
      *
-     * @param bot
-     *            the bot that must been removed from the channel
+     * @param bot the bot that must been removed from the channel
      * @return true if the bot has been removed, false otherwise
      */
     boolean delBot(Bot bot);

@@ -1,23 +1,23 @@
 package fr.umlv.thaw.message;
 
-import fr.umlv.thaw.user.userHuman.UserHuman;
+import fr.umlv.thaw.user.humanUser.HumanUser;
 
 /**
  * Project :Thaw
  */
 public class Message {
 
-    private final UserHuman sender;
+    private final HumanUser sender;
     private final long date;
     private final String content;
 
-    public Message(UserHuman sender, long date, String content) {
+    public Message(HumanUser sender, long date, String content) {
         this.sender = sender;
         this.date = date;
         this.content = content;
     }
 
-    public UserHuman getSender() {
+    public HumanUser getSender() {
         return sender;
     }
 
