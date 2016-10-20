@@ -4,7 +4,7 @@ import fr.umlv.thaw.channel.Channel;
 
 import java.util.concurrent.ConcurrentLinkedQueue;
 
-public class HumanUser extends UserImpl {
+public class HumanUser extends AbstractUser {
 
     //    private final String nickname;
     private final ConcurrentLinkedQueue<Channel> channels;
@@ -27,8 +27,16 @@ public class HumanUser extends UserImpl {
     @Override
     public String toString() {
         return "HumanUser{" +
-                "nickname='" + name + '\'' +
+                "name='" + name + '\'' +
                 ", channels=" + channels +
                 '}';
+    }
+
+    /**
+     * @return true is the user is a human, false otherwise
+     */
+    @Override
+    public boolean isUserHuman() {
+        return true;
     }
 }

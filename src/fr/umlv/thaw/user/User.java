@@ -33,4 +33,15 @@ public interface User {
      * otherwise
      */
     public boolean quitChannel(Channel chan);
+
+    /**
+     * @return true is the user is a bot, false otherwise
+     */
+    public boolean isUserBot();
+
+    /**
+     * @return true is the user is a human, false otherwise
+     */
+    public boolean isUserHuman();
+
 }

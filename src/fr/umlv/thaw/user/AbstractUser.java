@@ -8,11 +8,11 @@ import java.util.Objects;
  * Project :Thaw
  * Created by Narex on 20/10/2016.
  */
-abstract class UserImpl implements User {
+abstract class AbstractUser implements User {
 
     final String name;
 
-    UserImpl(String name) {
+    AbstractUser(String name) {
         this.name = Objects.requireNonNull(name);
     }
 
@@ -24,7 +24,6 @@ abstract class UserImpl implements User {
      * @param chan    the Channel in which the message will be send
      * @return true if the message has been sent, false otherwise
      */
-    @Override
     public boolean sendMessage(long date, String message, Channel chan) {
         return false;
     }
@@ -36,7 +35,6 @@ abstract class UserImpl implements User {
      * @return true if he has been authorized to join the channel in the other
      * cases return false
      */
-    @Override
     public boolean joinChannel(Channel chan) {
         return false;
     }
@@ -46,8 +44,29 @@ abstract class UserImpl implements User {
      * @return true if the humanUser has been remove from the channel, false
      * otherwise
      */
-    @Override
     public boolean quitChannel(Channel chan) {
         return false;
     }
+
+
+    /**
+     * @return true is the user is a bot, false otherwise
+     */
+    public boolean isUserBot() {
+        return false;
+    }
+
+    /**
+     * @return true is the user is a human, false otherwise
+     */
+    public boolean isUserHuman() {
+        return false;
+    }
+
+//    @Override
+//    public String toString() {
+//        return "AbstractUser{" +
+//                "name='" + name + '\'' +
+//                '}';
+//    }
 }

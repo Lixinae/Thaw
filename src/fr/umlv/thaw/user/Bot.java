@@ -4,7 +4,7 @@ package fr.umlv.thaw.user;
  * Project :Thaw
  * Created by Narex on 12/10/2016.
  */
-public class Bot extends UserImpl {
+public class Bot extends AbstractUser {
 
     //    private final String name;
     private final String filePropertiesName;
@@ -15,7 +15,6 @@ public class Bot extends UserImpl {
         this.filePropertiesName = filePropertiesName;
     }
 
-
     @Override
     public String toString() {
         return "Bot{" +
@@ -24,5 +23,11 @@ public class Bot extends UserImpl {
                 '}';
     }
 
-
+    /**
+     * @return true is the user is a bot, false otherwise
+     */
+    @Override
+    public boolean isUserBot() {
+        return true;
+    }
 }
