@@ -2,7 +2,7 @@ package fr.umlv.thaw.user.humanUser;
 
 import fr.umlv.thaw.channel.Channel;
 
-public interface UserHuman {
+public interface HumanUser {
     /**
      * This method allow a humanUser to send a message to a specific channel.
      *
@@ -46,7 +46,7 @@ public interface UserHuman {
     boolean addChannel(Channel chan);
 
     /**
-     * This method allow a UserHuman to remove a Channel if he got the permission
+     * This method allow a HumanUser to remove a Channel if he got the permission
      *
      * @param chan
      *            a channel that must been remove
