@@ -5,12 +5,12 @@ import fr.umlv.thaw.channel.Channel;
 import java.util.Objects;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
-public class UserHumanImpl implements HumanUser {
+public class HumanUserImpl implements HumanUser {
 
     private final String nickname;
     private final ConcurrentLinkedQueue<Channel> channels;
 
-    public UserHumanImpl(String nickname) {
+    public HumanUserImpl(String nickname) {
         this.nickname = Objects.requireNonNull(nickname);
         channels = new ConcurrentLinkedQueue<>();
     }
