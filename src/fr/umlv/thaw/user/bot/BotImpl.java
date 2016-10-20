@@ -1,4 +1,4 @@
-package fr.umlv.thaw.bot;
+package fr.umlv.thaw.user.bot;
 
 /**
  * Project :Thaw

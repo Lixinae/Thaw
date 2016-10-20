@@ -1,22 +1,25 @@
 package fr.umlv.thaw.channel;
 
-import fr.umlv.thaw.bot.Bot;
+import fr.umlv.thaw.message.Message;
 import fr.umlv.thaw.user.User;
+import fr.umlv.thaw.user.bot.Bot;
+import fr.umlv.thaw.user.userHuman.UserHuman;
 
 import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
-import java.util.concurrent.ConcurrentMap;
 
 public class ChannelImpl implements Channel {
 
     private final ConcurrentLinkedQueue<Bot> bots;
     private final String chanName;
-    private final User creator;
-    /*On prend un String nickname ou on prend l'user tel quel ?*/
-    private final ConcurrentHashMap<User, ConcurrentMap<Long, String>> messagesQueue;
+    private final UserHuman creator;
+    /*On prend un String nickname ou on prend l'userHuman tel quel ?*/
+//    private final ConcurrentHashMap<UserHuman, ConcurrentMap<Long, String>> messagesQueue;
+    private final ConcurrentHashMap<UserHuman,Message> messagesQueue;
 
-    public ChannelImpl(User creator, String channelName){
+
+    public ChannelImpl(UserHuman creator, String channelName){
         this.creator = Objects.requireNonNull(creator);
         chanName = Objects.requireNonNull(channelName);
         bots = new ConcurrentLinkedQueue<>();
@@ -44,7 +47,7 @@ public class ChannelImpl implements Channel {
     }
 
     @Override
-    public boolean delUserFromChan(User user) {
+    public boolean removeUserFromChan(User user) {
         // TODO Auto-generated method stub
         return false;
     }

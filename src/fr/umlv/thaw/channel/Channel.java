@@ -1,7 +1,7 @@
 package fr.umlv.thaw.channel;
 
-import fr.umlv.thaw.bot.Bot;
 import fr.umlv.thaw.user.User;
+import fr.umlv.thaw.user.bot.Bot;
 
 public interface Channel {
 
@@ -45,7 +45,7 @@ public interface Channel {
      *            the user to remove from the channel
      * @return true if the user has been removed, false otherwise
      */
-    boolean delUserFromChan(User user);
+    boolean removeUserFromChan(User user);
 
     /**
      * Add a bot in the channel. That method could be called only by someone who

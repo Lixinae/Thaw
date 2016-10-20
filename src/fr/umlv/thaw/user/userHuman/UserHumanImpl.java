@@ -1,16 +1,16 @@
-package fr.umlv.thaw.user;
+package fr.umlv.thaw.user.userHuman;
 
 import fr.umlv.thaw.channel.Channel;
 
 import java.util.Objects;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
-public class UserImpl implements User {
+public class UserHumanImpl implements UserHuman {
 
     private final String nickname;
     private final ConcurrentLinkedQueue<Channel> channels;
 
-    public UserImpl(String nickname) {
+    public UserHumanImpl(String nickname) {
         this.nickname = Objects.requireNonNull(nickname);
         channels = new ConcurrentLinkedQueue<>();
     }
