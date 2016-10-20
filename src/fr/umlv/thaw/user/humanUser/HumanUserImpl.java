@@ -15,19 +15,19 @@ class HumanUserImpl implements HumanUser {
         channels = new ConcurrentLinkedQueue<>();
     }
 
-    @Override
+
     public boolean sendMessage(long date, String message, Channel chan) {
         // TODO Auto-generated method stub
         return false;
     }
 
-    @Override
+
     public boolean joinChannel(Channel chan) {
         // TODO Auto-generated method stub
         return false;
     }
 
-    @Override
+
     public boolean quitChannel(Channel chan) {
         // TODO Auto-generated method stub
         return false;
