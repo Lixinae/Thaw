@@ -16,7 +16,7 @@ public interface User {
      * @param chan    the Channel in which the message will be send
      * @return true if the message has been sent, false otherwise
      */
-    boolean sendMessage(long date, String message, Channel chan);
+    public boolean sendMessage(long date, String message, Channel chan);
 
     /**
      * This method allow a humanUser to join a channel that exist
@@ -25,12 +25,12 @@ public interface User {
      * @return true if he has been authorized to join the channel in the other
      * cases return false
      */
-    boolean joinChannel(Channel chan);
+    public boolean joinChannel(Channel chan);
 
     /**
      * @param chan the channel to quit
      * @return true if the humanUser has been remove from the channel, false
      * otherwise
      */
-    boolean quitChannel(Channel chan);
+    public boolean quitChannel(Channel chan);
 }

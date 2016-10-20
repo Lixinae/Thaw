@@ -3,24 +3,49 @@ package fr.umlv.thaw.user.humanUser;
 import fr.umlv.thaw.channel.Channel;
 import fr.umlv.thaw.user.User;
 
-public interface HumanUser extends User {
+import java.util.Objects;
+import java.util.concurrent.ConcurrentLinkedQueue;
 
-    /**
-     * Create a channel in which the humanUser will be the master
-     *
-     * @param chan
-     *            the channel to create
-     * @return true if the channel has been successfully created, false
-     *         otherwise
-     */
-    boolean addChannel(Channel chan);
+class HumanUser implements User {
 
-    /**
-     * This method allow a HumanUser to remove a Channel if he got the permission
-     *
-     * @param chan
-     *            a channel that must been remove
-     * @return true if the channel has been removed false otherwise
-     */
-    boolean delChannel(Channel chan);
+    private final String nickname;
+    private final ConcurrentLinkedQueue<Channel> channels;
+
+    public HumanUser(String nickname) {
+        this.nickname = Objects.requireNonNull(nickname);
+        channels = new ConcurrentLinkedQueue<>();
+    }
+
+    public boolean addChannel(Channel chan) {
+        // TODO Auto-generated method stub
+        return false;
+    }
+
+    public boolean delChannel(Channel chan) {
+        // TODO Auto-generated method stub
+        return false;
+    }
+
+    @Override
+    public boolean sendMessage(long date, String message, Channel chan) {
+        return false;
+    }
+
+    @Override
+    public boolean joinChannel(Channel chan) {
+        return false;
+    }
+
+    @Override
+    public boolean quitChannel(Channel chan) {
+        return false;
+    }
+
+    @Override
+    public String toString() {
+        return "HumanUser{" +
+                "nickname='" + nickname + '\'' +
+                ", channels=" + channels +
+                '}';
+    }
 }
