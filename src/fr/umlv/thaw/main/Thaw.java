@@ -1,7 +1,7 @@
 package fr.umlv.thaw.main;
 
+import fr.umlv.thaw.user.Bot;
 import fr.umlv.thaw.user.User;
-import fr.umlv.thaw.user.bot.Bot;
 
 import java.util.HashMap;
 import java.util.Map;

@@ -1,18 +1,16 @@
-package fr.umlv.thaw.user.humanUser;
+package fr.umlv.thaw.user;
 
 import fr.umlv.thaw.channel.Channel;
-import fr.umlv.thaw.user.User;
 
-import java.util.Objects;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
-class HumanUser implements User {
+public class HumanUser extends UserImpl {
 
-    private final String nickname;
+    //    private final String nickname;
     private final ConcurrentLinkedQueue<Channel> channels;
 
     public HumanUser(String nickname) {
-        this.nickname = Objects.requireNonNull(nickname);
+        super(nickname);
         channels = new ConcurrentLinkedQueue<>();
     }
 
@@ -27,24 +25,9 @@ class HumanUser implements User {
     }
 
     @Override
-    public boolean sendMessage(long date, String message, Channel chan) {
-        return false;
-    }
-
-    @Override
-    public boolean joinChannel(Channel chan) {
-        return false;
-    }
-
-    @Override
-    public boolean quitChannel(Channel chan) {
-        return false;
-    }
-
-    @Override
     public String toString() {
         return "HumanUser{" +
-                "nickname='" + nickname + '\'' +
+                "nickname='" + name + '\'' +
                 ", channels=" + channels +
                 '}';
     }

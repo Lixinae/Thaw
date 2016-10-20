@@ -1,7 +1,7 @@
 package fr.umlv.thaw.channel;
 
+import fr.umlv.thaw.user.Bot;
 import fr.umlv.thaw.user.User;
-import fr.umlv.thaw.user.bot.Bot;
 
 public interface Channel {
 
