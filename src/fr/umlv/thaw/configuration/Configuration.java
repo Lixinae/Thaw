@@ -14,10 +14,12 @@ import java.util.stream.Stream;
  * Project :Thaw
  * Created by Narex on 10/10/2016.
  */
+
+//TODO : doc ... JAVAdoc
 public class Configuration {
 
-    private Map<String, String> hashMap;
     private final String configFilePathName;
+    private Map<String, String> hashMap;
 
     public Configuration(String configFilePathName) {
         this.hashMap = new HashMap<>();
@@ -34,10 +36,15 @@ public class Configuration {
         try (Stream<String> lines = Files.lines(configFilePath).filter(s -> !s.startsWith("#"))) {
             hashMap = lines
                     .map(l -> l.split(":"))
-                    .collect(Collectors.toMap(tokens -> tokens[0], tokens -> tokens[1]));
+                    .collect(Collectors.toMap(tokens -> tokens[0], tokens -> "./botConfig/" + tokens[1]));
         }
     }
 
+    public void printMap() {
+        hashMap.forEach((k, v) -> System.out.println("Key = " + k + "\n" + "Value = " + v));
+    }
+
+//    public void load
     /*
         -> http://stackoverflow.com/questions/1318347/how-to-use-java-property-files#1318391
 

@@ -2,6 +2,8 @@ package fr.umlv.thaw.message;
 
 import fr.umlv.thaw.user.User;
 
+import java.util.Objects;
+
 /**
  * Project :Thaw
  */
@@ -12,9 +14,12 @@ public class Message {
     private final String content;
 
     public Message(User sender, long date, String content) {
-        this.sender = sender;
+        this.sender = Objects.requireNonNull(sender);
+        if (date <= 0) {
+            throw new IllegalArgumentException("date must be positive");
+        }
         this.date = date;
-        this.content = content;
+        this.content = Objects.requireNonNull(content);
     }
 
     public User getSender() {

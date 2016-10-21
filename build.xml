@@ -1,92 +1,115 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project name="Thaw" default="all" basedir=".">
-	<description>
-		Build file for Thaw app.
-	</description>
+    <description>
+        Build file for Thaw app.
+    </description>
 
-	<property file="build.properties"/>
+    <property file="build.properties"/>
 
-	<!--  Create a classpath container which can be later used in the ant task -->
-	<path id="compile.classpath">
-		<fileset dir="${lib.dir}">
-			<include name="**/*.jar" />
-		</fileset>
-		<fileset dir="${libvertx.dir}">
-			<include name="**/*.jar" />
-		</fileset>
-		<pathelement path="${classes.dir}"/>
-	</path>
+    <property name="JDK1.9.dir" location="./jdk-9"/>
+    <property name="javac1.9" location="${JDK1.9.dir}/bin/javac"/>
 
-	<!-- Clean all the generated files -->
-	<target name="clean" description="Removing the all generated files.">
-		<delete dir="${classes.dir}"/>
-		<delete dir="${api.dir}"/>
-		<delete dir="${dest.dir}"/>
-	</target>
+    <!-- Print the java version -->
+    <target name="print-version">
+        <echo>Java/JVM version: ${ant.java.version}</echo>
+        <echo>Java/JVM detail version: ${java.version}</echo>
+    </target>
 
-	<!-- Cleans the folder and creates the necessary directories -->
-	<target name="init" depends="clean">
-		<mkdir dir="${classes.dir}"/>
-		<mkdir dir="${api.dir}"/>
-		<mkdir dir="${dest.dir}"/>
-	</target>
+    <!--
+        <fail message="Unsupported Java version: ${ant.java.version}.  Make sure that the Java version is 1.9 or greater.">
+            <condition>
+                <not>
+                    <or>
+                        <equals arg1="${ant.java.version}" arg2="1.9"/>
+                    </or>
+                </not>
+            </condition>
+        </fail>
+    -->
+    <!--  Create a classpath container which can be later used in the ant task -->
+    <path id="compile.classpath">
+        <fileset dir="${lib.dir}">
+            <include name="**/*.jar"/>
+        </fileset>
+        <fileset dir="${libvertx.dir}">
+            <include name="**/*.jar"/>
+        </fileset>
+        <pathelement path="${classes.dir}"/>
+    </path>
 
-	<!-- Compile the program -->
-	<target name="compile" depends="init" description="Compilation of all source code.">
-		<javac destdir="${classes.dir}" failonerror="true" includeantruntime="false">
-			<src path="${src.dir}"/>
-			<classpath refid="compile.classpath"/>
-		</javac>
-		<echo message="Compiling done"/>
-	</target>
+    <!-- Clean all the generated files -->
+    <target name="clean" description="Removing the all generated files.">
+        <delete dir="${classes.dir}"/>
+        <delete dir="${api.dir}"/>
+        <delete dir="${dest.dir}"/>
+    </target>
 
-	<!-- Creates Javadoc -->
-	<target name="javadoc" depends="compile" description="Generate documentation">
-		<javadoc sourcepath="${src.dir}" destdir="${api.dir}" version="true">
-			<classpath refid="compile.classpath"/>
-		</javadoc>
-		<echo message="Java doc created"/>
-	</target>
+    <!-- Cleans the folder and creates the necessary directories -->
+    <target name="init" depends="clean">
+        <mkdir dir="${classes.dir}"/>
+        <mkdir dir="${api.dir}"/>
+        <mkdir dir="${dest.dir}"/>
+    </target>
 
-	<target name="copy_dependencies">
-		<copy todir="${dest.dir}/libs">
-			<fileset dir="${lib.dir}" />
-		</copy>
-	</target>
+    <!-- Compile the program -->
+    <target name="compile" depends="init" description="Compilation of all source code.">
+        <javac destdir="${classes.dir}"
+               failonerror="true"
+               includeantruntime="false"
+               executable="${javac1.9}">
+            <src path="${src.dir}"/>
+            <classpath refid="compile.classpath"/>
+        </javac>
+        <echo message="Compiling done"/>
+    </target>
 
-	<!-- Creates the executable jar file -->
-	<target name="jar" depends="compile" description="Generates Thaw.jar file in to the dest directory.">
-		<pathconvert property="mf.classpath" pathsep=" ">
-			<path refid="compile.classpath"/>
-		</pathconvert>
+    <!-- Creates Javadoc -->
+    <target name="javadoc" depends="compile" description="Generate documentation">
+        <javadoc sourcepath="${src.dir}" destdir="${api.dir}" version="true">
+            <classpath refid="compile.classpath"/>
+        </javadoc>
+        <echo message="Java doc created"/>
+    </target>
 
-		<tstamp/>
-		<manifest file="${dest.dir}/MANIFEST.MF" >
-			<attribute name ="Built-By" value="${user.name}"/>
-			<attribute name ="Built-Date" value="${TODAY}"/>
-			<attribute name ="Main-Class" value="${main.class}" />
-			<attribute name ="Class-Path" value="${mf.classpath}"/>
-		</manifest>
+    <target name="copy_dependencies">
+        <copy todir="${dest.dir}/libs">
+            <fileset dir="${lib.dir}"/>
+        </copy>
+    </target>
 
-		<jar jarfile="${dest.dir}/${app.name}-${app.version}.jar"
-			 manifest="${dest.dir}/MANIFEST.MF"
-			 duplicate="preserve">
+    <!-- Creates the executable jar file -->
+    <target name="jar" depends="compile" description="Generates Thaw.jar file in to the dest directory.">
+        <pathconvert property="mf.classpath" pathsep=" ">
+            <path refid="compile.classpath"/>
+        </pathconvert>
 
-			<fileset dir="${classes.dir}"/>
-			<zipfileset dir="${lib.dir}">
-				<include name="**/*.jar" />
-				<exclude name="**/*javadoc.jar"/>
-				<exclude name="**/*sources.jar"/>
-			</zipfileset>
+        <tstamp/>
+        <manifest file="${dest.dir}/MANIFEST.MF">
+            <attribute name="Built-By" value="${user.name}"/>
+            <attribute name="Built-Date" value="${TODAY}"/>
+            <attribute name="Main-Class" value="${main.class}"/>
+            <attribute name="Class-Path" value="${mf.classpath}"/>
+        </manifest>
 
-			<zipfileset dir="${libvertx.dir}">
-				<include name ="**/*.jar"/>
-			</zipfileset>
-		</jar>
-		<echo message="Jar file created"/>
-	</target>
+        <jar jarfile="${dest.dir}/${app.name}-${app.version}.jar"
+             manifest="${dest.dir}/MANIFEST.MF"
+             duplicate="preserve">
 
-	<target name="all" depends="jar,javadoc" description="Create the jar file and the javadoc ">
-		<echo message="Generation complete."/>
-	</target>
+            <fileset dir="${classes.dir}"/>
+            <zipfileset dir="${lib.dir}">
+                <include name="**/*.jar"/>
+                <exclude name="**/*javadoc.jar"/>
+                <exclude name="**/*sources.jar"/>
+            </zipfileset>
+
+            <zipfileset dir="${libvertx.dir}">
+                <include name="**/*.jar"/>
+            </zipfileset>
+        </jar>
+        <echo message="Jar file created"/>
+    </target>
+
+    <target name="all" depends="jar,javadoc" description="Create the jar file and the javadoc ">
+        <echo message="Generation complete."/>
+    </target>
 </project>
