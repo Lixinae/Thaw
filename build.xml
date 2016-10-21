@@ -60,11 +60,13 @@
 
     <!-- Compile the program -->
     <target name="compile" depends="init" description="Compilation of all source code.">
-        <javac destdir="${classes.dir}"
+        <javac executable="${javac1.9}"
+               destdir="${classes.dir}"
+               fork="yes"
                failonerror="true"
                includeantruntime="false"
-               executable="${javac1.9}"
-               fork="yes">
+               compiler="javac1.9"
+        >
             <src path="${src.dir}"/>
             <classpath refid="compile.classpath"/>
         </javac>

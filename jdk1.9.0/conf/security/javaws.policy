@@ -1,0 +1,10 @@
+
+grant codeBase "file:${java.home}/lib/javaws.jar" {
+    permission java.security.AllPermission;
+};
+grant codeBase "file:${java.home}/lib/plugin.jar" {
+    permission java.security.AllPermission;
+};
+grant codeBase "file:${java.home}/lib/deploy.jar"  {
+    permission java.security.AllPermission;
+};
