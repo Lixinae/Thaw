@@ -56,7 +56,8 @@
         <javac destdir="${classes.dir}"
                failonerror="true"
                includeantruntime="false"
-               executable="${javac1.9}">
+               executable="${javac1.9}"
+               fork="true">
             <src path="${src.dir}"/>
             <classpath refid="compile.classpath"/>
         </javac>
