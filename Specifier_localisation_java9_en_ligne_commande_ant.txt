@@ -1,0 +1,34 @@
+Voici la commande a faire pour spécifier l'emplacement du JDK 9
+lorsque l'non execute notre build.xml :
+
+Exemple perso sous ma VM :
+ant -DJDK1.9.dir=/usr/lib/jvm/jdk1.9.b
+
+Explication :
+ant -DUneProPropriete=Sa_Valeur
+
+Donc, comme tu as une propriétée nommée JDK1.9.dir qui spécifie
+l'emplacement du répertoire de ava, il te suffit juste de faire le
+-DJDK1.9.dir=/ton/path/vers/java9/
+
+Si ensuite tu as l'erreur suivante lors de la compilation de l'exemple
+avec le Jshell :
+package jdk.jshell does not exist
+
+Ne t'en fait pas cela ne pose pas de problème à la compilation c'est juste
+la javadoc qui galère en vraie et cela on peut pas y faire grand chose sauf
+apporter nous même la doc de la lib mais rien d'utile donc.
+
+Et je confirme que l'on ne peut pas copier coller le dossier compilé
+des sources car l'installation est propre au processeur de chacun
+ce qui fait que tu te retrouveras (après avoir donnée les droits)
+avec l'erreur suivante pour moi :
+Error occurred during initialization of VM
+java/lang/NoClassDefFoundError: java/lang/Object
+
+Donc la seule solution propre c'est de jouer avec le -DJDK1.9.dir
+
+Ah et cela n'efface pas la valeur indiquée dans fichier cela le fait juste
+lors de l'exécution (donc n'écrit pas dans le fichier en somme ^^')
+
+Et ouais un pavé pour si peu ^^'

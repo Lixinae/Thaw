@@ -5,9 +5,11 @@ import fr.umlv.thaw.user.Bot;
 import fr.umlv.thaw.user.HumanUser;
 import fr.umlv.thaw.user.User;
 import jdk.jshell.JShell;
+import jdk.jshell.SnippetEvent;
 
 import java.io.IOException;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -33,6 +35,10 @@ public class Thaw {
         test.readConfigurationFromFile();
         test.printMap();
         JShell jShell = JShell.create();
+        List<SnippetEvent> l = jShell.eval("int x = 10");
+        for (SnippetEvent al : l) {
+            System.out.println(al);
+        }
 
     }
 }
