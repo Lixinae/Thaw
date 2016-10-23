@@ -7,8 +7,8 @@
     <property file="build.properties"/>
 
 
-    <property name="JDK1.9.dir" location="./jdk1.9.0"/>
-    <property name="javac1.9" location="${JDK1.9.dir}/bin/javac"/>
+    <!--<property name="JDK1.9.dir" location="./jdk1.9.0"/>-->
+    <!--<property name="javac1.9" location="${JDK1.9.dir}/bin/javac"/>-->
     <!-- In build.properties file
         JDK1.9.dir=./jdk1.9.0
         javac1.9=${JDK1.9.dir}/bin/javac
@@ -17,8 +17,8 @@
     <target name="print-version">
         <echo>Java/JVM version: ${ant.java.version}</echo>
         <echo>Java/JVM detail version: ${java.version}</echo>
-        <echo>JDK9 javac: ${javac1.9}</echo>
-        <echo>JDK9 dir: ${JDK1.9.dir}</echo>
+        <!--<echo>JDK9 javac: ${javac1.9}</echo>-->
+        <!--<echo>JDK9 dir: ${JDK1.9.dir}</echo>-->
 
     </target>
 
@@ -60,12 +60,10 @@
 
     <!-- Compile the program -->
     <target name="compile" depends="init" description="Compilation of all source code.">
-        <javac executable="${javac1.9}"
-               destdir="${classes.dir}"
+        <javac destdir="${classes.dir}"
                fork="yes"
                failonerror="true"
                includeantruntime="false"
-               compiler="javac1.9"
         >
             <src path="${src.dir}"/>
             <classpath refid="compile.classpath"/>
