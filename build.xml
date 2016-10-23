@@ -7,7 +7,7 @@
     <property file="build.properties"/>
 
 
-    <!--<property name="JDK1.9.dir" location="./jdk1.9.0"/>-->
+    <property name="JDK1.9.dir"/>
     <!--<property name="javac1.9" location="${JDK1.9.dir}/bin/javac"/>-->
     <!-- In build.properties file
         JDK1.9.dir=./jdk1.9.0
@@ -64,7 +64,7 @@
                fork="yes"
                failonerror="true"
                includeantruntime="false"
-        >
+               compiler="javac1.9">
             <src path="${src.dir}"/>
             <classpath refid="compile.classpath"/>
         </javac>
