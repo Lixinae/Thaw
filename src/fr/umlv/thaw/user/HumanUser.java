@@ -15,12 +15,26 @@ public class HumanUser extends AbstractUser {
         channels = new ConcurrentLinkedQueue<>();
     }
 
+    /**
+     * This method create a new channel with the current HumanUser as creator
+     *
+     * @param chan the Channel to create
+     * @return true if the Channel has been created false otherwise
+     */
     public boolean addChannel(Channel chan) {
+        //TODO Checker si vraiment correct
         Objects.requireNonNull(chan);
         return channels.add(chan);
     }
 
+    /**
+     * This method will try to delete a Channel that the current HumanUser has created.
+     *
+     * @param chan the Channel to delete
+     * @return true if the Channel has been deleted false otherwise
+     */
     public boolean delChannel(Channel chan) {
+        //TODO checker a quel moment virer les utilisateurs qui etaient encore dans la channel
         Objects.requireNonNull(chan);
         return channels.remove(chan);
     }
@@ -40,4 +54,6 @@ public class HumanUser extends AbstractUser {
     public boolean isUserHuman() {
         return true;
     }
+
+
 }
