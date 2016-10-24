@@ -1,6 +1,5 @@
 package fr.umlv.thaw.channel;
 
-import fr.umlv.thaw.user.Bot;
 import fr.umlv.thaw.user.User;
 
 /**
@@ -43,21 +42,21 @@ public interface Channel {
      */
     boolean removeUserFromChan(User user);
 
-    /**
-     * Add a bot in the channel. That method could be called only by someone who
-     * got enough privilege to add a bot in this channel
-     *
-     * @param bot the bot to add in the channel
-     * @return true if the bot has been added, false otherwise
-     */
-    boolean addBot(Bot bot);
-
-    /**
-     * Remove a bot from the channel. That method must be call by someone who
-     * got enough privilege to remove a bot from the current channel.
-     *
-     * @param bot the bot that must been removed from the channel
-     * @return true if the bot has been removed, false otherwise
-     */
-    boolean delBot(Bot bot);
+//    /**
+//     * Add a bot in the channel. That method could be called only by someone who
+//     * got enough privilege to add a bot in this channel
+//     *
+//     * @param bot the bot to add in the channel
+//     * @return true if the bot has been added, false otherwise
+//     */
+//    boolean addBot(Bot bot);
+//
+//    /**
+//     * Remove a bot from the channel. That method must be call by someone who
+//     * got enough privilege to remove a bot from the current channel.
+//     *
+//     * @param bot the bot that must been removed from the channel
+//     * @return true if the bot has been removed, false otherwise
+//     */
+//    boolean delBot(Bot bot);
 }

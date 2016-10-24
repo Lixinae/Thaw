@@ -3,6 +3,7 @@ package fr.umlv.thaw.user;
 import fr.umlv.thaw.channel.Channel;
 
 import java.util.Objects;
+import java.util.concurrent.ConcurrentLinkedQueue;
 
 /**
  * This abstract class regroups the commons methods of
@@ -11,9 +12,11 @@ import java.util.Objects;
 abstract class AbstractUser implements User {
 
     final String name;
+    final ConcurrentLinkedQueue<Channel> channels;
 
     AbstractUser(String name) {
         this.name = Objects.requireNonNull(name);
+        channels = new ConcurrentLinkedQueue<>();
     }
 
     public String getName() {
@@ -23,17 +26,16 @@ abstract class AbstractUser implements User {
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-
+        if (!(o instanceof AbstractUser)) return false;
         AbstractUser that = (AbstractUser) o;
-
-        return name.equals(that.name);
-
+        return name != null ? name.equals(that.name) : that.name == null && (channels != null ? channels.equals(that.channels) : that.channels == null);
     }
 
     @Override
     public int hashCode() {
-        return name.hashCode();
+        int result = name != null ? name.hashCode() : 0;
+        result = 31 * result + (channels != null ? channels.hashCode() : 0);
+        return result;
     }
 
     /**
@@ -70,10 +72,7 @@ abstract class AbstractUser implements User {
      */
     public boolean quitChannel(Channel chan) {
         Objects.requireNonNull(chan);
-        if (this.isUserBot()) {
-            return chan.delBot((Bot) this);
-        }
-        if (this.isUserHuman()) {
+        if (this.isUserHuman() || this.isUserBot()) {
             return chan.removeUserFromChan(this);
         }
         throw new IllegalArgumentException("Channel not found or the User haven't been found");
@@ -93,6 +92,7 @@ abstract class AbstractUser implements User {
     public boolean isUserHuman() {
         return false;
     }
+
 
 //    @Override
 //    public String toString() {

@@ -33,6 +33,7 @@ public class Message {
 
     /**
      * This method retrive the date in which the message has been sent.
+     *
      * @return the date of the Message as a long.
      */
     public long getDate() {
@@ -59,14 +60,17 @@ public class Message {
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
+        if (this == o)
+            return true;
+        if (o == null || getClass() != o.getClass())
+            return false;
 
         Message message = (Message) o;
 
-        if (date != message.date) return false;
-        if (sender != null ? !sender.equals(message.sender) : message.sender != null) return false;
-        return content != null ? content.equals(message.content) : message.content == null;
+//        if (date != message.date) return false;
+//        if (sender != null ? !sender.equals(message.sender) : message.sender != null) return false;
+//        return content != null ? content.equals(message.content) : message.content == null;
+        return date == message.date && (sender != null ? sender.equals(message.sender) : message.sender == null && (content != null ? content.equals(message.content) : message.content == null));
 
     }
 

@@ -3,19 +3,17 @@ package fr.umlv.thaw.user;
 import fr.umlv.thaw.channel.Channel;
 
 import java.util.Objects;
-import java.util.concurrent.ConcurrentLinkedQueue;
 
 /**
  * This class represent a Human user
  */
 public class HumanUser extends AbstractUser {
 
-    private final ConcurrentLinkedQueue<Channel> channels;
 
     public HumanUser(String nickname) {
         super(nickname);
-        channels = new ConcurrentLinkedQueue<>();
     }
+
 
     /**
      * This method create a new channel with the current HumanUser as creator
@@ -56,20 +54,11 @@ public class HumanUser extends AbstractUser {
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-        if (!super.equals(o)) return false;
-
-        HumanUser humanUser = (HumanUser) o;
-
-        return channels.equals(humanUser.channels);
-
+        return this == o || o instanceof HumanUser && super.equals(o);
     }
 
     @Override
     public int hashCode() {
-        int result = super.hashCode();
-        result = 31 * result + channels.hashCode();
-        return result;
+        return super.hashCode();
     }
 }
