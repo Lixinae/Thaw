@@ -6,8 +6,12 @@
 
     <property file="build.properties"/>
 
-
-    <property name="JDK1.9.dir" value=""/>
+    <!-- If the environment variable JAVA_HOME is set then it will take the
+    value. Otherwise, you will probably get an error (or even if the JAVA_HOME is set for a jdk 8) so you will
+    need to use ant -DJDK1.9.dir=/my/path/to/jvm9
+    -->
+    <property environment="env"/>
+    <property name="JDK1.9.dir" value="${env.JAVA_HOME}"/>
     <property name="javac1.9" location="${JDK1.9.dir}/bin/javac"/>
     <!-- In build.properties file
         JDK1.9.dir=./jdk1.9.0
