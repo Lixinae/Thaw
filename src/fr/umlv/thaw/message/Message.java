@@ -22,14 +22,28 @@ public class Message {
         this.content = Objects.requireNonNull(content);
     }
 
+    /**
+     * This method return the User that have sent the Message.
+     *
+     * @return The User that have sent the message
+     */
     public User getSender() {
         return sender;
     }
 
+    /**
+     * This method retrive the date in which the message has been sent.
+     * @return the date of the Message as a long.
+     */
     public long getDate() {
         return date;
     }
 
+    /**
+     * This message is useful to get the content of the message that is a String.
+     *
+     * @return the content of the Message as a String.
+     */
     public String getContent() {
         return content;
     }
