@@ -16,6 +16,10 @@ abstract class AbstractUser implements User {
         this.name = Objects.requireNonNull(name);
     }
 
+    public String getName() {
+        return name;
+    }
+
     /**
      * This method allow a humanUser to send a message to a specific channel.
      *
@@ -26,7 +30,7 @@ abstract class AbstractUser implements User {
      */
     public boolean sendMessage(long date, String message, Channel chan) {
         Objects.requireNonNull(chan);
-        return chan.addMessageToQueue(this.name, date, message);
+        return chan.addMessageToQueue(this, date, message);
     }
 
     /**
