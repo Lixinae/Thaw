@@ -20,6 +20,22 @@ abstract class AbstractUser implements User {
         return name;
     }
 
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        AbstractUser that = (AbstractUser) o;
+
+        return name.equals(that.name);
+
+    }
+
+    @Override
+    public int hashCode() {
+        return name.hashCode();
+    }
+
     /**
      * This method allow a humanUser to send a message to a specific channel.
      *
