@@ -25,7 +25,8 @@ abstract class AbstractUser implements User {
      * @return true if the message has been sent, false otherwise
      */
     public boolean sendMessage(long date, String message, Channel chan) {
-        return false;
+        Objects.requireNonNull(chan);
+        return chan.addMessageToQueue(this.name, date, message);
     }
 
     /**
@@ -36,7 +37,8 @@ abstract class AbstractUser implements User {
      * cases return false
      */
     public boolean joinChannel(Channel chan) {
-        return false;
+        Objects.requireNonNull(chan);
+        return chan.addUserToChan(this);
     }
 
     /**
@@ -45,7 +47,12 @@ abstract class AbstractUser implements User {
      * otherwise
      */
     public boolean quitChannel(Channel chan) {
-        return false;
+        Objects.requireNonNull(chan);
+        if (this.isUserBot()) {
+            return chan.delBot((Bot) this);
+        } else {
+            return chan.removeUserFromChan(this);
+        }
     }
 
 
