@@ -56,4 +56,25 @@ public class Message {
                 ", content='" + content + '\'' +
                 '}';
     }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        Message message = (Message) o;
+
+        if (date != message.date) return false;
+        if (sender != null ? !sender.equals(message.sender) : message.sender != null) return false;
+        return content != null ? content.equals(message.content) : message.content == null;
+
+    }
+
+    @Override
+    public int hashCode() {
+        int result = sender != null ? sender.hashCode() : 0;
+        result = 31 * result + (int) (date ^ (date >>> 32));
+        result = 31 * result + (content != null ? content.hashCode() : 0);
+        return result;
+    }
 }
