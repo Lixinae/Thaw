@@ -10,7 +10,6 @@ import java.util.concurrent.ConcurrentLinkedQueue;
  */
 public class HumanUser extends AbstractUser {
 
-    //    private final String nickname;
     private final ConcurrentLinkedQueue<Channel> channels;
 
     public HumanUser(String nickname) {
