@@ -5,8 +5,8 @@ import fr.umlv.thaw.channel.Channel;
 import java.util.Objects;
 
 /**
- * Project :Thaw
- * Created by Narex on 20/10/2016.
+ * This abstract class regroups the commons methods of
+ * a HumanUser and Bot.
  */
 abstract class AbstractUser implements User {
 
