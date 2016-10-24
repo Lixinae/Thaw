@@ -43,16 +43,20 @@ abstract class AbstractUser implements User {
 
     /**
      * @param chan the channel to quit
-     * @return true if the humanUser has been remove from the channel, false
+     * @throws IllegalArgumentException if the channel does not exist or if the HumanUser or bot has not joined
+     * the channel yet.
+     * @return true if the HumanUser or Bot has been removed from the channel, false
      * otherwise
      */
     public boolean quitChannel(Channel chan) {
         Objects.requireNonNull(chan);
         if (this.isUserBot()) {
             return chan.delBot((Bot) this);
-        } else {
+        }
+        if (this.isUserHuman()) {
             return chan.removeUserFromChan(this);
         }
+        throw new IllegalArgumentException("Channel not found or the User haven't been found");
     }
 
 
