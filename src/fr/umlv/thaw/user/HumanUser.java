@@ -2,6 +2,7 @@ package fr.umlv.thaw.user;
 
 import fr.umlv.thaw.channel.Channel;
 
+import java.util.Objects;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
 public class HumanUser extends AbstractUser {
@@ -15,13 +16,13 @@ public class HumanUser extends AbstractUser {
     }
 
     public boolean addChannel(Channel chan) {
-        // TODO Auto-generated method stub
-        return false;
+        Objects.requireNonNull(chan);
+        return channels.add(chan);
     }
 
     public boolean delChannel(Channel chan) {
-        // TODO Auto-generated method stub
-        return false;
+        Objects.requireNonNull(chan);
+        return channels.remove(chan);
     }
 
     @Override
