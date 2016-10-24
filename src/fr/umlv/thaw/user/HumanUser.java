@@ -5,6 +5,9 @@ import fr.umlv.thaw.channel.Channel;
 import java.util.Objects;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
+/**
+ * This class represent a Human user
+ */
 public class HumanUser extends AbstractUser {
 
     //    private final String nickname;
@@ -47,9 +50,6 @@ public class HumanUser extends AbstractUser {
                 '}';
     }
 
-    /**
-     * @return true is the user is a human, false otherwise
-     */
     @Override
     public boolean isUserHuman() {
         return true;
