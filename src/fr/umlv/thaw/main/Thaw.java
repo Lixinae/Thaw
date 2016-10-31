@@ -36,9 +36,9 @@ public class Thaw {
         test.printMap();
         JShell jShell = JShell.create();
         List<SnippetEvent> l = jShell.eval("int x = 10");
-        for (SnippetEvent al : l) {
-            System.out.println(al);
-        }
+        l.forEach(System.out::println);
 
+//        Vertx vertx = Vertx.vertx();
+//        vertx.deployVerticle(new Server());
     }
 }
