@@ -1,3 +1,43 @@
 body{
 background-color:#D3D3D3;
 }
+h1{
+	font-family: "Times New Roman";
+	font-size: 10;
+	text-align: center;
+}
+h2{
+	font-family: "Times New Roman";
+	font-size: 8;
+	text-align: center;
+}
+
+.background{
+	border: red thin solid;/*Seulement pour test inclusion, à virer par la suite*/
+	background-color:#D3D3E5;
+}
+.listChannels{
+	display: inline-block;
+	border: blue thin solid;
+	margin-left: 10%;
+	margin-top: 10%;
+	width:20%;
+}
+.tchat{
+	display: inline-block;
+	border: blue thin solid;
+	margin-left: 5%;
+	width:30%;
+}
+.textEntry{
+	border: orange thin solid;
+	margin-left: 35.3%;
+	margin-top: 2%;
+	width:30%;
+}
+.listUsers{
+	display: inline-block;
+	border: blue thin solid;
+	margin-left: 5%;
+	width:20%;
+}
