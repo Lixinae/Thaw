@@ -53,6 +53,14 @@ public class Server extends AbstractVerticle {
     private void listOfRequest(Router router) {
         router.post("/test/:username").handler(this::testAjax);
         router.post("/sendMessage").handler(this::sendMessage);
+        router.get("/getListChannel").handler(this::getListChannels);
+
+    }
+
+    private void getListChannels(RoutingContext routingContext) {
+//        routingContext.response()
+//                .putHeader("content-type", "application/json")
+//                .end(Json.encodePrettily());
     }
 
     // TODO

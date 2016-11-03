@@ -38,10 +38,11 @@ function getListUsers(){
 // TODO A changer !
 function getListChannels(){
 	var listChannel = $("#listChannels")
+	listChannel.children().remove();
+	
 	var delimiter = "/"
 	// format : $.get(nomRequete,fonction a appliquer)
-	$.get("/getListChannels",
-		function(data){
+	/*$.get("/getListChannels",function(data){
 			// Mettre un delimiteur entre chaque nom de channel pour split
 			// Exemple :
 			//   MonSuperChannel / UnAutreChannel / EncoreUn 
@@ -51,11 +52,27 @@ function getListChannels(){
 				
 			}
 		}
-	
-	)
+	)*/
+	// TODO verifier fonctionnement
+	listChannel.children().remove();
+	// Va creer une liste cliquable avec chacun des channel
+	listChannel.append("<ul id=\"channels\" onclick=\"selectChannel()\">");
+	$.getJSON("/getListChannels",function(data){
+		$.each(data,function(val){
+			listChannel.append("<li> "+ val+" </li>");
+		}
+	}
+	listChannel.append("</ul>");
 }
 
 
-function selectChannel(val){
+function selectChannel(){
+		var ul = document.getElementById('channels');
+		ul.onclick = function(event) {
+				var target = getEventTarget(event);
+				//alert(target.innerHTML);
+				currentChannel=target.innerHTML;
+				alert(currentChannel)
+		};
 	
 }
