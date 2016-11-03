@@ -1,10 +1,20 @@
 package fr.umlv.thaw.server;
 
+
+import fr.umlv.thaw.channel.Channel;
+import fr.umlv.thaw.user.User;
 import io.vertx.core.AbstractVerticle;
+import io.vertx.core.http.HttpServerRequest;
+import io.vertx.core.http.HttpServerResponse;
+import io.vertx.core.json.Json;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.Router;
 import io.vertx.ext.web.RoutingContext;
 import io.vertx.ext.web.handler.StaticHandler;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Objects;
 
 
 /**
@@ -12,6 +22,9 @@ import io.vertx.ext.web.handler.StaticHandler;
  * Created by Narex on 31/10/2016.
  */
 public class Server extends AbstractVerticle {
+
+    private final List<Channel> channels = new ArrayList<>();
+
     @Override
     public void start() {
         Router router = Router.router(vertx);
@@ -54,16 +67,47 @@ public class Server extends AbstractVerticle {
         router.post("/test/:username").handler(this::testAjax);
         router.post("/sendMessage").handler(this::sendMessage);
         router.get("/getListChannel").handler(this::getListChannels);
+        router.get("/getListUserForChannel/:channelName").handler(this::getListUserForChannel);
 
     }
 
+    // TODO -> A tester
+    private void getListUserForChannel(RoutingContext routingContext) {
+        HttpServerResponse response = routingContext.response();
+        HttpServerRequest request = routingContext.request();
+        String channelName = Objects.requireNonNull(request.getParam("channelName"));
+        if (channelName.isEmpty()) {
+            response.setStatusCode(404).end();
+            return;
+        }
+        Channel chan = channels.get(findChannelIndex(channelName));
+        List<User> tmp = chan.getListUser();
+        routingContext.response()
+                .putHeader("content-type", "application/json")
+                .end(Json.encodePrettily(tmp));
+
+    }
+
+    // TODO -> A tester
+    private int findChannelIndex(String channelName) {
+        int i = 0;
+        for (Channel c : channels) {
+            if (c.getChannelName().contentEquals(channelName)) {
+                return i;
+            }
+            i++;
+        }
+        return -1;
+    }
+
+    // TODO -> A tester
     private void getListChannels(RoutingContext routingContext) {
-//        routingContext.response()
-//                .putHeader("content-type", "application/json")
-//                .end(Json.encodePrettily());
+        routingContext.response()
+                .putHeader("content-type", "application/json")
+                .end(Json.encodePrettily(channels));
     }
 
-    // TODO
+    // TODO -> A tester
     private void sendMessage(RoutingContext routingContext) {
         JsonObject json = routingContext.getBodyAsJson();
         if (json == null) {
@@ -81,6 +125,7 @@ public class Server extends AbstractVerticle {
         }
     }
 
+    // TODO -> Fonctionne
     private void testAjax(RoutingContext routingContext) {
 //        System.out.println("niaaaaa");
 //        String username = Json.decodeValue(routingContext.getBodyAsString(),String.class);

@@ -3,7 +3,10 @@ package fr.umlv.thaw.channel;
 import fr.umlv.thaw.message.Message;
 import fr.umlv.thaw.user.HumanUser;
 import fr.umlv.thaw.user.User;
+import io.netty.util.internal.ConcurrentSet;
 
+import java.util.Arrays;
+import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
@@ -16,6 +19,7 @@ class ChannelImpl implements Channel {
     //    private final ConcurrentLinkedQueue<Bot> bots;
     private final String chanName;
     private final HumanUser creator;
+    private final ConcurrentSet<User> users;
     //Prendre une LinkedQueue de message car un utilisateur peut envoyer plusieurs messages.
     private final ConcurrentHashMap<User, ConcurrentLinkedQueue<Message>> messagesQueue;
 
@@ -25,6 +29,7 @@ class ChannelImpl implements Channel {
         chanName = Objects.requireNonNull(channelName);
 //        bots = new ConcurrentLinkedQueue<>();
         messagesQueue = new ConcurrentHashMap<>();
+        users = new ConcurrentSet<>();
     }
 
 
@@ -66,6 +71,17 @@ class ChannelImpl implements Channel {
         return true;
     }
 
+    @Override
+    public String getChannelName() {
+        return chanName;
+    }
+
+    @Override
+    public List<User> getListUser() {
+        // TODO
+        return Arrays.asList((User[]) users.toArray());
+    }
+
 //    @Override
 //    public boolean addBot(Bot bot) {
 //        Objects.requireNonNull(bot);
@@ -88,23 +104,7 @@ class ChannelImpl implements Channel {
 //    }
 
 
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (!(o instanceof ChannelImpl)) return false;
-        ChannelImpl channel = (ChannelImpl) o;
-        return chanName.equals(channel.chanName) && creator.equals(channel.creator) && messagesQueue.equals(channel.messagesQueue);
-    }
-
-    @Override
-    public int hashCode() {
-        int result = chanName.hashCode();
-        result = 31 * result + creator.hashCode();
-        result = 31 * result + messagesQueue.hashCode();
-        return result;
-    }
-
-//    @Override
+    //    @Override
 //    public String toString() {
 //        return "ChannelImpl{" +
 //                "bots=" + bots +
@@ -119,7 +119,25 @@ class ChannelImpl implements Channel {
         return "ChannelImpl{" +
                 "chanName='" + chanName + '\'' +
                 ", creator=" + creator +
+                ", users=" + users +
                 ", messagesQueue=" + messagesQueue +
                 '}';
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof ChannelImpl)) return false;
+        ChannelImpl channel = (ChannelImpl) o;
+        return chanName != null ? chanName.equals(channel.chanName) : channel.chanName == null && (creator != null ? creator.equals(channel.creator) : channel.creator == null && (users != null ? users.equals(channel.users) : channel.users == null && (messagesQueue != null ? messagesQueue.equals(channel.messagesQueue) : channel.messagesQueue == null)));
+    }
+
+    @Override
+    public int hashCode() {
+        int result = chanName != null ? chanName.hashCode() : 0;
+        result = 31 * result + (creator != null ? creator.hashCode() : 0);
+        result = 31 * result + (users != null ? users.hashCode() : 0);
+        result = 31 * result + (messagesQueue != null ? messagesQueue.hashCode() : 0);
+        return result;
     }
 }

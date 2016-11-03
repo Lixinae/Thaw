@@ -2,6 +2,8 @@ package fr.umlv.thaw.channel;
 
 import fr.umlv.thaw.user.User;
 
+import java.util.List;
+
 /**
  * This interface contains every method that is useful to implement a channel.
  */
@@ -42,6 +44,9 @@ public interface Channel {
      */
     boolean removeUserFromChan(User user);
 
+    String getChannelName();
+
+    List<User> getListUser();
 //    /**
 //     * Add a bot in the channel. That method could be called only by someone who
 //     * got enough privilege to add a bot in this channel
