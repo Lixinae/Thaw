@@ -1,16 +1,9 @@
 package fr.umlv.thaw.main;
 
-import fr.umlv.thaw.configuration.Configuration;
-import fr.umlv.thaw.user.Bot;
-import fr.umlv.thaw.user.HumanUser;
-import fr.umlv.thaw.user.User;
-import jdk.jshell.JShell;
-import jdk.jshell.SnippetEvent;
+import fr.umlv.thaw.server.Server;
+import io.vertx.core.Vertx;
 
 import java.io.IOException;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 
 /**
  * Project :Thaw
@@ -21,24 +14,30 @@ public class Thaw {
         TODO
      */
     public static void main(String[] args) throws IOException {
-        Map map = new HashMap();
+//        Map map = new HashMap();
+//
+//        User a = new Bot("a", "a");
+//        User b = new HumanUser("blork");
+////        System.out.println(a);
+////        System.out.println(b);
+////        System.out.println(a.isUserHuman());
+////        System.out.println(a.isUserBot());
+////        System.out.println(b.isUserHuman());
+////        System.out.println(b.isUserBot());
+//        Configuration test = new Configuration("./botConfig/botConfigurations.txt");
+//        test.readConfigurationFromFile();
+//        test.printMap();
+//        JShell jShell = JShell.create();
+//        List<SnippetEvent> l = jShell.eval("int x = 10");
+//        l.forEach(System.out::println);
 
-        User a = new Bot("a", "a");
-        User b = new HumanUser("blork");
-//        System.out.println(a);
-//        System.out.println(b);
-//        System.out.println(a.isUserHuman());
-//        System.out.println(a.isUserBot());
-//        System.out.println(b.isUserHuman());
-//        System.out.println(b.isUserBot());
-        Configuration test = new Configuration("./botConfig/botConfigurations.txt");
-        test.readConfigurationFromFile();
-        test.printMap();
-        JShell jShell = JShell.create();
-        List<SnippetEvent> l = jShell.eval("int x = 10");
-        l.forEach(System.out::println);
 
-//        Vertx vertx = Vertx.vertx();
-//        vertx.deployVerticle(new Server());
+        // development option, avoid caching to see changes of
+        // static files without having to reload the application,
+        // obviously, this line should be commented in production
+        System.setProperty("vertx.disableFileCaching", "true");
+        Server server = new Server();
+        Vertx vertx = Vertx.vertx();
+        vertx.deployVerticle(server);
     }
 }
