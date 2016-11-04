@@ -23,6 +23,16 @@ h2{
 	margin-top: 10%;
 	width:20%;
 }
+
+#channels{
+	list-style:none;
+}
+
+#channels li:hover{
+	background-color: yellow;
+}
+
+
 .tchat{
 	display: inline-block;
 	border: blue thin solid;
@@ -40,4 +50,12 @@ h2{
 	border: blue thin solid;
 	margin-left: 5%;
 	width:20%;
+}
+
+#usersOnChan{
+	list-style:none;
+}
+
+#usersOnChan li:hover{
+	background-color: yellow;
 }

@@ -3,7 +3,7 @@
 	<meta charset="UTF-8">
 	<link rel="stylesheet" href="mycss.css" type="text/css" media="all"/>
 	<script src="asset/jquery-2.1.4.js"></script>
-    <script src="test.js"></script>
+    <script src="script.js"></script>
 
 </head>
 <body>
@@ -11,23 +11,40 @@
 	<h1>THAW</h1>
 	<div class="listChannels">
 		<h2>listChannels</h2>
+        <!-- Test pour affichage -->
+        <ul id="channels" onclick="selectChannel()">
+            <li>Item 1</li>
+            <li>Item 2</li>
+            <li>Item 3</li>
+            <li>Item 3</li>
+        </ul>
 	</div>
-	<div class="tchat">
+
+    <div class="tchat">
 		<h2>Tchat</h2>
+        <!-- Test pour affichage -->
+        <ul id="maSuperList2">
+            <li>Item 1</li>
+            <li>Item 2</li>
+            <li>Item 3</li>
+            <li>Item 3</li>
+            <li>Item 3</li>
+        </ul>
 	</div>
 	<div class="listUsers">
 		<h2>ListUsers </h2>
+        <!-- Test pour affichage -->
+        <ul id="usersOnChan">
+            <li>Item 1</li>
+            <li>Item 2</li>
+            <li>Item 3</li>
+        </ul>
 	</div>
 	<div class="textEntry">
 		<h2>Text Entry</h2>
 	</div>
 
-    <ul id="maSuperList" onclick="updateValue()">
-        <li>Item 1</li>
-        <li>Item 2</li>
-        <li>Item 3</li>
-    </ul>
-    <ul id="maSuperList2" onclick="testAjax()">
+    <ul id="maSuperList3" onclick="testAjax()">
         <li>Item 4</li>
         <li>Item 5</li>
         <li>Item 6</li>

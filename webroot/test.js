@@ -12,13 +12,13 @@
 	
 	// Recupère la valeur de l'element de la liste sur lequel on clique
 	// -> Pour change de chan efficacement
-	function updateValue(){
-		var ul = document.getElementById('maSuperList');
+	function selectChannel(){
+		var ul = document.getElementById('channels');
 		ul.onclick = function(event) {
-				var target = getEventTarget(event);
-				//alert(target.innerHTML);
-				currentChannel=target.innerHTML;
-				alert(currentChannel)
+			var target = getEventTarget(event);
+			//alert(target.innerHTML);
+			currentChannel=target.innerHTML;
+			alert(currentChannel)
 		};
 	}
 	
