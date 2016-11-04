@@ -80,12 +80,16 @@ public class Server extends AbstractVerticle {
             response.setStatusCode(404).end();
             return;
         }
-        Channel chan = channels.get(findChannelIndex(channelName));
+        int index = findChannelIndex(channelName);
+        if (index == -1) {
+            response.setStatusCode(404).end();
+            return;
+        }
+        Channel chan = channels.get(index);
         List<User> tmp = chan.getListUser();
         routingContext.response()
                 .putHeader("content-type", "application/json")
                 .end(Json.encodePrettily(tmp));
-
     }
 
     // TODO -> A tester
