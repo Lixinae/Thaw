@@ -13,9 +13,7 @@ import io.vertx.ext.web.Router;
 import io.vertx.ext.web.RoutingContext;
 import io.vertx.ext.web.handler.StaticHandler;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 
 
 /**
@@ -193,13 +191,18 @@ public class Server extends AbstractVerticle {
     }
 
     private void testAjax2(RoutingContext routingContext) {
-        List<String> test = new ArrayList<>();
-        test.add("blork");
-        test.add("yoooo");
-        test.add("hehehe");
+        Map<Integer, String> testMap = new HashMap<>();
+//        List<String> test = new ArrayList<>();
+//        test.add("blork");
+//        test.add("yoooo");
+//        test.add("hehehe");
+
+        testMap.put(1, "Bmurk");
+        testMap.put(2, "Randim");
+        testMap.put(10, "Textalacon");
         System.out.println("moi");
         routingContext.response()
                 .putHeader("content-type", "application/json")
-                .end(Json.encodePrettily(test));
+                .end(Json.encodePrettily(testMap));
     }
 }
