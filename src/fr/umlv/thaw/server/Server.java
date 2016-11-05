@@ -11,6 +11,7 @@ import io.vertx.core.json.Json;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.Router;
 import io.vertx.ext.web.RoutingContext;
+import io.vertx.ext.web.handler.BodyHandler;
 import io.vertx.ext.web.handler.StaticHandler;
 
 import java.util.*;
@@ -47,10 +48,11 @@ public class Server extends AbstractVerticle {
 //
 //            routingContext.response().end("Hitcount: " + cnt);
 //        });
-
+        router.route().handler(BodyHandler.create());
+        router.route().handler(StaticHandler.create());
         listOfRequest(router);
         // otherwise serve static pages
-        router.route().handler(StaticHandler.create());
+
 
         // Creation d'un serveur en https avec authentification
         // Exemple ici pour creer fichier jks : https://gist.github.com/InfoSec812/a45eb3b7ba9d4b2a9b94
@@ -109,6 +111,8 @@ public class Server extends AbstractVerticle {
 
         router.get("/api/testParam/:username").handler(this::testAjax);
         router.get("/api/test").handler(this::testAjax2);
+        router.post("/api/testJson").handler(this::testAjax3);
+
         router.post("/api/sendMessage").handler(this::sendMessage);
         router.get("/api/getListChannel").handler(this::getListChannels);
         router.get("/api/getListUserForChannel/:channelName").handler(this::getListUserForChannel);
@@ -192,10 +196,6 @@ public class Server extends AbstractVerticle {
 
     private void testAjax2(RoutingContext routingContext) {
         Map<Integer, String> testMap = new HashMap<>();
-//        List<String> test = new ArrayList<>();
-//        test.add("blork");
-//        test.add("yoooo");
-//        test.add("hehehe");
 
         testMap.put(1, "Bmurk");
         testMap.put(2, "Randim");
@@ -204,5 +204,15 @@ public class Server extends AbstractVerticle {
         routingContext.response()
                 .putHeader("content-type", "application/json")
                 .end(Json.encodePrettily(testMap));
+    }
+
+    private void testAjax3(RoutingContext routingContext) {
+        JsonObject json = routingContext.getBodyAsJson();
+        System.out.println(json);
+        List<String> test = new ArrayList<>();
+        test.add("This is");
+        test.add("a Json");
+        test.add("Test");
+        routingContext.response().putHeader("content-type", "application/json").end(Json.encodePrettily(test));
     }
 }

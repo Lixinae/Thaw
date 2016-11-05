@@ -79,7 +79,8 @@ def fetchMessage(machineName,channelName,numberMessage=10):
     return
 
 # This function is only to test how the REST API works
-def testSimple():
+
+def testSimpleGet():
     url = "http://192.168.1.34:8080/api/test"
     #payload = { 'username' : 'mouhahahaha' }
     r = requests.get(url)
@@ -93,8 +94,18 @@ def testSimple():
     print(r.status_code)
     print(r.json())
 
+def testSimplePost():
+    payload = { 'username' : 'mouhahahaha' , 'another':'value' }
+    url = "http://192.168.1.34:8080/api/testJson"
+    headers = {'Content-type': 'application/json', 'Accept': 'text/plain'}
+    print(json.dumps(payload))
+    r = requests.post(url, data=json.dumps(payload),headers=headers)
+    print(r.text)
+    print(r.status_code)
+    print(r.json())
 if __name__ == '__main__':
-    testSimple()
+    #testSimpleGet()
+    testSimplePost()
     #machineUrl = askMachineUrl()
     #channelName = askChannelName()
     #numberMessage = askNumberMessage()
