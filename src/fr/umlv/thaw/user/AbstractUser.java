@@ -19,6 +19,7 @@ abstract class AbstractUser implements User {
         channels = new ConcurrentLinkedQueue<>();
     }
 
+    @Override
     public String getName() {
         return name;
     }

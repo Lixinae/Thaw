@@ -10,6 +10,10 @@ import java.util.List;
 public interface Channel {
 
     /**
+     * @return the userName where it is called on
+     */
+    String getName();
+    /**
      * This method add a message that has been wrote by a user in a certain date
      *
      * @param user the user that send the message

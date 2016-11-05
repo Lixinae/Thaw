@@ -14,10 +14,10 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 /**
  * This is the implementation of a channel. This class represent the channel itself.
  */
-class ChannelImpl implements Channel {
+public class ChannelImpl implements Channel {
 
     //    private final ConcurrentLinkedQueue<Bot> bots;
-    private final String chanName;
+    private final String channelName;
     private final HumanUser creator;
     private final ConcurrentSet<User> users;
     //Prendre une LinkedQueue de message car un utilisateur peut envoyer plusieurs messages.
@@ -26,12 +26,11 @@ class ChannelImpl implements Channel {
 
     public ChannelImpl(HumanUser creator, String channelName) {
         this.creator = Objects.requireNonNull(creator);
-        chanName = Objects.requireNonNull(channelName);
+        this.channelName = Objects.requireNonNull(channelName);
 //        bots = new ConcurrentLinkedQueue<>();
         messagesQueue = new ConcurrentHashMap<>();
         users = new ConcurrentSet<>();
     }
-
 
     @Override
     public boolean addMessageToQueue(User user, long date, String message) {
@@ -73,7 +72,7 @@ class ChannelImpl implements Channel {
 
     @Override
     public String getChannelName() {
-        return chanName;
+        return channelName;
     }
 
     @Override
@@ -108,7 +107,7 @@ class ChannelImpl implements Channel {
 //    public String toString() {
 //        return "ChannelImpl{" +
 //                "bots=" + bots +
-//                ", chanName='" + chanName + '\'' +
+//                ", channelName='" + channelName + '\'' +
 //                ", creator=" + creator +
 //                ", messagesQueue=" + messagesQueue +
 //                '}';
@@ -117,7 +116,7 @@ class ChannelImpl implements Channel {
     @Override
     public String toString() {
         return "ChannelImpl{" +
-                "chanName='" + chanName + '\'' +
+                "channelName='" + channelName + '\'' +
                 ", creator=" + creator +
                 ", users=" + users +
                 ", messagesQueue=" + messagesQueue +
@@ -129,12 +128,12 @@ class ChannelImpl implements Channel {
         if (this == o) return true;
         if (!(o instanceof ChannelImpl)) return false;
         ChannelImpl channel = (ChannelImpl) o;
-        return chanName != null ? chanName.equals(channel.chanName) : channel.chanName == null && (creator != null ? creator.equals(channel.creator) : channel.creator == null && (users != null ? users.equals(channel.users) : channel.users == null && (messagesQueue != null ? messagesQueue.equals(channel.messagesQueue) : channel.messagesQueue == null)));
+        return channelName != null ? channelName.equals(channel.channelName) : channel.channelName == null && (creator != null ? creator.equals(channel.creator) : channel.creator == null && (users != null ? users.equals(channel.users) : channel.users == null && (messagesQueue != null ? messagesQueue.equals(channel.messagesQueue) : channel.messagesQueue == null)));
     }
 
     @Override
     public int hashCode() {
-        int result = chanName != null ? chanName.hashCode() : 0;
+        int result = channelName != null ? channelName.hashCode() : 0;
         result = 31 * result + (creator != null ? creator.hashCode() : 0);
         result = 31 * result + (users != null ? users.hashCode() : 0);
         result = 31 * result + (messagesQueue != null ? messagesQueue.hashCode() : 0);

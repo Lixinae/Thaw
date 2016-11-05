@@ -2,6 +2,8 @@ package fr.umlv.thaw.server;
 
 
 import fr.umlv.thaw.channel.Channel;
+import fr.umlv.thaw.channel.ChannelImpl;
+import fr.umlv.thaw.user.HumanUser;
 import fr.umlv.thaw.user.User;
 import io.vertx.core.AbstractVerticle;
 import io.vertx.core.Future;
@@ -15,6 +17,7 @@ import io.vertx.ext.web.handler.BodyHandler;
 import io.vertx.ext.web.handler.StaticHandler;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 
 /**
@@ -49,10 +52,24 @@ public class Server extends AbstractVerticle {
 //            routingContext.response().end("Hitcount: " + cnt);
 //        });
         router.route().handler(BodyHandler.create());
-        router.route().handler(StaticHandler.create());
-        listOfRequest(router);
-        // otherwise serve static pages
 
+        listOfRequest(router);
+
+
+        // ONLY FOR TESTTING !!!!!! //
+        // Fonctionne bien
+        HumanUser a = new HumanUser("Blark");
+        Channel c = new ChannelImpl(a, "monSuperChan1");
+        Channel c2 = new ChannelImpl(a, "monSuperChan2");
+        Channel c3 = new ChannelImpl(a, "monSuperChan3");
+        Channel c4 = new ChannelImpl(a, "monSuperChan4");
+        channels.add(c);
+        channels.add(c2);
+        channels.add(c3);
+        channels.add(c4);
+        System.out.println(channels);
+//        channels.get(1).addMessageToQueue(a,120,"truc");
+        // END OF TEST !!!!!!!!!!! //
 
         // Creation d'un serveur en https avec authentification
         // Exemple ici pour creer fichier jks : https://gist.github.com/InfoSec812/a45eb3b7ba9d4b2a9b94
@@ -80,6 +97,8 @@ public class Server extends AbstractVerticle {
 //                });
 //        System.out.println("listen on port "+config().getInteger("http.port"));
 
+        // otherwise serve static pages
+        router.route().handler(StaticHandler.create());
         vertx.createHttpServer().requestHandler(router::accept).listen(8080);
         System.out.println("listen on port 8080");
     }
@@ -122,6 +141,7 @@ public class Server extends AbstractVerticle {
 
     // TODO -> A tester
     private void getListUserForChannel(RoutingContext routingContext) {
+        System.out.println("In getListUser request");
         HttpServerResponse response = routingContext.response();
         HttpServerRequest request = routingContext.request();
         String channelName = Objects.requireNonNull(request.getParam("channelName"));
@@ -135,7 +155,8 @@ public class Server extends AbstractVerticle {
             return;
         }
         Channel chan = channels.get(index);
-        List<User> tmp = chan.getListUser();
+        List<String> tmp = chan.getListUser().stream().map(User::getName).collect(Collectors.toList());
+
         routingContext.response()
                 .putHeader("content-type", "application/json")
                 .end(Json.encodePrettily(tmp));
@@ -155,13 +176,16 @@ public class Server extends AbstractVerticle {
 
     // TODO -> A tester
     private void getListChannels(RoutingContext routingContext) {
+        System.out.println("In getListChannels request");
+        List<String> tmp = channels.stream().map(Channel::getChannelName).collect(Collectors.toList());
         routingContext.response()
                 .putHeader("content-type", "application/json")
-                .end(Json.encodePrettily(channels));
+                .end(Json.encodePrettily(tmp));
     }
 
     // TODO -> A tester
     private void sendMessage(RoutingContext routingContext) {
+        System.out.println("In sendMessage request");
         JsonObject json = routingContext.getBodyAsJson();
         if (json == null) {
             routingContext.response().setStatusCode(400).end();

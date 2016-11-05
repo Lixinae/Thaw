@@ -8,6 +8,9 @@ import fr.umlv.thaw.channel.Channel;
  */
 public interface User {
 
+
+    String getName();
+
     /**
      * This method allow a humanUser to send a message to a specific channel.
      *
