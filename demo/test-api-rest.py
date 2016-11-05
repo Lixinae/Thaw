@@ -43,7 +43,7 @@ except ImportError:
 
 # Asks the user on which machine he wants to log on 
 def askMachineUrl():
-    print("Format must be https://[adresse]:[port]/")
+    print("Format must be https://[adresse]:[port]")
     machineUrl = input("Enter a machine Url to read from : ")
     
     return machineUrl
@@ -60,17 +60,28 @@ def askNumberMessage():
     return int(numberMessage)
 
 # Asks the user from which channel the message should be retrieved
-def askChannelName():
+def askChannelName(machineUrl):
     channelName = ""
-    while channelName not in getChannelsList():
+    while channelName not in getChannelsList(machineUrl):
         channelName = input("Enter a channel name to read from : ")    
     return channelName
 
 # Ask the server for all channel names
 # Return a list of all channel names
-def getChannelsList():
+def getChannelsList(machineUrl):
     # TODO
-    return
+    url = "http://192.168.1.34:8080/api/getListChannel"
+    #querie = "/api/getListChannel"
+    #url = machineUrl+querie
+    print(url)
+    try:
+        r = requests.get(url)
+    except :
+        print("Can't reach target ")+url
+        return
+    print(r.status_code)
+    print(r.json())
+    return r.json()
 
 # Returns the list of all messages we want on a channel
 # Default value for numberMessage is 10
@@ -79,7 +90,6 @@ def fetchMessage(machineName,channelName,numberMessage=10):
     return
 
 # This function is only to test how the REST API works
-
 def testSimpleGet():
     url = "http://192.168.1.34:8080/api/test"
     #payload = { 'username' : 'mouhahahaha' }
@@ -105,10 +115,14 @@ def testSimplePost():
     print(r.json())
 if __name__ == '__main__':
     #testSimpleGet()
-    testSimplePost()
+    #testSimplePost()
+    listTest = getChannelsList("http://192.168.1.34:8080")
+    print(listTest)
     #machineUrl = askMachineUrl()
     #channelName = askChannelName()
     #numberMessage = askNumberMessage()
     
     #l = fetchMessage(machineName,channelName,numberMessage)
     #print (l.join("\n)"))
+
+
