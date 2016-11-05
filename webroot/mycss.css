@@ -1,11 +1,13 @@
 body{
 	background-color:#D3D3D3;
 }
+
 h1{
 	font-family: "Times New Roman";
 	font-size: 14;
 	text-align: center;
 }
+
 h2{
 	font-family: "Times New Roman";
 	font-size: 12;
@@ -16,6 +18,7 @@ h2{
 	border: red thin solid;/*Seulement pour test inclusion, à virer par la suite*/
 	background-color:#D3D3E5;
 }
+
 .listChannels{
 	display: inline-block;
 	border: blue thin solid;
@@ -47,6 +50,7 @@ h2{
 	overflow:auto;
 	
 }
+
 .textEntry{
 /*La position est en relative par defaut donc pas de precision
 a donner a ce niveau la. Ne pas metttre la position en absolute*/
@@ -56,6 +60,7 @@ a donner a ce niveau la. Ne pas metttre la position en absolute*/
 	height:25%;
 	overflow:auto;/*Fait apparaitre scrollbar lorsque limite de taille atteinte*/
 }
+
 textarea#TextZone{
 	width: 100%;
 	height:60%;
@@ -66,7 +71,7 @@ textarea#TextZone{
 	position:absolute;
 	border: blue thin solid;
 	margin-left: 70%;
-	top:30%;
+	top:23.5%;
 	width:20%;
 	height:80%;
 	overflow:auto;/*Fait apparaitre scrollbar lorsque limite de taille atteinte*/

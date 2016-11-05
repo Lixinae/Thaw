@@ -57,7 +57,7 @@ function getListChannels(){
 
 	// Va creer une liste cliquable avec chacun des channel
 	listChannel.append("<ul id=\"channels\" onclick=\"selectChannel()\">");
-	$.getJSON("/getListChannels",function(data){
+	$.getJSON("/api/getListChannels",function(data){
 		$.each(data,function(val){
 			listChannel.append("<li> "+ val+" </li>");
 		})
@@ -71,7 +71,7 @@ function getListUsersFromChan(){
 	usersListOnChan.children().remove();
 
 	usersListOnChan.append("<ul id=\"usersOnChan\">");
-	$.getJSON("/getListUsersForChanChannels/"+currentChannel,function(data){
+	$.getJSON("/api/getListUsersForChanChannels/"+currentChannel,function(data){
 		$.each(data,function(val){
 			usersListOnChan.append("<li> "+ val+" </li>");
 		})
@@ -97,3 +97,12 @@ function selectChannel(){
 	};
 	
 }
+
+function testAjax() {
+		var username ="testify"
+		$.get("/api/test/"+username, JSON.stringify({username: username}), function () {
+				//load();
+				// Do stuff
+				alert("bla")
+		},"json");
+	}
