@@ -4,6 +4,7 @@ package fr.umlv.thaw.server;
 import fr.umlv.thaw.channel.Channel;
 import fr.umlv.thaw.user.User;
 import io.vertx.core.AbstractVerticle;
+import io.vertx.core.Future;
 import io.vertx.core.http.HttpServerRequest;
 import io.vertx.core.http.HttpServerResponse;
 import io.vertx.core.json.Json;
@@ -26,20 +27,60 @@ public class Server extends AbstractVerticle {
     private final List<Channel> channels = new ArrayList<>();
 
     @Override
-    public void start() {
+    public void start(Future<Void> fut) {
         Router router = Router.router(vertx);
 
-        // route to JSON REST APIs
-//        router.get("/all").handler(this::getAllDBs);
-//        router.get("/get/:name/:id").handler(this::getARecord);
-        System.out.println(router.getRoutes());
+        //
+//        router.route().handler(CookieHandler.create());
+//        router.route().handler(SessionHandler
+//                .create(LocalSessionStore.create(vertx))
+//                .setCookieHttpOnlyFlag(true)
+//                .setCookieSecureFlag(true)
+//        );
+//
+//        router.route().handler(routingContext -> {
+//
+//            Session session = routingContext.session();
+//
+//            Integer cnt = session.get("hitcount");
+//            cnt = (cnt == null ? 0 : cnt) + 1;
+//
+//            session.put("hitcount", cnt);
+//
+//            routingContext.response().end("Hitcount: " + cnt);
+//        });
+
         listOfRequest(router);
-        System.out.println(router.getRoutes());
         // otherwise serve static pages
         router.route().handler(StaticHandler.create());
 
-        vertx.createHttpServer().requestHandler(router::accept).listen(8080);
+        // Creation d'un serveur en https avec authentification
+        // Exemple ici pour creer fichier jks : https://gist.github.com/InfoSec812/a45eb3b7ba9d4b2a9b94
+        // C'est à se tirer une balle le truc
+        // Sinon voila un exemple avec un fichier jks fourni
+        // Fichier jks -> permet de stocker les certificat et autres trucs
+//        HttpServer server =
+//                vertx.createHttpServer(new HttpServerOptions().setSsl(true).setKeyStoreOptions(
+//                        new JksOptions().setPath("server-keystore.jks").setPassword("wibble")
+//                ));
+//
+////        server.requestHandler(req -> {
+////            req.response().putHeader("content-type", "text/html").end("<html><body><h1>Hello from vert.x!</h1></body></html>");
+////        }).listen(8080);
+//        server.requestHandler(router::accept).listen(8080);
 
+// Plutot que de mettre le port de manière direct -> aller le chercher dans la configuration
+//        vertx.createHttpServer().requestHandler(router::accept).listen(config().getInteger("http.port", 8080),
+//                result -> {
+//                    if (result.succeeded()) {
+//                        fut.complete();
+//                    } else {
+//                        fut.fail(result.cause());
+//                    }
+//                });
+//        System.out.println("listen on port "+config().getInteger("http.port"));
+
+        vertx.createHttpServer().requestHandler(router::accept).listen(8080);
         System.out.println("listen on port 8080");
     }
 
@@ -64,12 +105,18 @@ public class Server extends AbstractVerticle {
 //    }
 
     private void listOfRequest(Router router) {
-        router.post("/test/:username").handler(this::testAjax);
-        router.post("/sendMessage").handler(this::sendMessage);
-        router.get("/getListChannel").handler(this::getListChannels);
-        router.get("/getListUserForChannel/:channelName").handler(this::getListUserForChannel);
+        // route to JSON REST APIs
+//        router.get("/all").handler(this::getAllDBs);
+//        router.get("/get/:name/:id").handler(this::getARecord);
+
+        router.get("/api/testParam/:username").handler(this::testAjax);
+        router.get("/api/test").handler(this::testAjax2);
+        router.post("/api/sendMessage").handler(this::sendMessage);
+        router.get("/api/getListChannel").handler(this::getListChannels);
+        router.get("/api/getListUserForChannel/:channelName").handler(this::getListUserForChannel);
 
     }
+
 
     // TODO -> A tester
     private void getListUserForChannel(RoutingContext routingContext) {
@@ -135,5 +182,24 @@ public class Server extends AbstractVerticle {
 //        String username = Json.decodeValue(routingContext.getBodyAsString(),String.class);
         String username = routingContext.request().getParam("username");
         System.out.println(username);
+        List<String> test = new ArrayList<>();
+        test.add("blork");
+        test.add("yoooofjugt");
+        test.add("hehefgjhuefh");
+
+        routingContext.response()
+                .putHeader("content-type", "application/json")
+                .end(Json.encodePrettily(test));
+    }
+
+    private void testAjax2(RoutingContext routingContext) {
+        List<String> test = new ArrayList<>();
+        test.add("blork");
+        test.add("yoooo");
+        test.add("hehehe");
+        System.out.println("moi");
+        routingContext.response()
+                .putHeader("content-type", "application/json")
+                .end(Json.encodePrettily(test));
     }
 }

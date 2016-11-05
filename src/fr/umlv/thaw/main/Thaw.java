@@ -31,6 +31,12 @@ public class Thaw {
 //        List<SnippetEvent> l = jShell.eval("int x = 10");
 //        l.forEach(System.out::println);
 
+//        ServerSocket socket = new ServerSocket(0);
+//        int port = socket.getLocalPort();
+//        socket.close();
+//        System.out.println(args[0]);
+//        DeploymentOptions options = new DeploymentOptions()
+//                .setConfig(new JsonObject().put("http.port", port));
 
         // development option, avoid caching to see changes of
         // static files without having to reload the application,
@@ -39,5 +45,6 @@ public class Thaw {
         Server server = new Server();
         Vertx vertx = Vertx.vertx();
         vertx.deployVerticle(server);
+//        vertx.deployVerticle(server, options);
     }
 }
