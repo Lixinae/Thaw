@@ -3,7 +3,6 @@ package fr.umlv.thaw.channel;
 import fr.umlv.thaw.message.Message;
 import fr.umlv.thaw.user.HumanUser;
 import fr.umlv.thaw.user.User;
-import io.netty.util.internal.ConcurrentSet;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -19,7 +18,7 @@ public class ChannelImpl implements Channel {
     //    private final ConcurrentLinkedQueue<Bot> bots;
     private final String channelName;
     private final HumanUser creator;
-    private final ConcurrentSet<User> users;
+    //    private final ConcurrentSet<User> users;
     //Prendre une LinkedQueue de message car un utilisateur peut envoyer plusieurs messages.
     private final ConcurrentHashMap<User, ConcurrentLinkedQueue<Message>> messagesQueue;
 
@@ -29,7 +28,7 @@ public class ChannelImpl implements Channel {
         this.channelName = Objects.requireNonNull(channelName);
 //        bots = new ConcurrentLinkedQueue<>();
         messagesQueue = new ConcurrentHashMap<>();
-        users = new ConcurrentSet<>();
+//        users = new ConcurrentSet<>();
     }
 
     /**
@@ -61,25 +60,24 @@ public class ChannelImpl implements Channel {
     @Override
     public boolean addUserToChan(User user) {
         Objects.requireNonNull(user);
-        return users.add(user);
-//        if (messagesQueue.containsKey(user)) {
-//            return false;
-//        }
-//        messagesQueue.put(user, new ConcurrentLinkedQueue<>());
-//        return true;
+//        return users.add(user);
+        if (messagesQueue.containsKey(user)) {
+            return false;
+        }
+        messagesQueue.put(user, new ConcurrentLinkedQueue<>());
+        return true;
     }
 
     @Override
     public boolean removeUserFromChan(User user) {
         Objects.requireNonNull(user);
-        if (users.contains(user)) {
-            return users.remove(user);
-        }
-
-//        if (!messagesQueue.containsKey(user)) {
-//            return false;
+//        if (users.contains(user)) {
+//            return users.remove(user);
 //        }
-//        messagesQueue.remove(user);
+        if (!messagesQueue.containsKey(user)) {
+            return false;
+        }
+        messagesQueue.remove(user);
         return false;
     }
 
@@ -91,7 +89,9 @@ public class ChannelImpl implements Channel {
     @Override
     public List<User> getListUser() {
         // TODO
-        return new ArrayList<>(users);
+        List<User> tmp = new ArrayList<>();
+        messagesQueue.forEach((k, v) -> tmp.add(k));
+        return tmp;
     }
 
 //    @Override
@@ -131,7 +131,6 @@ public class ChannelImpl implements Channel {
         return "ChannelImpl{" +
                 "channelName='" + channelName + '\'' +
                 ", creator=" + creator +
-                ", users=" + users +
                 ", messagesQueue=" + messagesQueue +
                 '}';
     }
@@ -141,14 +140,13 @@ public class ChannelImpl implements Channel {
         if (this == o) return true;
         if (!(o instanceof ChannelImpl)) return false;
         ChannelImpl channel = (ChannelImpl) o;
-        return channelName != null ? channelName.equals(channel.channelName) : channel.channelName == null && (creator != null ? creator.equals(channel.creator) : channel.creator == null && (users != null ? users.equals(channel.users) : channel.users == null && (messagesQueue != null ? messagesQueue.equals(channel.messagesQueue) : channel.messagesQueue == null)));
+        return channelName != null ? channelName.equals(channel.channelName) : channel.channelName == null && (creator != null ? creator.equals(channel.creator) : channel.creator == null && (messagesQueue != null ? messagesQueue.equals(channel.messagesQueue) : channel.messagesQueue == null));
     }
 
     @Override
     public int hashCode() {
         int result = channelName != null ? channelName.hashCode() : 0;
         result = 31 * result + (creator != null ? creator.hashCode() : 0);
-        result = 31 * result + (users != null ? users.hashCode() : 0);
         result = 31 * result + (messagesQueue != null ? messagesQueue.hashCode() : 0);
         return result;
     }
