@@ -70,14 +70,14 @@ def askChannelName(machineUrl):
 # Return a list of all channel names
 def getChannelsList(machineUrl):
     # TODO
-    url = "http://192.168.1.34:8080/api/getListChannel"
-    #querie = "/api/getListChannel"
-    #url = machineUrl+querie
+    #url = "http://192.168.1.34:8080/api/getListChannel"
+    querie = "/api/getListChannel"
+    url = machineUrl+querie
     print(url)
     try:
         r = requests.get(url)
     except :
-        print("Can't reach target ")+url
+        print("Can't reach target "+url)
         return
     print(r.status_code)
     print(r.json())
@@ -113,11 +113,29 @@ def testSimplePost():
     print(r.text)
     print(r.status_code)
     print(r.json())
+
+def sendMessageToServer(machineUrl):
+    querie = "/api/sendMessage"
+    url = machineUrl+querie
+    payload = { 'username' : 'Narex' , 'channelName':'monSuperChan1' , 'message':'Super message de test qui dechire' }
+    headers = {'Content-type': 'application/json', 'Accept': 'text/plain'}
+    try:
+        r = requests.post(url,data=json.dumps(payload),headers=headers)
+    except :
+        print("Can't reach target "+url)
+        return
+    print(r.status_code)
+    print(r.json())
+    return r.json()
+    
 if __name__ == '__main__':
     #testSimpleGet()
     #testSimplePost()
-    listTest = getChannelsList("http://192.168.1.34:8080")
-    print(listTest)
+    machineUrl = "http://192.168.1.34:8080"
+    #listTest = getChannelsList("http://192.168.1.34:8080")
+    #print(listTest)
+    sendMessageToServer(machineUrl)
+    
     #machineUrl = askMachineUrl()
     #channelName = askChannelName()
     #numberMessage = askNumberMessage()

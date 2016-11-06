@@ -5,7 +5,7 @@ import fr.umlv.thaw.user.HumanUser;
 import fr.umlv.thaw.user.User;
 import io.netty.util.internal.ConcurrentSet;
 
-import java.util.Arrays;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
@@ -32,6 +32,14 @@ public class ChannelImpl implements Channel {
         users = new ConcurrentSet<>();
     }
 
+    /**
+     * @return the userName where it is called on
+     */
+    @Override
+    public String getName() {
+        return channelName;
+    }
+
     @Override
     public boolean addMessageToQueue(User user, long date, String message) {
         Objects.requireNonNull(user);
@@ -53,21 +61,26 @@ public class ChannelImpl implements Channel {
     @Override
     public boolean addUserToChan(User user) {
         Objects.requireNonNull(user);
-        if (messagesQueue.containsKey(user)) {
-            return false;
-        }
-        messagesQueue.put(user, new ConcurrentLinkedQueue<>());
-        return true;
+        return users.add(user);
+//        if (messagesQueue.containsKey(user)) {
+//            return false;
+//        }
+//        messagesQueue.put(user, new ConcurrentLinkedQueue<>());
+//        return true;
     }
 
     @Override
     public boolean removeUserFromChan(User user) {
         Objects.requireNonNull(user);
-        if (!messagesQueue.containsKey(user)) {
-            return false;
+        if (users.contains(user)) {
+            return users.remove(user);
         }
-        messagesQueue.remove(user);
-        return true;
+
+//        if (!messagesQueue.containsKey(user)) {
+//            return false;
+//        }
+//        messagesQueue.remove(user);
+        return false;
     }
 
     @Override
@@ -78,7 +91,7 @@ public class ChannelImpl implements Channel {
     @Override
     public List<User> getListUser() {
         // TODO
-        return Arrays.asList((User[]) users.toArray());
+        return new ArrayList<>(users);
     }
 
 //    @Override

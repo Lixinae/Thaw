@@ -3,11 +3,11 @@ package fr.umlv.thaw.server;
 
 import fr.umlv.thaw.channel.Channel;
 import fr.umlv.thaw.channel.ChannelImpl;
+import fr.umlv.thaw.message.Message;
 import fr.umlv.thaw.user.HumanUser;
 import fr.umlv.thaw.user.User;
 import io.vertx.core.AbstractVerticle;
 import io.vertx.core.Future;
-import io.vertx.core.http.HttpServerRequest;
 import io.vertx.core.http.HttpServerResponse;
 import io.vertx.core.json.Json;
 import io.vertx.core.json.JsonObject;
@@ -58,8 +58,9 @@ public class Server extends AbstractVerticle {
 
         // ONLY FOR TESTTING !!!!!! //
         // Fonctionne bien
-        HumanUser a = new HumanUser("Blark");
+        HumanUser a = new HumanUser("Narex");
         Channel c = new ChannelImpl(a, "monSuperChan1");
+        c.addUserToChan(a);
         Channel c2 = new ChannelImpl(a, "monSuperChan2");
         Channel c3 = new ChannelImpl(a, "monSuperChan3");
         Channel c4 = new ChannelImpl(a, "monSuperChan4");
@@ -128,14 +129,32 @@ public class Server extends AbstractVerticle {
 //        router.get("/all").handler(this::getAllDBs);
 //        router.get("/get/:name/:id").handler(this::getARecord);
 
+        ///////////////////////////////////
+        // Remove after finishing test !!!
         router.get("/api/testParam/:username").handler(this::testAjax);
         router.get("/api/test").handler(this::testAjax2);
         router.post("/api/testJson").handler(this::testAjax3);
+        ///////////////////////////////////
 
+        router.post("/api/connectToChannel").handler(this::connectToChannel);
         router.post("/api/sendMessage").handler(this::sendMessage);
         router.get("/api/getListChannel").handler(this::getListChannels);
-        router.get("/api/getListUserForChannel/:channelName").handler(this::getListUserForChannel);
+        router.get("/api/getListUserForChannel").handler(this::getListUserForChannel);
 
+    }
+
+    private void connectToChannel(RoutingContext routingContext) {
+        System.out.println("In connectToChannel request");
+        HttpServerResponse response = routingContext.response();
+        JsonObject json = routingContext.getBodyAsJson();
+        if (json == null) {
+            routingContext.response().setStatusCode(400).end();
+        } else {
+            String channelName = json.getString("channelName");
+            String userName = json.getString("username");
+
+            // Faire en sorte de connecter le user au channel donnee
+        }
     }
 
 
@@ -143,23 +162,31 @@ public class Server extends AbstractVerticle {
     private void getListUserForChannel(RoutingContext routingContext) {
         System.out.println("In getListUser request");
         HttpServerResponse response = routingContext.response();
-        HttpServerRequest request = routingContext.request();
-        String channelName = Objects.requireNonNull(request.getParam("channelName"));
-        if (channelName.isEmpty()) {
-            response.setStatusCode(404).end();
-            return;
-        }
-        int index = findChannelIndex(channelName);
-        if (index == -1) {
-            response.setStatusCode(404).end();
-            return;
-        }
-        Channel chan = channels.get(index);
-        List<String> tmp = chan.getListUser().stream().map(User::getName).collect(Collectors.toList());
+//        HttpServerRequest request = routingContext.request();
 
-        routingContext.response()
-                .putHeader("content-type", "application/json")
-                .end(Json.encodePrettily(tmp));
+        JsonObject json = routingContext.getBodyAsJson();
+        if (json == null) {
+            routingContext.response().setStatusCode(400).end();
+        } else {
+//          String channelName = Objects.requireNonNull(request.getParam("channelName"));
+            String channelName = json.getString("channelName");
+
+            if (channelName.isEmpty()) {
+                response.setStatusCode(404).end();
+                return;
+            }
+            int index = findChannelIndex(channelName);
+            if (index == -1) {
+                response.setStatusCode(404).end();
+                return;
+            }
+            Channel chan = channels.get(index);
+            List<String> tmp = chan.getListUser().stream().map(User::getName).collect(Collectors.toList());
+
+            routingContext.response()
+                    .putHeader("content-type", "application/json")
+                    .end(Json.encodePrettily(tmp));
+        }
     }
 
     // TODO -> A tester
@@ -174,7 +201,7 @@ public class Server extends AbstractVerticle {
         return -1;
     }
 
-    // TODO -> A tester
+    // TODO -> Fonctionne
     private void getListChannels(RoutingContext routingContext) {
         System.out.println("In getListChannels request");
         List<String> tmp = channels.stream().map(Channel::getChannelName).collect(Collectors.toList());
@@ -184,25 +211,56 @@ public class Server extends AbstractVerticle {
     }
 
     // TODO -> A tester
+    // Devrait fonctionner
+    // Fonctionne à condition d'avoir ajouter l'utilisateur au channel courant :)
     private void sendMessage(RoutingContext routingContext) {
         System.out.println("In sendMessage request");
         JsonObject json = routingContext.getBodyAsJson();
+        HttpServerResponse response = routingContext.response();
         if (json == null) {
             routingContext.response().setStatusCode(400).end();
         } else {
-//            long date = System.currentTimeMillis();
-//
-//            String message = json.getString("message");
-//            String userName = json.getString("username");
-//            String channelName = json.getString("channel");
-////            Channel chan = ; //TODO Faire quelque chose comme "channels.get(nomChan)
-//            User user = ; //TODO Idem avec user
-//            Message mes = new Message(user,date,message);
-//            routingContext.response().putHeader("content-type", "application/json").end(Json.encodePrettily(mes));
+            long date = System.currentTimeMillis();
+
+            String message = json.getString("message");
+            String userName = json.getString("username");
+            String channelName = json.getString("channelName");
+
+            int index = findChannelIndex(channelName);
+            if (index == -1) {
+                response.setStatusCode(404).end();
+                return;
+            }
+            Channel chan = channels.get(index);
+            // This should never happen, it's only matter of security
+            Optional<User> optUsr = findUserInList(chan.getListUser(), userName);
+            if (!optUsr.isPresent()) {
+                response.setStatusCode(404).end();
+                return;
+            }
+            User user = optUsr.get();
+            Message mes = new Message(user, date, message);
+
+            System.out.println(mes.getContent());
+            // Pas forcement utile de renvoyer le message reçu
+            // Renvoyer quelque chose d'autre mais je ne sais pas quoi
+            // TODO Stocker les information du message dans la base de donnée du channel
+            routingContext.response().putHeader("content-type", "application/json").end(Json.encodePrettily(mes));
         }
     }
 
-    // TODO -> Fonctionne
+    private Optional<User> findUserInList(List<User> userList, String userName) {
+        for (User u : userList) {
+            System.out.println(u);
+            if (u.getName().equals(userName)) {
+                return Optional.of(u);
+            }
+        }
+        return Optional.empty();
+    }
+
+    // TODO -> Les 3 tests Fonctionne
+    // Penser à les enlever pour le rendu !!!!
     private void testAjax(RoutingContext routingContext) {
 //        System.out.println("niaaaaa");
 //        String username = Json.decodeValue(routingContext.getBodyAsString(),String.class);
@@ -237,6 +295,9 @@ public class Server extends AbstractVerticle {
         test.add("This is");
         test.add("a Json");
         test.add("Test");
+
+//        Message mes = new Message(new HumanUser("Blork"), 1123, "Mon super message");
         routingContext.response().putHeader("content-type", "application/json").end(Json.encodePrettily(test));
+//        routingContext.response().putHeader("content-type", "application/json").end(Json.encodePrettily(mes));
     }
 }
