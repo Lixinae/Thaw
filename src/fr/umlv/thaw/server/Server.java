@@ -143,17 +143,44 @@ public class Server extends AbstractVerticle {
 
     }
 
+    // TODO
     private void connectToChannel(RoutingContext routingContext) {
         System.out.println("In connectToChannel request");
         HttpServerResponse response = routingContext.response();
         JsonObject json = routingContext.getBodyAsJson();
         if (json == null) {
-            routingContext.response().setStatusCode(400).end();
+            response.setStatusCode(400).end();
         } else {
+            String currentChannelName = json.getString("currentChannelName");
             String channelName = json.getString("channelName");
             String userName = json.getString("username");
-
-            // Faire en sorte de connecter le user au channel donnee
+            // Check si l'utilisateur est déjà connecté au chan auquel il veut se connecter
+            // TODO
+//            Optional<Channel> currentchannelOptional = findChannelInList(currentChannelName);
+//            Optional<Channel> channelOptional = findChannelInList(channelName);
+//            User user = new HumanUser(userName);
+//            if (currentchannelOptional.isPresent() && channelOptional.isPresent()){
+//                if (channelOptional.get().checkIfUserIsConnected(user)){
+//
+//                }
+//            }
+//
+//
+//            if(channelOptional.isPresent()){
+//                Optional<User> userOptional = findUserInList(channelOptional.get().getListUser(),userName);
+//                if (userOptional.isPresent()){
+//                    response.setStatusCode(200).end();
+//                    return;
+//                }
+//                User user = new HumanUser(userName); // -> Peut etre bancale, à voir
+////                channels.get(findChannelIndex(channelName)).addUserToChan(user);
+//                channelOptional.get().addUserToChan(user);
+//
+//
+//            }else{
+//                // Todo -> changer les code de retour en cas d'erruer
+//                response.setStatusCode(400).end();
+//            }
         }
     }
 
@@ -162,43 +189,29 @@ public class Server extends AbstractVerticle {
     private void getListUserForChannel(RoutingContext routingContext) {
         System.out.println("In getListUser request");
         HttpServerResponse response = routingContext.response();
-//        HttpServerRequest request = routingContext.request();
-
         JsonObject json = routingContext.getBodyAsJson();
         if (json == null) {
             routingContext.response().setStatusCode(400).end();
         } else {
-//          String channelName = Objects.requireNonNull(request.getParam("channelName"));
             String channelName = json.getString("channelName");
 
             if (channelName.isEmpty()) {
+                // Todo -> changer les code de retour en cas d'erruer
                 response.setStatusCode(404).end();
                 return;
             }
-            int index = findChannelIndex(channelName);
-            if (index == -1) {
+            Optional<Channel> channelOptional = findChannelInList(channelName);
+            if (channelOptional.isPresent()) {
+                List<String> tmp = channelOptional.get().getListUser().stream().map(User::getName).collect(Collectors.toList());
+                routingContext.response()
+                        .putHeader("content-type", "application/json")
+                        .end(Json.encodePrettily(tmp));
+            } else {
+                // Todo -> changer les code de retour en cas d'erruer
                 response.setStatusCode(404).end();
-                return;
             }
-            Channel chan = channels.get(index);
-            List<String> tmp = chan.getListUser().stream().map(User::getName).collect(Collectors.toList());
 
-            routingContext.response()
-                    .putHeader("content-type", "application/json")
-                    .end(Json.encodePrettily(tmp));
         }
-    }
-
-    // TODO -> A tester
-    private int findChannelIndex(String channelName) {
-        int i = 0;
-        for (Channel c : channels) {
-            if (c.getChannelName().contentEquals(channelName)) {
-                return i;
-            }
-            i++;
-        }
-        return -1;
     }
 
     // TODO -> Fonctionne
@@ -226,16 +239,16 @@ public class Server extends AbstractVerticle {
             String userName = json.getString("username");
             String channelName = json.getString("channelName");
 
-            int index = findChannelIndex(channelName);
-            if (index == -1) {
-                response.setStatusCode(404).end();
+            Optional<Channel> channelOptional = findChannelInList(channelName);
+            if (!channelOptional.isPresent()) {
+                response.setStatusCode(400).end();
                 return;
             }
-            Channel chan = channels.get(index);
+            Channel chan = channelOptional.get();
             // This should never happen, it's only matter of security
             Optional<User> optUsr = findUserInList(chan.getListUser(), userName);
             if (!optUsr.isPresent()) {
-                response.setStatusCode(404).end();
+                response.setStatusCode(400).end();
                 return;
             }
             User user = optUsr.get();
@@ -251,13 +264,35 @@ public class Server extends AbstractVerticle {
 
     private Optional<User> findUserInList(List<User> userList, String userName) {
         for (User u : userList) {
-            System.out.println(u);
-            if (u.getName().equals(userName)) {
+//            System.out.println(u);
+            if (u.getName().contentEquals(userName)) {
                 return Optional.of(u);
             }
         }
         return Optional.empty();
     }
+
+    // TODO -> A tester
+    private Optional<Channel> findChannelInList(String channelName) {
+        for (Channel c : channels) {
+            if (c.getChannelName().contentEquals(channelName)) {
+                return Optional.of(c);
+            }
+        }
+        return Optional.empty();
+    }
+
+
+//    private int findChannelIndex(String channelName) {
+//        int i = 0;
+//        for (Channel c : channels) {
+//            if (c.getChannelName().contentEquals(channelName)) {
+//                return i;
+//            }
+//            i++;
+//        }
+//        return -1;
+//    }
 
     // TODO -> Les 3 tests Fonctionne
     // Penser à les enlever pour le rendu !!!!

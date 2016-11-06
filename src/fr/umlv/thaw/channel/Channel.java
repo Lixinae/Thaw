@@ -48,9 +48,24 @@ public interface Channel {
      */
     boolean removeUserFromChan(User user);
 
+    /**
+     * @return a string containing the channel Name
+     */
     String getChannelName();
 
+    /**
+     *
+     * @return the list of user connected to the channel
+     */
     List<User> getListUser();
+
+    /**
+     *
+     * @param user the user you want you want to check
+     * @return true if the user is already connected, false otherwise
+     */
+    boolean checkIfUserIsConnected(User user);
+
 //    /**
 //     * Add a bot in the channel. That method could be called only by someone who
 //     * got enough privilege to add a bot in this channel

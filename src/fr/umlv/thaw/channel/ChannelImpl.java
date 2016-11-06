@@ -60,24 +60,20 @@ public class ChannelImpl implements Channel {
     @Override
     public boolean addUserToChan(User user) {
         Objects.requireNonNull(user);
-//        return users.add(user);
-        if (messagesQueue.containsKey(user)) {
-            return false;
+        if (!checkIfUserIsConnected(user)) {
+            messagesQueue.put(user, new ConcurrentLinkedQueue<>());
+            return true;
         }
-        messagesQueue.put(user, new ConcurrentLinkedQueue<>());
-        return true;
+        return false;
     }
 
     @Override
     public boolean removeUserFromChan(User user) {
         Objects.requireNonNull(user);
-//        if (users.contains(user)) {
-//            return users.remove(user);
-//        }
-        if (!messagesQueue.containsKey(user)) {
-            return false;
+        if (checkIfUserIsConnected(user)) {
+            messagesQueue.remove(user);
+            return true;
         }
-        messagesQueue.remove(user);
         return false;
     }
 
@@ -92,6 +88,16 @@ public class ChannelImpl implements Channel {
         List<User> tmp = new ArrayList<>();
         messagesQueue.forEach((k, v) -> tmp.add(k));
         return tmp;
+    }
+
+    /**
+     * @param user the user you want you want to check
+     * @return true if the user is already connected, false otherwise
+     */
+    @Override
+    public boolean checkIfUserIsConnected(User user) {
+        Objects.requireNonNull(user);
+        return messagesQueue.containsKey(user);
     }
 
 //    @Override
@@ -140,7 +146,9 @@ public class ChannelImpl implements Channel {
         if (this == o) return true;
         if (!(o instanceof ChannelImpl)) return false;
         ChannelImpl channel = (ChannelImpl) o;
+
         return channelName != null ? channelName.equals(channel.channelName) : channel.channelName == null && (creator != null ? creator.equals(channel.creator) : channel.creator == null && (messagesQueue != null ? messagesQueue.equals(channel.messagesQueue) : channel.messagesQueue == null));
+
     }
 
     @Override

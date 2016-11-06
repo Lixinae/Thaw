@@ -43,8 +43,9 @@ public class HumanUser extends AbstractUser {
     public String toString() {
         return "HumanUser{" +
                 "name='" + name + '\'' +
-                ", channels=" + channels +
                 '}';
+        // Ne pas mettre la liste des channels à l'affichage -> Stack overflow à cause de boucle infini
+        // Channels qui affiche le createur , qui affiche ses channels qui affiche le createur qui affiche les channels etc...
     }
 
     @Override

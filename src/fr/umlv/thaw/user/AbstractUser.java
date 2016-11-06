@@ -94,11 +94,4 @@ abstract class AbstractUser implements User {
         return false;
     }
 
-
-//    @Override
-//    public String toString() {
-//        return "AbstractUser{" +
-//                "name='" + name + '\'' +
-//                '}';
-//    }
 }
