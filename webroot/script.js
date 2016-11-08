@@ -2,10 +2,16 @@
 
 //////// TOUT FAIRE EN AJAX ////////////
 
-var currentChannel = ""
-var numberChannels = 0
-var numberUsers = 0
-var username = "blork"
+var currentChannel = "default";
+var numberChannels = 0;
+var numberUsers = 0;
+var username = "blork";
+
+$(document).ready(function(){
+//			$('#paragraphe').html(valeur1);
+			$("#currentUser").html(username);
+			$("#currentChannel").html(currentChannel);
+		});
 
 // L'utilisateur saisie un message
 // Envoie le message au serveur qui l'ajoutera à la base de donné du channel
@@ -37,7 +43,7 @@ function getListUsers(){
 
 // TODO A changer !
 function getListChannels(){
-	var listChannel = document.getElementById('listChannels');
+	var listChannel = $("#listChannels");
 	listChannel.children().remove();
 
 	//var delimiter = "/"
@@ -67,11 +73,11 @@ function getListChannels(){
 
 // TODO A changer !
 function getListUsersFromChan(){
-	var usersListOnChan = document.getElementById('listUsers');
+	var usersListOnChan = $("#listUsers");
 	usersListOnChan.children().remove();
 
 	usersListOnChan.append("<ul id=\"usersOnChan\">");
-	$.getJSON("/api/getListUsersForChanChannels/"+currentChannel,function(data){
+	$.getJSON("/api/getListUsersForChanChannels/",function(data){
 		$.each(data,function(val){
 			usersListOnChan.append("<li> "+ val+" </li>");
 		})
@@ -79,6 +85,7 @@ function getListUsersFromChan(){
 	usersListOnChan.append("</ul>");
 }
 
+// Compatibilite pour IE si besoin
 function getEventTarget(e) {
 	e = e || window.event;
 	return e.target || e.srcElement;
@@ -86,18 +93,32 @@ function getEventTarget(e) {
 
 // Fonctionne
 function selectChannel(){
-	var ul = document.getElementById('channels');
-//	var ul = $("#channels");
-//	alert(ul.val());
-	ul.onclick = function(event) {
+//	var ul = document.getElementById('channels');
+	var ul = $("#channels");
+	ul.click(function(event) {
 		var target = getEventTarget(event);
-		//alert(target.innerHTML);
-			currentChannel=target.innerHTML;
-			alert(currentChannel)
-	};
+		var tmpChannel = target.innerHTML;
+		var oldChannel = currentChannel;
+        if (!(tmpChannel == currentChannel)){
+            currentChannel=target.innerHTML;
+        }
+        else if (currentChannel == ""){
+            currentChannel=target.innerHTML;
+        }
+        else{
+            return
+        }
+
+        $.post("/api/connectToChannel",
+            JSON.stringify({channelName : currentChannel,userName: username,oldChannelName : oldChannel}),
+            function (reponse){
+                alert("alacon");
+            });
+        alert(currentChannel);
+	});
 	
 }
-
+// TODO -> Test uniquement
 function testAjax() {
 		var username ="testify"
 		$.get("/api/test/"+username, JSON.stringify({username: username}), function () {
@@ -106,3 +127,12 @@ function testAjax() {
 				alert("bla")
 		},"json");
 	}
+
+function testAjax3() {
+  	alert("a");
+    $.post("/api/testJson/", JSON.stringify({currentChannelName: currentChannel}), function () {
+   	    //load();
+   		// Do stuff
+   	    alert("bla")
+    },"json");
+}

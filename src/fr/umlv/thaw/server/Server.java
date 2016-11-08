@@ -2,7 +2,6 @@ package fr.umlv.thaw.server;
 
 
 import fr.umlv.thaw.channel.Channel;
-import fr.umlv.thaw.channel.ChannelImpl;
 import fr.umlv.thaw.message.Message;
 import fr.umlv.thaw.user.HumanUser;
 import fr.umlv.thaw.user.User;
@@ -27,6 +26,7 @@ import java.util.stream.Collectors;
 public class Server extends AbstractVerticle {
 
     private final List<Channel> channels = new ArrayList<>();
+    private final List<User> users = new ArrayList<>();
 
     @Override
     public void start(Future<Void> fut) {
@@ -54,23 +54,6 @@ public class Server extends AbstractVerticle {
         router.route().handler(BodyHandler.create());
 
         listOfRequest(router);
-
-
-        // ONLY FOR TESTTING !!!!!! //
-        // Fonctionne bien
-        HumanUser a = new HumanUser("Narex");
-        Channel c = new ChannelImpl(a, "monSuperChan1");
-        c.addUserToChan(a);
-        Channel c2 = new ChannelImpl(a, "monSuperChan2");
-        Channel c3 = new ChannelImpl(a, "monSuperChan3");
-        Channel c4 = new ChannelImpl(a, "monSuperChan4");
-        channels.add(c);
-        channels.add(c2);
-        channels.add(c3);
-        channels.add(c4);
-        System.out.println(channels);
-//        channels.get(1).addMessageToQueue(a,120,"truc");
-        // END OF TEST !!!!!!!!!!! //
 
         // Creation d'un serveur en https avec authentification
         // Exemple ici pour creer fichier jks : https://gist.github.com/InfoSec812/a45eb3b7ba9d4b2a9b94
@@ -104,30 +87,9 @@ public class Server extends AbstractVerticle {
         System.out.println("listen on port 8080");
     }
 
-//    private void getAllDBs(RoutingContext routingContext) {
-//        routingContext.response()
-//                .putHeader("content-type", "application/json")
-//                .end(List.of("bd1", "bd2").stream().map(Json::encodePrettily).collect(Collectors.joining(", ", "[", "]")));
-//    }
-//
-//    private void getARecord(RoutingContext routingContext) {
-//        HttpServerResponse response = routingContext.response();
-//        HttpServerRequest request = routingContext.request();
-//        String name = Objects.requireNonNull(request.getParam("name"));
-//        int id = Integer.parseInt(request.getParam("id"));
-//        if (name.isEmpty() || id < 0) {
-//            response.setStatusCode(404).end();
-//            return;
-//        }
-//        routingContext.response()
-//                .putHeader("content-type", "application/json")
-//                .end(Json.encodePrettily(Map.of("id", "" + id, "name", name)));
-//    }
 
     private void listOfRequest(Router router) {
         // route to JSON REST APIs
-//        router.get("/all").handler(this::getAllDBs);
-//        router.get("/get/:name/:id").handler(this::getARecord);
 
         ///////////////////////////////////
         // Remove after finishing test !!!
@@ -151,36 +113,43 @@ public class Server extends AbstractVerticle {
         if (json == null) {
             response.setStatusCode(400).end();
         } else {
-            String currentChannelName = json.getString("currentChannelName");
+            String oldChannelName = json.getString("oldChannelName");
             String channelName = json.getString("channelName");
-            String userName = json.getString("username");
-            // Check si l'utilisateur est déjà connecté au chan auquel il veut se connecter
-            // TODO
-//            Optional<Channel> currentchannelOptional = findChannelInList(currentChannelName);
-//            Optional<Channel> channelOptional = findChannelInList(channelName);
-//            User user = new HumanUser(userName);
-//            if (currentchannelOptional.isPresent() && channelOptional.isPresent()){
-//                if (channelOptional.get().checkIfUserIsConnected(user)){
-//
-//                }
-//            }
-//
-//
-//            if(channelOptional.isPresent()){
-//                Optional<User> userOptional = findUserInList(channelOptional.get().getListUser(),userName);
-//                if (userOptional.isPresent()){
-//                    response.setStatusCode(200).end();
-//                    return;
-//                }
-//                User user = new HumanUser(userName); // -> Peut etre bancale, à voir
-////                channels.get(findChannelIndex(channelName)).addUserToChan(user);
-//                channelOptional.get().addUserToChan(user);
-//
-//
-//            }else{
-//                // Todo -> changer les code de retour en cas d'erruer
-//                response.setStatusCode(400).end();
-//            }
+            String userName = json.getString("userName");
+            System.out.println(oldChannelName + " " + userName + " " + channelName);
+            Optional<Channel> optchannel = findChannelInList(channelName);
+            Optional<User> optuser = findUserInList(userName);
+            User user;
+            if (!optuser.isPresent()) {
+                user = new HumanUser(userName);
+                users.add(user);
+            } else {
+                user = optuser.get();
+            }
+            // TODO verifier que le user n'est pas deja connecter au channel donne
+
+            if (!optchannel.isPresent()) {
+                response.setStatusCode(400).end();
+                System.out.println("Channel " + channelName + " does not exist");
+            } else {
+                Channel chan = optchannel.get();
+                Optional<User> tmpUserInChan = findUserInListFromChan(chan.getListUser(), userName);
+                if (tmpUserInChan.isPresent()) {
+                    response.setStatusCode(400).end();
+                } else {
+                    chan.addUserToChan(user);
+                    Optional<Channel> optChannelOld = findChannelInList(oldChannelName);
+                    if (!optChannelOld.isPresent()) {
+                        response.setStatusCode(400).end();
+                        System.out.println("OldChannel " + oldChannelName + " does not exist");
+                    } else {
+                        Channel oldChan = optChannelOld.get();
+                        oldChan.removeUserFromChan(user);
+                        System.out.println("test");
+                        response.setStatusCode(200).end();
+                    }
+                }
+            }
         }
     }
 
@@ -197,7 +166,7 @@ public class Server extends AbstractVerticle {
 
             if (channelName.isEmpty()) {
                 // Todo -> changer les code de retour en cas d'erruer
-                response.setStatusCode(404).end();
+                response.setStatusCode(400).end();
                 return;
             }
             Optional<Channel> channelOptional = findChannelInList(channelName);
@@ -208,7 +177,7 @@ public class Server extends AbstractVerticle {
                         .end(Json.encodePrettily(tmp));
             } else {
                 // Todo -> changer les code de retour en cas d'erruer
-                response.setStatusCode(404).end();
+                response.setStatusCode(400).end();
             }
 
         }
@@ -246,7 +215,7 @@ public class Server extends AbstractVerticle {
             }
             Channel chan = channelOptional.get();
             // This should never happen, it's only matter of security
-            Optional<User> optUsr = findUserInList(chan.getListUser(), userName);
+            Optional<User> optUsr = findUserInListFromChan(chan.getListUser(), userName);
             if (!optUsr.isPresent()) {
                 response.setStatusCode(400).end();
                 return;
@@ -262,8 +231,18 @@ public class Server extends AbstractVerticle {
         }
     }
 
-    private Optional<User> findUserInList(List<User> userList, String userName) {
-        for (User u : userList) {
+    private Optional<User> findUserInListFromChan(List<User> listUser, String userName) {
+        for (User u : listUser) {
+//            System.out.println(u);
+            if (u.getName().contentEquals(userName)) {
+                return Optional.of(u);
+            }
+        }
+        return Optional.empty();
+    }
+
+    private Optional<User> findUserInList(String userName) {
+        for (User u : users) {
 //            System.out.println(u);
             if (u.getName().contentEquals(userName)) {
                 return Optional.of(u);
@@ -282,17 +261,6 @@ public class Server extends AbstractVerticle {
         return Optional.empty();
     }
 
-
-//    private int findChannelIndex(String channelName) {
-//        int i = 0;
-//        for (Channel c : channels) {
-//            if (c.getChannelName().contentEquals(channelName)) {
-//                return i;
-//            }
-//            i++;
-//        }
-//        return -1;
-//    }
 
     // TODO -> Les 3 tests Fonctionne
     // Penser à les enlever pour le rendu !!!!

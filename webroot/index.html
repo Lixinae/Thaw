@@ -2,13 +2,23 @@
 <head>
 	<meta charset="UTF-8">
 	<link rel="stylesheet" href="mycss.css" type="text/css" media="all"/>
-	<script src="asset/jquery-2.1.4.js"></script>
+	<script src="asset/jquery-3.1.1.js"></script>
     <script src="script.js"></script>
 
 </head>
 <body>
 <div class="background">
 	<h1>THAW</h1>
+	<div class="infoOnUser">
+		<p id="currentUser">
+			truc
+		</p>
+		<p id="currentChannel">
+			bidule
+		</p>
+	</div>
+
+
 	<div class="listChannels">
 		<h2>listChannels</h2>
         <!-- Test pour affichage -->
@@ -61,6 +71,12 @@
         <li>Item 5</li>
         <li>Item 6</li>
     </ul>
+
+	<ul id="maSuperList4" onclick="testAjax3()">
+		<li>Item 544</li>
+		<li>Item 545</li>
+		<li>Item 645</li>
+	</ul>
 </div>
 </body>
 </html>
