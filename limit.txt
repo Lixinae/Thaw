@@ -1,0 +1,1 @@
+Limite les messages a 512 caracteres
