@@ -118,41 +118,50 @@ public class Server extends AbstractVerticle {
         if (json == null) {
             errorWithMessage(response, 400, "Wrong Json format");
         } else {
-            String oldChannelName = json.getString("oldChannelName");
-            String channelName = json.getString("channelName");
-            String userName = json.getString("userName");
-            System.out.println(oldChannelName + " " + userName + " " + channelName);
-            Optional<Channel> optchannel = findChannelInList(channelName);
-            Optional<User> optuser = findUserInList(userName);
-            User user;
-            if (!optuser.isPresent()) {
-                user = new HumanUser(userName);
-                users.add(user);
+            analyzeRequest(response, json);
+        }
+    }
+
+    //TODO : refactorer davantage le code (en evitant les Optional en parametres)
+    private void analyzeRequest(HttpServerResponse response, JsonObject json) {
+        String oldChannelName = json.getString("oldChannelName");
+        String channelName = json.getString("channelName");
+        String userName = json.getString("userName");
+        System.out.println(oldChannelName + " " + userName + " " + channelName);
+        Optional<Channel> optchannel = findChannelInList(channelName);
+        Optional<User> optuser = findUserInList(userName);
+        User user;
+        if (!optuser.isPresent()) {
+            user = new HumanUser(userName);
+            users.add(user);
+        } else {
+            user = optuser.get();
+        }
+        if (!optchannel.isPresent()) {
+            errorWithMessage(response, 400, "Channel " + channelName + " does not exist");
+        } else {
+            Channel chan = optchannel.get();
+            Optional<User> tmpUserInChan = findUserInListFromChan(chan.getListUser(), userName);
+            if (tmpUserInChan.isPresent()) {
+                errorWithMessage(response, 400, "User " + userName + " is already connected");
             } else {
-                user = optuser.get();
-            }
-            if (!optchannel.isPresent()) {
-                errorWithMessage(response, 400, "Channel " + channelName + " does not exist");
-            } else {
-                Channel chan = optchannel.get();
-                Optional<User> tmpUserInChan = findUserInListFromChan(chan.getListUser(), userName);
-                if (tmpUserInChan.isPresent()) {
-                    errorWithMessage(response, 400, "User " + userName + " is already connected");
+                Optional<Channel> optChannelOld = findChannelInList(oldChannelName);
+                if (!optChannelOld.isPresent()) {
+                    errorWithMessage(response, 400, "OldChannel " + oldChannelName + " does not exist");
                 } else {
-                    Optional<Channel> optChannelOld = findChannelInList(oldChannelName);
-                    if (!optChannelOld.isPresent()) {
-                        errorWithMessage(response, 400, "OldChannel " + oldChannelName + " does not exist");
-                    } else {
-                        Channel oldChan = optChannelOld.get();
-                        oldChan.removeUserFromChan(user);
-                        // Only add a user to a channel if we can remove him from the old channel
-                        chan.addUserToChan(user);
-                        System.out.println("User connected to right channel");
-                        response.setStatusCode(200).end();
-                    }
+                    Channel oldChan = optChannelOld.get();
+                    establishConnection(response, user, chan, oldChan);
                 }
             }
         }
+    }
+
+    private void establishConnection(HttpServerResponse response, User user, Channel chan, Channel oldChan) {
+        oldChan.removeUserFromChan(user);
+        // Only add a user to a channel if we can remove him from the old channel
+        chan.addUserToChan(user);
+        System.out.println("User connected to right channel");
+        response.setStatusCode(200).end();
     }
 
 
