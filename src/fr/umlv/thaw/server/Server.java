@@ -98,6 +98,7 @@ public class Server extends AbstractVerticle {
         router.post("/api/testJson").handler(this::testAjax3);
         ///////////////////////////////////
 
+        router.post("/api/createChannel").handler(this::createChannel);
         router.post("/api/connectToChannel").handler(this::connectToChannel);
         router.post("/api/sendMessage").handler(this::sendMessage);
         router.get("/api/getListChannel").handler(this::getListChannels);
@@ -105,13 +106,17 @@ public class Server extends AbstractVerticle {
 
     }
 
-    // TODO
+    private void createChannel(RoutingContext routingContext) {
+
+    }
+
+    // TODO -> A tester
     private void connectToChannel(RoutingContext routingContext) {
         System.out.println("In connectToChannel request");
         HttpServerResponse response = routingContext.response();
         JsonObject json = routingContext.getBodyAsJson();
         if (json == null) {
-            response.setStatusCode(400).end();
+            errorWithMessage(response, 400, "Wrong Json format");
         } else {
             String oldChannelName = json.getString("oldChannelName");
             String channelName = json.getString("channelName");
@@ -126,26 +131,23 @@ public class Server extends AbstractVerticle {
             } else {
                 user = optuser.get();
             }
-            // TODO verifier que le user n'est pas deja connecter au channel donne
-
             if (!optchannel.isPresent()) {
-                response.setStatusCode(400).end();
-                System.out.println("Channel " + channelName + " does not exist");
+                errorWithMessage(response, 400, "Channel " + channelName + " does not exist");
             } else {
                 Channel chan = optchannel.get();
                 Optional<User> tmpUserInChan = findUserInListFromChan(chan.getListUser(), userName);
                 if (tmpUserInChan.isPresent()) {
-                    response.setStatusCode(400).end();
+                    errorWithMessage(response, 400, "User " + userName + " is already connected");
                 } else {
-                    chan.addUserToChan(user);
                     Optional<Channel> optChannelOld = findChannelInList(oldChannelName);
                     if (!optChannelOld.isPresent()) {
-                        response.setStatusCode(400).end();
-                        System.out.println("OldChannel " + oldChannelName + " does not exist");
+                        errorWithMessage(response, 400, "OldChannel " + oldChannelName + " does not exist");
                     } else {
                         Channel oldChan = optChannelOld.get();
                         oldChan.removeUserFromChan(user);
-                        System.out.println("test");
+                        // Only add a user to a channel if we can remove him from the old channel
+                        chan.addUserToChan(user);
+                        System.out.println("User connected to right channel");
                         response.setStatusCode(200).end();
                     }
                 }
@@ -200,7 +202,7 @@ public class Server extends AbstractVerticle {
         JsonObject json = routingContext.getBodyAsJson();
         HttpServerResponse response = routingContext.response();
         if (json == null) {
-            routingContext.response().setStatusCode(400).end();
+            errorWithMessage(response, 400, "Wrong Json format");
         } else {
             long date = System.currentTimeMillis();
 
@@ -210,14 +212,14 @@ public class Server extends AbstractVerticle {
 
             Optional<Channel> channelOptional = findChannelInList(channelName);
             if (!channelOptional.isPresent()) {
-                response.setStatusCode(400).end();
+                errorWithMessage(response, 400, "Channel " + channelName + " does not exist");
                 return;
             }
             Channel chan = channelOptional.get();
             // This should never happen, it's only matter of security
             Optional<User> optUsr = findUserInListFromChan(chan.getListUser(), userName);
             if (!optUsr.isPresent()) {
-                response.setStatusCode(400).end();
+                errorWithMessage(response, 400, "User " + userName + " does not exist");
                 return;
             }
             User user = optUsr.get();
@@ -229,6 +231,11 @@ public class Server extends AbstractVerticle {
             // TODO Stocker les information du message dans la base de donnée du channel
             routingContext.response().putHeader("content-type", "application/json").end(Json.encodePrettily(mes));
         }
+    }
+
+    private void errorWithMessage(HttpServerResponse response, int code, String s) {
+        response.setStatusCode(code).end();
+        System.err.println(s);
     }
 
     private Optional<User> findUserInListFromChan(List<User> listUser, String userName) {
