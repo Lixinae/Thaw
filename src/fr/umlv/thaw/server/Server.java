@@ -3,6 +3,7 @@ package fr.umlv.thaw.server;
 
 import fr.umlv.thaw.channel.Channel;
 import fr.umlv.thaw.channel.ChannelImpl;
+import fr.umlv.thaw.logger.ThawLogger;
 import fr.umlv.thaw.message.Message;
 import fr.umlv.thaw.user.HumanUser;
 import fr.umlv.thaw.user.User;
@@ -16,7 +17,11 @@ import io.vertx.ext.web.RoutingContext;
 import io.vertx.ext.web.handler.BodyHandler;
 import io.vertx.ext.web.handler.StaticHandler;
 
-import java.util.*;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
+import java.util.logging.Level;
 import java.util.stream.Collectors;
 
 
@@ -26,32 +31,30 @@ import java.util.stream.Collectors;
  */
 public class Server extends AbstractVerticle {
 
-    private final List<Channel> channels = new ArrayList<>();
-    private final List<User> users = new ArrayList<>();
+    private final List<Channel> channels;
+    private final List<User> users;
+    private final ThawLogger thawLogger;
+
+    public Server() throws IOException {
+        channels = new ArrayList<>();
+        users = new ArrayList<>();
+        thawLogger = new ThawLogger(false);
+    }
+
+    /**
+     * @param enableLogger -> Enable the logger
+     * @throws IOException -> If the logger can't find or create the file
+     */
+    public Server(boolean enableLogger) throws IOException {
+        channels = new ArrayList<>();
+        users = new ArrayList<>();
+        thawLogger = new ThawLogger(enableLogger);// Enable or not the logs of the server
+    }
 
     @Override
     public void start(Future<Void> fut) {
         Router router = Router.router(vertx);
 
-        //
-//        router.route().handler(CookieHandler.create());
-//        router.route().handler(SessionHandler
-//                .create(LocalSessionStore.create(vertx))
-//                .setCookieHttpOnlyFlag(true)
-//                .setCookieSecureFlag(true)
-//        );
-//
-//        router.route().handler(routingContext -> {
-//
-//            Session session = routingContext.session();
-//
-//            Integer cnt = session.get("hitcount");
-//            cnt = (cnt == null ? 0 : cnt) + 1;
-//
-//            session.put("hitcount", cnt);
-//
-//            routingContext.response().end("Hitcount: " + cnt);
-//        });
         router.route().handler(BodyHandler.create());
 
         listOfRequest(router);
@@ -94,9 +97,9 @@ public class Server extends AbstractVerticle {
 
         ///////////////////////////////////
         // Remove after finishing test !!!
-        router.get("/api/testParam/:username").handler(this::testAjax);
-        router.get("/api/test").handler(this::testAjax2);
-        router.post("/api/testJson").handler(this::testAjax3);
+//        router.get("/api/testParam/:username").handler(this::testAjax);
+//        router.get("/api/test").handler(this::testAjax2);
+//        router.post("/api/testJson").handler(this::testAjax3);
         ///////////////////////////////////
 
         router.post("/api/createChannel").handler(this::createChannel);
@@ -109,7 +112,8 @@ public class Server extends AbstractVerticle {
 
     // Todo -> A tester
     private void createChannel(RoutingContext routingContext) {
-        System.out.println("DEBUG " + "In createChannel request");
+        thawLogger.log(Level.INFO, "DEBUG " + "In createChannel request");
+//        System.out.println("DEBUG " + "In createChannel request");
         HttpServerResponse response = routingContext.response();
         JsonObject json = routingContext.getBodyAsJson();
         if (json == null) {
@@ -122,7 +126,7 @@ public class Server extends AbstractVerticle {
     private void analyzeCreateChannelRequest(HttpServerResponse response, JsonObject json) {
         String newChannelName = json.getString("newChannelName");
         String creatorName = json.getString("creatorName");
-        System.out.println("DEBUG " + newChannelName + " " + creatorName + " ");
+        thawLogger.log(Level.INFO, "DEBUG " + newChannelName + " " + creatorName + " ");
 
         Optional<Channel> optChannel = findChannelInList(newChannelName);
         if (optChannel.isPresent()) {
@@ -155,7 +159,8 @@ public class Server extends AbstractVerticle {
 
     // TODO -> A tester
     private void connectToChannel(RoutingContext routingContext) {
-        System.out.println("DEBUG " + "In connectToChannel request");
+//        System.out.println("DEBUG " + "In connectToChannel request");
+        thawLogger.log(Level.INFO, "DEBUG " + "In connectToChannel request");
         HttpServerResponse response = routingContext.response();
         JsonObject json = routingContext.getBodyAsJson();
         if (json == null) {
@@ -170,7 +175,8 @@ public class Server extends AbstractVerticle {
         String oldChannelName = json.getString("oldChannelName");
         String channelName = json.getString("channelName");
         String userName = json.getString("userName");
-        System.out.println("DEBUG " + oldChannelName + " " + userName + " " + channelName);
+        thawLogger.log(Level.INFO, "DEBUG " + oldChannelName + " " + userName + " " + channelName);
+//        System.out.println("DEBUG " + oldChannelName + " " + userName + " " + channelName);
         Optional<Channel> optchannel = findChannelInList(channelName);
         Optional<User> optuser = findUserInServerUserList(userName);
         User user;
@@ -203,7 +209,7 @@ public class Server extends AbstractVerticle {
         oldChan.removeUserFromChan(user);
         // Only add a user to a channel if we can remove him from the old channel
         chan.addUserToChan(user);
-        System.out.println("DEBUG " + "User connected to " + chan.getName() + "channel");
+        thawLogger.log(Level.INFO, "DEBUG " + "User connected to " + chan.getName() + "channel");
         answerToRequest(response, 200, " Successfully connected to channel " + chan.getName());
 //        response.setStatusCode(200).end();
     }
@@ -211,7 +217,7 @@ public class Server extends AbstractVerticle {
 
     // TODO -> A tester
     private void getListUserForChannel(RoutingContext routingContext) {
-        System.out.println("DEBUG " + "In getListUser request");
+        thawLogger.log(Level.INFO, "DEBUG " + "In getListUser request");
         HttpServerResponse response = routingContext.response();
         JsonObject json = routingContext.getBodyAsJson();
         if (json == null) {
@@ -237,7 +243,7 @@ public class Server extends AbstractVerticle {
 
     // TODO -> Fonctionne
     private void getListChannels(RoutingContext routingContext) {
-        System.out.println("DEBUG " + "In getListChannels request");
+        thawLogger.log(Level.INFO, "DEBUG " + "In getListChannels request");
         List<String> tmp = channels.stream().map(Channel::getChannelName).collect(Collectors.toList());
         routingContext.response()
                 .putHeader("content-type", "application/json")
@@ -248,7 +254,7 @@ public class Server extends AbstractVerticle {
     // Devrait fonctionner
     // Fonctionne à condition d'avoir ajouter l'utilisateur au channel courant :)
     private void sendMessage(RoutingContext routingContext) {
-        System.out.println("DEBUG " + "In sendMessage request");
+        thawLogger.log(Level.INFO, "DEBUG " + "In sendMessage request");
         JsonObject json = routingContext.getBodyAsJson();
         HttpServerResponse response = routingContext.response();
         if (json == null) {
@@ -284,6 +290,11 @@ public class Server extends AbstractVerticle {
     }
 
     private void answerToRequest(HttpServerResponse response, int code, Object answer) {
+        if (code == 200) {
+            thawLogger.log(Level.INFO, "code " + code + " " + answer.toString());
+        } else {
+            thawLogger.log(Level.WARNING, "code " + code + " " + answer.toString());
+        }
         response.setStatusCode(code)
                 .putHeader("content-type", "application/json")
                 .end(Json.encodePrettily(answer));
@@ -291,7 +302,6 @@ public class Server extends AbstractVerticle {
 
     private Optional<User> findUserInListFromChan(List<User> listUser, String userName) {
         for (User u : listUser) {
-//            System.out.println(u);
             if (u.getName().contentEquals(userName)) {
                 return Optional.of(u);
             }
@@ -301,7 +311,6 @@ public class Server extends AbstractVerticle {
 
     private Optional<User> findUserInServerUserList(String userName) {
         for (User u : users) {
-//            System.out.println(u);
             if (u.getName().contentEquals(userName)) {
                 return Optional.of(u);
             }
@@ -320,45 +329,45 @@ public class Server extends AbstractVerticle {
     }
 
 
-    // TODO -> Les 3 tests Fonctionne
-    // Penser à les enlever pour le rendu !!!!
-    private void testAjax(RoutingContext routingContext) {
-//        System.out.println("niaaaaa");
-//        String username = Json.decodeValue(routingContext.getBodyAsString(),String.class);
-        String username = routingContext.request().getParam("username");
-        System.out.println(username);
-        List<String> test = new ArrayList<>();
-        test.add("blork");
-        test.add("yoooofjugt");
-        test.add("hehefgjhuefh");
-
-        routingContext.response()
-                .putHeader("content-type", "application/json")
-                .end(Json.encodePrettily(test));
-    }
-
-    private void testAjax2(RoutingContext routingContext) {
-        Map<Integer, String> testMap = new HashMap<>();
-
-        testMap.put(1, "Bmurk");
-        testMap.put(2, "Randim");
-        testMap.put(10, "Textalacon");
-        System.out.println("moi");
-        routingContext.response()
-                .putHeader("content-type", "application/json")
-                .end(Json.encodePrettily(testMap));
-    }
-
-    private void testAjax3(RoutingContext routingContext) {
-        JsonObject json = routingContext.getBodyAsJson();
-        System.out.println(json);
-        List<String> test = new ArrayList<>();
-        test.add("This is");
-        test.add("a Json");
-        test.add("Test");
-
-//        Message mes = new Message(new HumanUser("Blork"), 1123, "Mon super message");
-        routingContext.response().putHeader("content-type", "application/json").end(Json.encodePrettily(test));
-//        routingContext.response().putHeader("content-type", "application/json").end(Json.encodePrettily(mes));
-    }
+//    // TODO -> Les 3 tests Fonctionne
+//    // Penser à les enlever pour le rendu !!!!
+//    private void testAjax(RoutingContext routingContext) {
+////        System.out.println("niaaaaa");
+////        String username = Json.decodeValue(routingContext.getBodyAsString(),String.class);
+//        String username = routingContext.request().getParam("username");
+//        System.out.println(username);
+//        List<String> test = new ArrayList<>();
+//        test.add("blork");
+//        test.add("yoooofjugt");
+//        test.add("hehefgjhuefh");
+//
+//        routingContext.response()
+//                .putHeader("content-type", "application/json")
+//                .end(Json.encodePrettily(test));
+//    }
+//
+//    private void testAjax2(RoutingContext routingContext) {
+//        Map<Integer, String> testMap = new HashMap<>();
+//
+//        testMap.put(1, "Bmurk");
+//        testMap.put(2, "Randim");
+//        testMap.put(10, "Textalacon");
+//        System.out.println("moi");
+//        routingContext.response()
+//                .putHeader("content-type", "application/json")
+//                .end(Json.encodePrettily(testMap));
+//    }
+//
+//    private void testAjax3(RoutingContext routingContext) {
+//        JsonObject json = routingContext.getBodyAsJson();
+//        System.out.println(json);
+//        List<String> test = new ArrayList<>();
+//        test.add("This is");
+//        test.add("a Json");
+//        test.add("Test");
+//
+////        Message mes = new Message(new HumanUser("Blork"), 1123, "Mon super message");
+//        routingContext.response().putHeader("content-type", "application/json").end(Json.encodePrettily(test));
+////        routingContext.response().putHeader("content-type", "application/json").end(Json.encodePrettily(mes));
+//    }
 }
