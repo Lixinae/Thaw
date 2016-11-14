@@ -18,7 +18,6 @@ public class ChannelImpl implements Channel {
     //    private final ConcurrentLinkedQueue<Bot> bots;
     private final String channelName;
     private final HumanUser creator;
-    //    private final ConcurrentSet<User> users;
     //Prendre une LinkedQueue de message car un utilisateur peut envoyer plusieurs messages.
     private final ConcurrentHashMap<User, ConcurrentLinkedQueue<Message>> messagesQueue;
 
@@ -119,17 +118,6 @@ public class ChannelImpl implements Channel {
 //            return bots.remove(bot);
 //        }
 //        return false;
-//    }
-
-
-    //    @Override
-//    public String toString() {
-//        return "ChannelImpl{" +
-//                "bots=" + bots +
-//                ", channelName='" + channelName + '\'' +
-//                ", creator=" + creator +
-//                ", messagesQueue=" + messagesQueue +
-//                '}';
 //    }
 
     @Override

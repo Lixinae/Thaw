@@ -2,6 +2,7 @@ package fr.umlv.thaw.server;
 
 
 import fr.umlv.thaw.channel.Channel;
+import fr.umlv.thaw.channel.ChannelImpl;
 import fr.umlv.thaw.message.Message;
 import fr.umlv.thaw.user.HumanUser;
 import fr.umlv.thaw.user.User;
@@ -106,30 +107,72 @@ public class Server extends AbstractVerticle {
 
     }
 
+    // Todo -> A tester
     private void createChannel(RoutingContext routingContext) {
+        System.out.println("DEBUG " + "In createChannel request");
+        HttpServerResponse response = routingContext.response();
+        JsonObject json = routingContext.getBodyAsJson();
+        if (json == null) {
+            answerToRequest(response, 400, "Wrong Json format");
+        } else {
+            analyzeCreateChannelRequest(response, json);
+        }
+    }
 
+    private void analyzeCreateChannelRequest(HttpServerResponse response, JsonObject json) {
+        String newChannelName = json.getString("newChannelName");
+        String creatorName = json.getString("creatorName");
+        System.out.println("DEBUG " + newChannelName + " " + creatorName + " ");
+
+        Optional<Channel> optChannel = findChannelInList(newChannelName);
+        if (optChannel.isPresent()) {
+            answerToRequest(response, 400, "Channel " + newChannelName + " already exists");
+        } else {
+            Optional<User> optUser = findUserInServerUserList(creatorName);
+            User tmpUser;  // new HumanUser(creatorName);
+            HumanUser creator;
+            if (optUser.isPresent()) {
+                tmpUser = optUser.get();
+                if (tmpUser.isUserBot()) {
+                    answerToRequest(response, 400, "Bots can't create channels ! Bot name = " + creatorName);
+                    return;
+                }
+                creator = (HumanUser) tmpUser; // Todo Moche -> changer plus tard
+            } else {
+                creator = new HumanUser(creatorName);
+            }
+            createAndAddChannel(response, newChannelName, creator);
+        }
+
+    }
+
+    private void createAndAddChannel(HttpServerResponse response, String newChannelName, HumanUser creator) {
+        Channel newChannel = new ChannelImpl(creator, newChannelName);
+        channels.add(newChannel);
+        creator.addChannel(newChannel);
+        answerToRequest(response, 200, "Channel " + newChannelName + " successfully created");
     }
 
     // TODO -> A tester
     private void connectToChannel(RoutingContext routingContext) {
-        System.out.println("In connectToChannel request");
+        System.out.println("DEBUG " + "In connectToChannel request");
         HttpServerResponse response = routingContext.response();
         JsonObject json = routingContext.getBodyAsJson();
         if (json == null) {
-            errorWithMessage(response, 400, "Wrong Json format");
+            answerToRequest(response, 400, "Wrong Json format");
         } else {
-            analyzeRequest(response, json);
+            analyzeConnecToChannelRequest(response, json);
         }
     }
 
     //TODO : refactorer davantage le code (en evitant les Optional en parametres)
-    private void analyzeRequest(HttpServerResponse response, JsonObject json) {
+    private void analyzeConnecToChannelRequest(HttpServerResponse response, JsonObject json) {
         String oldChannelName = json.getString("oldChannelName");
         String channelName = json.getString("channelName");
         String userName = json.getString("userName");
-        System.out.println(oldChannelName + " " + userName + " " + channelName);
+        System.out.println("DEBUG " + oldChannelName + " " + userName + " " + channelName);
         Optional<Channel> optchannel = findChannelInList(channelName);
-        Optional<User> optuser = findUserInList(userName);
+        Optional<User> optuser = findUserInServerUserList(userName);
         User user;
         if (!optuser.isPresent()) {
             user = new HumanUser(userName);
@@ -138,16 +181,16 @@ public class Server extends AbstractVerticle {
             user = optuser.get();
         }
         if (!optchannel.isPresent()) {
-            errorWithMessage(response, 400, "Channel " + channelName + " does not exist");
+            answerToRequest(response, 400, "Channel " + channelName + " does not exist");
         } else {
             Channel chan = optchannel.get();
             Optional<User> tmpUserInChan = findUserInListFromChan(chan.getListUser(), userName);
             if (tmpUserInChan.isPresent()) {
-                errorWithMessage(response, 400, "User " + userName + " is already connected");
+                answerToRequest(response, 400, "User " + userName + " is already connected");
             } else {
                 Optional<Channel> optChannelOld = findChannelInList(oldChannelName);
                 if (!optChannelOld.isPresent()) {
-                    errorWithMessage(response, 400, "OldChannel " + oldChannelName + " does not exist");
+                    answerToRequest(response, 400, "OldChannel " + oldChannelName + " does not exist");
                 } else {
                     Channel oldChan = optChannelOld.get();
                     establishConnection(response, user, chan, oldChan);
@@ -160,35 +203,33 @@ public class Server extends AbstractVerticle {
         oldChan.removeUserFromChan(user);
         // Only add a user to a channel if we can remove him from the old channel
         chan.addUserToChan(user);
-        System.out.println("User connected to right channel");
-        response.setStatusCode(200).end();
+        System.out.println("DEBUG " + "User connected to " + chan.getName() + "channel");
+        answerToRequest(response, 200, " Successfully connected to channel " + chan.getName());
+//        response.setStatusCode(200).end();
     }
 
 
     // TODO -> A tester
     private void getListUserForChannel(RoutingContext routingContext) {
-        System.out.println("In getListUser request");
+        System.out.println("DEBUG " + "In getListUser request");
         HttpServerResponse response = routingContext.response();
         JsonObject json = routingContext.getBodyAsJson();
         if (json == null) {
             routingContext.response().setStatusCode(400).end();
         } else {
             String channelName = json.getString("channelName");
-
             if (channelName.isEmpty()) {
                 // Todo -> changer les code de retour en cas d'erruer
-                response.setStatusCode(400).end();
+                answerToRequest(response, 400, "No channelName given");
                 return;
             }
             Optional<Channel> channelOptional = findChannelInList(channelName);
             if (channelOptional.isPresent()) {
                 List<String> tmp = channelOptional.get().getListUser().stream().map(User::getName).collect(Collectors.toList());
-                routingContext.response()
-                        .putHeader("content-type", "application/json")
-                        .end(Json.encodePrettily(tmp));
+                answerToRequest(response, 200, tmp);
             } else {
                 // Todo -> changer les code de retour en cas d'erruer
-                response.setStatusCode(400).end();
+                answerToRequest(response, 400, "Channel " + channelName + " doesn't exist");
             }
 
         }
@@ -196,7 +237,7 @@ public class Server extends AbstractVerticle {
 
     // TODO -> Fonctionne
     private void getListChannels(RoutingContext routingContext) {
-        System.out.println("In getListChannels request");
+        System.out.println("DEBUG " + "In getListChannels request");
         List<String> tmp = channels.stream().map(Channel::getChannelName).collect(Collectors.toList());
         routingContext.response()
                 .putHeader("content-type", "application/json")
@@ -207,11 +248,11 @@ public class Server extends AbstractVerticle {
     // Devrait fonctionner
     // Fonctionne à condition d'avoir ajouter l'utilisateur au channel courant :)
     private void sendMessage(RoutingContext routingContext) {
-        System.out.println("In sendMessage request");
+        System.out.println("DEBUG " + "In sendMessage request");
         JsonObject json = routingContext.getBodyAsJson();
         HttpServerResponse response = routingContext.response();
         if (json == null) {
-            errorWithMessage(response, 400, "Wrong Json format");
+            answerToRequest(response, 400, "Wrong Json format");
         } else {
             long date = System.currentTimeMillis();
 
@@ -221,14 +262,14 @@ public class Server extends AbstractVerticle {
 
             Optional<Channel> channelOptional = findChannelInList(channelName);
             if (!channelOptional.isPresent()) {
-                errorWithMessage(response, 400, "Channel " + channelName + " does not exist");
+                answerToRequest(response, 400, "Channel " + channelName + " does not exist");
                 return;
             }
             Channel chan = channelOptional.get();
             // This should never happen, it's only matter of security
             Optional<User> optUsr = findUserInListFromChan(chan.getListUser(), userName);
             if (!optUsr.isPresent()) {
-                errorWithMessage(response, 400, "User " + userName + " does not exist");
+                answerToRequest(response, 400, "User " + userName + " does not exist");
                 return;
             }
             User user = optUsr.get();
@@ -242,9 +283,10 @@ public class Server extends AbstractVerticle {
         }
     }
 
-    private void errorWithMessage(HttpServerResponse response, int code, String s) {
-        response.setStatusCode(code).end();
-        System.err.println(s);
+    private void answerToRequest(HttpServerResponse response, int code, Object answer) {
+        response.setStatusCode(code)
+                .putHeader("content-type", "application/json")
+                .end(Json.encodePrettily(answer));
     }
 
     private Optional<User> findUserInListFromChan(List<User> listUser, String userName) {
@@ -257,7 +299,7 @@ public class Server extends AbstractVerticle {
         return Optional.empty();
     }
 
-    private Optional<User> findUserInList(String userName) {
+    private Optional<User> findUserInServerUserList(String userName) {
         for (User u : users) {
 //            System.out.println(u);
             if (u.getName().contentEquals(userName)) {
