@@ -1,3 +1,5 @@
 Limite les messages a 512 caracteres
 
 UML -> utiliser plant UML ( plugin google doc -> format markdown )
+
+Ajouter test unitaire /!\
