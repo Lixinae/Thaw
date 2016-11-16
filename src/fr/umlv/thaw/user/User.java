@@ -19,7 +19,7 @@ public interface User {
      * @param chan    the Channel in which the message will be send
      * @return true if the message has been sent, false otherwise
      */
-    public boolean sendMessage(long date, String message, Channel chan);
+    boolean sendMessage(long date, String message, Channel chan);
 
     /**
      * This method allow a humanUser to join a channel that exist
@@ -28,23 +28,23 @@ public interface User {
      * @return true if he has been authorized to join the channel in the other
      * cases return false
      */
-    public boolean joinChannel(Channel chan);
+    boolean joinChannel(Channel chan);
 
     /**
      * @param chan the channel to quit
      * @return true if the humanUser has been remove from the channel, false
      * otherwise
      */
-    public boolean quitChannel(Channel chan);
+    boolean quitChannel(Channel chan);
 
     /**
      * @return true is the user is a bot, false otherwise
      */
-    public boolean isUserBot();
+    boolean isUserBot();
 
     /**
      * @return true is the user is a human, false otherwise
      */
-    public boolean isUserHuman();
+    boolean isUserHuman();
 
 }

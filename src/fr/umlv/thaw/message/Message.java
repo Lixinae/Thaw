@@ -15,11 +15,15 @@ public class Message {
 
     public Message(User sender, long date, String content) {
         this.sender = Objects.requireNonNull(sender);
+        this.date = requiresStrictPositive(date);
+        this.content = Objects.requireNonNull(content);
+    }
+
+    private static long requiresStrictPositive(long date) {
         if (date <= 0) {
             throw new IllegalArgumentException("date must be positive");
         }
-        this.date = date;
-        this.content = Objects.requireNonNull(content);
+        return date;
     }
 
     /**
@@ -28,7 +32,7 @@ public class Message {
      * @return The User that have sent the message
      */
     public User getSender() {
-        return sender;
+        return sender; // Sender non mutable -> pas besoin de copie defensive
     }
 
     /**
