@@ -1,5 +1,7 @@
 package fr.umlv.thaw.user;
 
+import java.util.Objects;
+
 /**
  * This class represent a bot that could be added in a channel.
  */
@@ -9,7 +11,7 @@ public class Bot extends AbstractUser {
 
     public Bot(String name, String filePropertiesName) {
         super(name);
-        this.filePropertiesName = filePropertiesName;
+        this.filePropertiesName = Objects.requireNonNull(filePropertiesName);
     }
 
     @Override
