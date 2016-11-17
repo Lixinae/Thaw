@@ -15,7 +15,6 @@ import java.util.concurrent.ConcurrentLinkedQueue;
  */
 public class ChannelImpl implements Channel {
 
-    //    private final ConcurrentLinkedQueue<Bot> bots;
     private final String channelName;
     private final HumanUser creator;
     //Prendre une LinkedQueue de message car un utilisateur peut envoyer plusieurs messages.
@@ -25,9 +24,7 @@ public class ChannelImpl implements Channel {
     public ChannelImpl(HumanUser creator, String channelName) {
         this.creator = Objects.requireNonNull(creator);
         this.channelName = Objects.requireNonNull(channelName);
-//        bots = new ConcurrentLinkedQueue<>();
         messagesQueue = new ConcurrentHashMap<>();
-//        users = new ConcurrentSet<>();
     }
 
     /**
