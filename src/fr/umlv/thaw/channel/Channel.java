@@ -1,5 +1,6 @@
 package fr.umlv.thaw.channel;
 
+import fr.umlv.thaw.message.Message;
 import fr.umlv.thaw.user.User;
 
 import java.util.List;
@@ -65,6 +66,11 @@ public interface Channel {
      * @return true if the user is already connected, false otherwise
      */
     boolean checkIfUserIsConnected(User user);
+
+    /**
+     * @return the channel's messages as a List
+     */
+    List<Message> getListMessage();
 
 //    /**
 //     * Add a bot in the channel. That method could be called only by someone who

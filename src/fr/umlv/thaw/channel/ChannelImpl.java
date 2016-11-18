@@ -5,6 +5,7 @@ import fr.umlv.thaw.user.HumanUser;
 import fr.umlv.thaw.user.User;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
@@ -38,6 +39,9 @@ public class ChannelImpl implements Channel {
     @Override
     public boolean addMessageToQueue(User user, long date, String message) {
         Objects.requireNonNull(user);
+        if (!messagesQueue.containsKey(user)) {
+            addUserToChan(user);
+        }
         ConcurrentLinkedQueue<Message> lq = messagesQueue.get(user);
         Message msg = new Message(user, date, message);
         if (lq.add(msg)) {
@@ -94,6 +98,15 @@ public class ChannelImpl implements Channel {
     public boolean checkIfUserIsConnected(User user) {
         Objects.requireNonNull(user);
         return messagesQueue.containsKey(user);
+    }
+
+    @Override
+    public List<Message> getListMessage() {
+        List<Message> tmp = new ArrayList<>();
+        messagesQueue.forEach((key, value) -> {
+            tmp.addAll(value);
+        });
+        return Collections.unmodifiableList(tmp);
     }
 
 //    @Override
