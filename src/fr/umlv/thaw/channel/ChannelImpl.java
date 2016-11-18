@@ -103,9 +103,7 @@ public class ChannelImpl implements Channel {
     @Override
     public List<Message> getListMessage() {
         List<Message> tmp = new ArrayList<>();
-        messagesQueue.forEach((key, value) -> {
-            tmp.addAll(value);
-        });
+        messagesQueue.forEach((key, value) -> tmp.addAll(value));
         return Collections.unmodifiableList(tmp);
     }
 
@@ -139,21 +137,25 @@ public class ChannelImpl implements Channel {
                 '}';
     }
 
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
-        if (!(o instanceof ChannelImpl)) return false;
+        if (o == null || getClass() != o.getClass()) return false;
+
         ChannelImpl channel = (ChannelImpl) o;
 
-        return channelName != null ? channelName.equals(channel.channelName) : channel.channelName == null && (creator != null ? creator.equals(channel.creator) : channel.creator == null && (messagesQueue != null ? messagesQueue.equals(channel.messagesQueue) : channel.messagesQueue == null));
+        if (!channelName.equals(channel.channelName)) return false;
+        if (!creator.equals(channel.creator)) return false;
+        return messagesQueue.equals(channel.messagesQueue);
 
     }
 
     @Override
     public int hashCode() {
-        int result = channelName != null ? channelName.hashCode() : 0;
-        result = 31 * result + (creator != null ? creator.hashCode() : 0);
-        result = 31 * result + (messagesQueue != null ? messagesQueue.hashCode() : 0);
+        int result = channelName.hashCode();
+        result = 31 * result + creator.hashCode();
+        result = 31 * result + messagesQueue.hashCode();
         return result;
     }
 }

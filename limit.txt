@@ -3,3 +3,6 @@ Limite les messages a 512 caracteres
 UML -> utiliser plant UML ( plugin google doc -> format markdown )
 
 Ajouter test unitaire /!\
+
+
+Ajout d'une date grace au System.getMillisseoncds : Date d = new Date(1220227200L * 1000);
