@@ -37,16 +37,18 @@ public class ChannelImpl implements Channel {
     }
 
     @Override
-    public boolean addMessageToQueue(User user, long date, String message) {
-        Objects.requireNonNull(user);
-        if (!messagesQueue.containsKey(user)) {
-            addUserToChan(user);
+    public boolean addMessageToQueue(Message message) {
+//        Objects.requireNonNull(user);
+        Objects.requireNonNull(message);
+        User user = message.getSender();
+        if (!messagesQueue.containsKey(message.getSender())) {
+            addUserToChan(message.getSender());
         }
         ConcurrentLinkedQueue<Message> lq = messagesQueue.get(user);
-        Message msg = new Message(user, date, message);
-        if (lq.add(msg)) {
+//        Message msg = new Message(user, date, message);
+        if (lq.add(message)) {
             messagesQueue.put(user, lq);
-            return messagesQueue.get(user).contains(msg);
+            return messagesQueue.get(user).contains(message);
         }
         return false;
     }

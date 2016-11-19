@@ -1,6 +1,7 @@
 package fr.umlv.thaw.user;
 
 import fr.umlv.thaw.channel.Channel;
+import fr.umlv.thaw.message.Message;
 
 import java.util.Objects;
 import java.util.concurrent.ConcurrentLinkedQueue;
@@ -42,14 +43,13 @@ abstract class AbstractUser implements User {
     /**
      * This method allow a humanUser to send a message to a specific channel.
      *
-     * @param date    a long that represent when the humanUser send the message
-     * @param message a String that represent the message to send
+     * @param message the message to send
      * @param chan    the Channel in which the message will be send
      * @return true if the message has been sent, false otherwise
      */
-    public boolean sendMessage(long date, String message, Channel chan) {
+    public boolean sendMessage(Channel chan, Message message) {
         Objects.requireNonNull(chan);
-        return chan.addMessageToQueue(this, date, message);
+        return chan.addMessageToQueue(message);
     }
 
     /**

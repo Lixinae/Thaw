@@ -282,9 +282,13 @@ public class Server extends AbstractVerticle {
             Message mes = new Message(user, date, message);
 
             System.out.println(mes.getContent());
-            // Pas forcement utile de renvoyer le message reçu
-            // Renvoyer quelque chose d'autre mais je ne sais pas quoi
+
+            chan.addMessageToQueue(mes);
             // TODO Stocker les information du message dans la base de donnée du channel
+
+            // Recupère liste des message du channel
+//            List<Message> messageListTmp = chan.getListMessage();
+            // TODO Renvoyer la liste des messages correctement formaté pour l'affichage
             routingContext.response().putHeader("content-type", "application/json").end(Json.encodePrettily(mes));
         }
     }

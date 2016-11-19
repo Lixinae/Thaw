@@ -1,6 +1,7 @@
 package fr.umlv.thaw.user;
 
 import fr.umlv.thaw.channel.Channel;
+import fr.umlv.thaw.message.Message;
 
 /**
  * Project :Thaw
@@ -14,12 +15,11 @@ public interface User {
     /**
      * This method allow a humanUser to send a message to a specific channel.
      *
-     * @param date    a long that represent when the humanUser send the message
-     * @param message a String that represent the message to send
+     * @param message the message to send
      * @param chan    the Channel in which the message will be send
      * @return true if the message has been sent, false otherwise
      */
-    boolean sendMessage(long date, String message, Channel chan);
+    boolean sendMessage(Channel chan, Message message);
 
     /**
      * This method allow a humanUser to join a channel that exist

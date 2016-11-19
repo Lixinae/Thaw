@@ -1,5 +1,6 @@
 package fr.umlv.thaw.channel;
 
+import fr.umlv.thaw.message.Message;
 import fr.umlv.thaw.user.Bot;
 import fr.umlv.thaw.user.HumanUser;
 import org.junit.Assert;
@@ -15,19 +16,26 @@ public class ChannelImplTest {
     public void addSingleMessageToQueue() throws Exception {
         Channel ch = new ChannelImpl(new HumanUser("Pierre"), "Marie");
         HumanUser gege = new HumanUser("Ggee");
-        Assert.assertTrue(ch.addMessageToQueue(gege, 10, "Hey du gland!"));
+        Message message = new Message(gege, 10, "Hey du gland!");
+        Assert.assertTrue(ch.addMessageToQueue(message));
     }
 
     @Test
     public void addMultipleMessagesToQueue() throws Exception {
         Channel ch = new ChannelImpl(new HumanUser("Poney"), "Je sus ici");
         HumanUser dede = new HumanUser("dede");
-        Assert.assertTrue(ch.addMessageToQueue(dede, 10, "Hey du gland!"));
-        Assert.assertTrue(ch.addMessageToQueue(dede, 10, "Hey du gland!"));
-        Assert.assertTrue(ch.addMessageToQueue(dede, 20, "Hey Bapt!"));
-        Assert.assertTrue(ch.addMessageToQueue(dede, 50, "Ouais Gaël!"));
-        Assert.assertTrue(ch.addMessageToQueue(dede, 70, "Nan rien!"));
-        Assert.assertTrue(ch.addMessageToQueue(dede, 81, "Okaay!"));
+        Message message = new Message(dede, 10, "Hey du gland!");
+        Message message1 = new Message(dede, 30, "Hey du glandos!");
+        Message message2 = new Message(dede, 50, "Hey bachi!");
+        Message message3 = new Message(dede, 60, "Hey dsfsdf");
+        Message message4 = new Message(dede, 70, "Okay");
+        Message message5 = new Message(dede, 80, "Hey du gland!");
+        Assert.assertTrue(ch.addMessageToQueue(message));
+        Assert.assertTrue(ch.addMessageToQueue(message1));
+        Assert.assertTrue(ch.addMessageToQueue(message2));
+        Assert.assertTrue(ch.addMessageToQueue(message3));
+        Assert.assertTrue(ch.addMessageToQueue(message4));
+        Assert.assertTrue(ch.addMessageToQueue(message5));
     }
 
     ///// DEL MESSAGES /////
@@ -35,7 +43,8 @@ public class ChannelImplTest {
     public void delMessageFromQueue() throws Exception {
         Channel ch = new ChannelImpl(new HumanUser("Pierre"), "Marie");
         HumanUser gege = new HumanUser("Ggee");
-        ch.addMessageToQueue(gege, 10, "Hey du gland!");
+        Message message = new Message(gege, 10, "Hey du gland!");
+        ch.addMessageToQueue(message);
         Assert.assertEquals(1, ch.getListMessage().size());
         ch.delMessageFromQueue(gege, 10);
         Assert.assertEquals(0, ch.getListMessage().size());
@@ -46,16 +55,26 @@ public class ChannelImplTest {
     public void delMultipleMessageFromQueue() throws Exception {
         Channel ch = new ChannelImpl(new HumanUser("Pierre"), "Marie");
         HumanUser gege = new HumanUser("Ggee");
-        ch.addMessageToQueue(gege, 10, "Hey du gland!");
-        ch.addMessageToQueue(gege, 30, "Hey du glandos!");
-        ch.addMessageToQueue(gege, 50, "Hey bachi!");
-        ch.addMessageToQueue(gege, 60, "Hey dsfsdf");
-        ch.addMessageToQueue(gege, 70, "Okay");
-        ch.addMessageToQueue(gege, 80, "Hey du gland!");
-        ch.addMessageToQueue(gege, 90, "Hey du gland!");
-        ch.addMessageToQueue(gege, System.currentTimeMillis(), "Hey du gland!");
-        ch.addMessageToQueue(gege, System.currentTimeMillis(), "Hey du gland!");
-        ch.addMessageToQueue(gege, System.currentTimeMillis(), "Hey du gland!");
+        Message message = new Message(gege, 10, "Hey du gland!");
+        Message message1 = new Message(gege, 30, "Hey du glandos!");
+        Message message2 = new Message(gege, 50, "Hey bachi!");
+        Message message3 = new Message(gege, 60, "Hey dsfsdf");
+        Message message4 = new Message(gege, 70, "Okay");
+        Message message5 = new Message(gege, 80, "Hey du gland!");
+        Message message6 = new Message(gege, 90, "Hey du gland!");
+        Message message7 = new Message(gege, System.currentTimeMillis(), "Hey du gland!");
+        Message message8 = new Message(gege, System.currentTimeMillis(), "Hey du gland!");
+        Message message9 = new Message(gege, System.currentTimeMillis(), "Hey du gland!");
+        ch.addMessageToQueue(message);
+        ch.addMessageToQueue(message1);
+        ch.addMessageToQueue(message2);
+        ch.addMessageToQueue(message3);
+        ch.addMessageToQueue(message4);
+        ch.addMessageToQueue(message5);
+        ch.addMessageToQueue(message6);
+        ch.addMessageToQueue(message7);
+        ch.addMessageToQueue(message8);
+        ch.addMessageToQueue(message9);
         Assert.assertEquals(10, ch.getListMessage().size());
         ch.delMessageFromQueue(gege, 10);
         Assert.assertEquals(9, ch.getListMessage().size());

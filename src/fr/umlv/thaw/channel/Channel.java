@@ -17,12 +17,10 @@ public interface Channel {
     /**
      * This method add a message that has been wrote by a user in a certain date
      *
-     * @param user the user that send the message
-     * @param date     the date in which the message has been received
      * @param message  the message that must been add
      * @return true if the message has been sent false otherwise
      */
-    boolean addMessageToQueue(User user, long date, String message);
+    boolean addMessageToQueue(Message message);
 
     /**
      * Delete a message from the channel from the author at a certain instant
