@@ -103,6 +103,7 @@ public class DatabaseImpl implements Database {
     }
 
     public ResultSet executeQuery(String query) throws SQLException {
+        Objects.requireNonNull(query);
         return state.executeQuery(query);
     }
 
@@ -111,6 +112,7 @@ public class DatabaseImpl implements Database {
     }
 
     public void setPrepStringValue(int idx, String value, boolean addToBatch) throws SQLException {
+        Objects.requireNonNull(value);
         if (idx <= 0) {
             throw new IllegalArgumentException("idx must be > 0");
         }
@@ -135,6 +137,7 @@ public class DatabaseImpl implements Database {
     }
 
     public void exeUpda(String query) throws SQLException {
+        Objects.requireNonNull(query);
         state.executeUpdate(query);
     }
 

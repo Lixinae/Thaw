@@ -49,6 +49,7 @@ abstract class AbstractUser implements User {
      */
     public boolean sendMessage(Channel chan, Message message) {
         Objects.requireNonNull(chan);
+        Objects.requireNonNull(message);
         return chan.addMessageToQueue(message);
     }
 

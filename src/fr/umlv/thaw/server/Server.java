@@ -103,6 +103,7 @@ public class Server extends AbstractVerticle {
         ///////////////////////////////////
 
         router.post("/api/createChannel").handler(this::createChannel);
+        router.post("/api/deleteChannel").handler(this::deleteChannel);
         router.post("/api/connectToChannel").handler(this::connectToChannel);
         router.post("/api/sendMessage").handler(this::sendMessage);
         router.get("/api/getListChannel").handler(this::getListChannels);
@@ -157,6 +158,12 @@ public class Server extends AbstractVerticle {
         answerToRequest(response, 200, "Channel " + newChannelName + " successfully created");
     }
 
+    private void deleteChannel(RoutingContext routingContext) {
+        thawLogger.log(Level.INFO, "DEBUG " + "In deleteChannel request");
+
+
+    }
+
     // TODO -> A tester
     private void connectToChannel(RoutingContext routingContext) {
 //        System.out.println("DEBUG " + "In connectToChannel request");
@@ -190,7 +197,7 @@ public class Server extends AbstractVerticle {
             answerToRequest(response, 400, "Channel " + channelName + " does not exist");
         } else {
             Channel chan = optchannel.get();
-            Optional<User> tmpUserInChan = findUserInListFromChan(chan.getListUser(), userName);
+            Optional<User> tmpUserInChan = chan.findUser(user);
             if (tmpUserInChan.isPresent()) {
                 answerToRequest(response, 400, "User " + userName + " is already connected");
             } else {
@@ -206,9 +213,8 @@ public class Server extends AbstractVerticle {
     }
 
     private void establishConnection(HttpServerResponse response, User user, Channel chan, Channel oldChan) {
-        oldChan.removeUserFromChan(user);
-        // Only add a user to a channel if we can remove him from the old channel
-        chan.addUserToChan(user);
+        user.quitChannel(oldChan);
+        user.joinChannel(chan);
         thawLogger.log(Level.INFO, "DEBUG " + "User connected to " + chan.getName() + "channel");
         answerToRequest(response, 200, " Successfully connected to channel " + chan.getName());
 //        response.setStatusCode(200).end();
@@ -272,8 +278,9 @@ public class Server extends AbstractVerticle {
                 return;
             }
             Channel chan = channelOptional.get();
+
             // This should never happen, it's only matter of security
-            Optional<User> optUsr = findUserInListFromChan(chan.getListUser(), userName);
+            Optional<User> optUsr = chan.findUserByName(userName);
             if (!optUsr.isPresent()) {
                 answerToRequest(response, 400, "User " + userName + " does not exist");
                 return;
@@ -283,7 +290,8 @@ public class Server extends AbstractVerticle {
 
             System.out.println(mes.getContent());
 
-            chan.addMessageToQueue(mes);
+            user.sendMessage(chan, mes);
+//            chan.addMessageToQueue(mes);
             // TODO Stocker les information du message dans la base de donnée du channel
 
             // Recupère liste des message du channel
@@ -304,14 +312,14 @@ public class Server extends AbstractVerticle {
                 .end(Json.encodePrettily(answer));
     }
 
-    private Optional<User> findUserInListFromChan(List<User> listUser, String userName) {
-        for (User u : listUser) {
-            if (u.getName().contentEquals(userName)) {
-                return Optional.of(u);
-            }
-        }
-        return Optional.empty();
-    }
+//    private Optional<User> findUserInListFromChan(List<User> listUser, String userName) {
+//        for (User u : listUser) {
+//            if (u.getName().contentEquals(userName)) {
+//                return Optional.of(u);
+//            }
+//        }
+//        return Optional.empty();
+//    }
 
     private Optional<User> findUserInServerUserList(String userName) {
         for (User u : users) {
@@ -322,7 +330,6 @@ public class Server extends AbstractVerticle {
         return Optional.empty();
     }
 
-    // TODO -> A tester
     private Optional<Channel> findChannelInList(String channelName) {
         for (Channel c : channels) {
             if (c.getChannelName().contentEquals(channelName)) {

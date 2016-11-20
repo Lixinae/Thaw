@@ -3,6 +3,7 @@ package fr.umlv.thaw.logger;
 import java.io.IOException;
 import java.time.Instant;
 import java.util.Date;
+import java.util.Objects;
 import java.util.logging.FileHandler;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -29,6 +30,8 @@ public class ThawLogger {
 
     // basic logging
     public void log(Level level, String message) {
+        Objects.requireNonNull(message);
+        Objects.requireNonNull(level);
         if (enabled) {
             thawLogger.log(level, message);
         }
