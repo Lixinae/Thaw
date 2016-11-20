@@ -3,10 +3,7 @@ package fr.umlv.thaw.user;
 import org.junit.Assert;
 import org.junit.Test;
 
-/**
- * Project :Thaw
- * Created by Narex on 16/11/2016.
- */
+
 public class BotTest {
 
     ////////// CONSTRUCTOR ///////////////
@@ -30,7 +27,7 @@ public class BotTest {
         new Bot("bidul", "truc");
     }
 
-    ////////// IS_USER_BOT ///////////////
+    ////////// IS_USER_BOT and IS_USER_HUMAN///////////////
     @Test
     public void isUserBotTrue() throws Exception {
         Bot bot = new Bot("nameTest", "File test");
@@ -38,7 +35,7 @@ public class BotTest {
     }
 
     @Test
-    public void isUserBotFalse() throws Exception {
+    public void isUserHumanFalse() throws Exception {
         Bot bot = new Bot("nameTest", "File test");
         Assert.assertFalse(bot.isUserHuman());
     }
