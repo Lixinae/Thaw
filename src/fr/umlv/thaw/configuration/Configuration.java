@@ -10,12 +10,10 @@ import java.util.Objects;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-/**
- * Project :Thaw
- * Created by Narex on 10/10/2016.
- */
 
-//TODO : doc ... JAVAdoc
+/**
+ * This class is in charge of loading the configuration's files for the Bots
+ */
 public class Configuration {
 
     private final String configFilePathName;
@@ -40,6 +38,10 @@ public class Configuration {
         }
     }
 
+    /**
+     * This method print the contents of the Map that contains the
+     * configuration's file associated to each bot.
+     */
     public void printMap() {
         hashMap.forEach((k, v) -> System.out.println("Key = " + k + "\n" + "Value = " + v));
     }
