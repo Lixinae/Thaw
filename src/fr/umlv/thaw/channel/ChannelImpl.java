@@ -4,10 +4,7 @@ import fr.umlv.thaw.message.Message;
 import fr.umlv.thaw.user.HumanUser;
 import fr.umlv.thaw.user.User;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
@@ -107,6 +104,40 @@ public class ChannelImpl implements Channel {
         List<Message> tmp = new ArrayList<>();
         messagesQueue.forEach((key, value) -> tmp.addAll(value));
         return Collections.unmodifiableList(tmp);
+    }
+
+    /**
+     * @param name Name of the user you want to find
+     * @return The user if he exists, optional.empty otherwise
+     */
+    @Override
+    public Optional<User> findUserByName(String name) {
+        for (User u : messagesQueue.keySet()) {
+            if (u.getName().equals(name)) {
+                return Optional.of(u);
+            }
+        }
+        return Optional.empty();
+    }
+//    private Optional<User> findUserInListFromChan(List<User> listUser, String userName) {
+//        for (User u : listUser) {
+//            if (u.getName().contentEquals(userName)) {
+//                return Optional.of(u);
+//            }
+//        }
+//        return Optional.empty();
+//    }
+
+    /**
+     * @param user The user you want to find
+     * @return The user if he exists, optional.empty otherwise
+     */
+    @Override
+    public Optional<User> findUser(User user) {
+        if (messagesQueue.containsKey(user)) {
+            return Optional.of(user);
+        }
+        return Optional.empty();
     }
 
 //    @Override

@@ -4,6 +4,7 @@ import fr.umlv.thaw.message.Message;
 import fr.umlv.thaw.user.User;
 
 import java.util.List;
+import java.util.Optional;
 
 /**
  * This interface contains every method that is useful to implement a channel.
@@ -14,10 +15,11 @@ public interface Channel {
      * @return the userName where it is called on
      */
     String getName();
+
     /**
      * This method add a message that has been wrote by a user in a certain date
      *
-     * @param message  the message that must been add
+     * @param message the message that must been add
      * @return true if the message has been sent false otherwise
      */
     boolean addMessageToQueue(Message message);
@@ -25,8 +27,8 @@ public interface Channel {
     /**
      * Delete a message from the channel from the author at a certain instant
      *
-     * @param usr the user that sent the message at the given time
-     * @param date     the date in which the message has been sent
+     * @param usr  the user that sent the message at the given time
+     * @param date the date in which the message has been sent
      * @return true if the message has been removed, false otherwise
      */
     boolean delMessageFromQueue(User usr, long date);
@@ -53,13 +55,11 @@ public interface Channel {
     String getChannelName();
 
     /**
-     *
      * @return the list of user connected to the channel
      */
     List<User> getListUser();
 
     /**
-     *
      * @param user the user you want you want to check
      * @return true if the user is already connected, false otherwise
      */
@@ -69,6 +69,18 @@ public interface Channel {
      * @return the channel's messages as a List
      */
     List<Message> getListMessage();
+
+    /**
+     * @param name Name of the user you want to find
+     * @return The user if he exists, optional.empty otherwise
+     */
+    Optional<User> findUserByName(String name);
+
+    /**
+     * @param user The user you want to find
+     * @return The user if he exists, optional.empty otherwise
+     */
+    Optional<User> findUser(User user);
 
 //    /**
 //     * Add a bot in the channel. That method could be called only by someone who
