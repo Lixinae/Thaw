@@ -16,8 +16,9 @@ $(document).ready(function(){
 // L'utilisateur saisie un message
 // Envoie le message au serveur qui l'ajoutera à la base de donné du channel
 function sendMessage(){
-	var messageV= $("#textEntry");
-
+	//var messageV= $("#textEntry");
+    var  messageV = $("#TextZone");
+    //TODO : a jeter alert(messageV.val()); //pour verifier que j'ai bien recuperer la bonne chaine de caractere
 	$.post("/sendMessage",JSON.stringify({channel : currentChannel, message : messageV.val(),username : username}),
 			function(){
 

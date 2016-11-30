@@ -71,7 +71,9 @@ textarea#TextZone{
 	position:absolute;
 	border: blue thin solid;
 	margin-left: 70%;
-	top:23.5%;
+	margin-top:-42.5%;/*Valeur negative permet de mieux rehausser le cadre.La virgule se fait avec un . */
+	/*Plus le nombre est petit, plus le cadre remontera (en considerant -42 < -41 par exemple)*/
+	/*top:23.5%;garder pour dire mais cette valeur n'est vraiment par adapte pour la majorite des cas*/
 	width:20%;
 	height:80%;
 	overflow:auto;/*Fait apparaitre scrollbar lorsque limite de taille atteinte*/
