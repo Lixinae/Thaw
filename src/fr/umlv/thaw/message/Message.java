@@ -13,7 +13,7 @@ public class Message {
     private final long date;
     private final String content;
 
-    public Message(User sender, long date, String content) {
+    Message(User sender, long date, String content) {
         this.sender = Objects.requireNonNull(sender);
         this.date = requiresStrictPositive(date);
         this.content = Objects.requireNonNull(content);
@@ -71,10 +71,10 @@ public class Message {
 
         Message message = (Message) o;
 
-//        if (date != message.date) return false;
-//        if (sender != null ? !sender.equals(message.sender) : message.sender != null) return false;
-//        return content != null ? content.equals(message.content) : message.content == null;
-        return date == message.date && (sender != null ? sender.equals(message.sender) : message.sender == null && (content != null ? content.equals(message.content) : message.content == null));
+        if (date != message.date) return false;
+        if (sender != null ? !sender.equals(message.sender) : message.sender != null) return false;
+        return content != null ? content.equals(message.content) : message.content == null;
+//        return date == message.date && (sender != null ? sender.equals(message.sender) : message.sender == null && (content != null ? content.equals(message.content) : message.content == null));
 
     }
 
