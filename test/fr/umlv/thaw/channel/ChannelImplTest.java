@@ -1,8 +1,10 @@
 package fr.umlv.thaw.channel;
 
 import fr.umlv.thaw.message.Message;
+import fr.umlv.thaw.message.MessageFactory;
 import fr.umlv.thaw.user.Bot;
 import fr.umlv.thaw.user.HumanUser;
+import fr.umlv.thaw.user.UserFactory;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -14,22 +16,22 @@ public class ChannelImplTest {
     ///// ADD MESSAGE ////
     @Test
     public void addSingleMessageToQueue() throws Exception {
-        Channel ch = new ChannelImpl(new HumanUser("Pierre"), "Marie");
-        HumanUser gege = new HumanUser("Ggee");
-        Message message = new Message(gege, 10, "Hey du gland!");
+        Channel ch = new ChannelImpl(UserFactory.createHumanUser("Pierre"), "Marie");
+        HumanUser gege = UserFactory.createHumanUser("Ggee");
+        Message message = MessageFactory.createMessage(gege, 10, "Hey du gland!");
         Assert.assertTrue(ch.addMessageToQueue(message));
     }
 
     @Test
     public void addMultipleMessagesToQueue() throws Exception {
-        Channel ch = new ChannelImpl(new HumanUser("Poney"), "Je sus ici");
-        HumanUser dede = new HumanUser("dede");
-        Message message = new Message(dede, 10, "Hey du gland!");
-        Message message1 = new Message(dede, 30, "Hey du glandos!");
-        Message message2 = new Message(dede, 50, "Hey bachi!");
-        Message message3 = new Message(dede, 60, "Hey dsfsdf");
-        Message message4 = new Message(dede, 70, "Okay");
-        Message message5 = new Message(dede, 80, "Hey du gland!");
+        Channel ch = new ChannelImpl(UserFactory.createHumanUser("Poney"), "Je sus ici");
+        HumanUser dede = UserFactory.createHumanUser("dede");
+        Message message = MessageFactory.createMessage(dede, 10, "Hey du gland!");
+        Message message1 = MessageFactory.createMessage(dede, 30, "Hey du glandos!");
+        Message message2 = MessageFactory.createMessage(dede, 50, "Hey bachi!");
+        Message message3 = MessageFactory.createMessage(dede, 60, "Hey dsfsdf");
+        Message message4 = MessageFactory.createMessage(dede, 70, "Okay");
+        Message message5 = MessageFactory.createMessage(dede, 80, "Hey du gland!");
         Assert.assertTrue(ch.addMessageToQueue(message));
         Assert.assertTrue(ch.addMessageToQueue(message1));
         Assert.assertTrue(ch.addMessageToQueue(message2));
@@ -41,9 +43,9 @@ public class ChannelImplTest {
     ///// DEL MESSAGES /////
     @Test
     public void delMessageFromQueue() throws Exception {
-        Channel ch = new ChannelImpl(new HumanUser("Pierre"), "Marie");
-        HumanUser gege = new HumanUser("Ggee");
-        Message message = new Message(gege, 10, "Hey du gland!");
+        Channel ch = new ChannelImpl(UserFactory.createHumanUser("Pierre"), "Marie");
+        HumanUser gege = UserFactory.createHumanUser("Ggee");
+        Message message = MessageFactory.createMessage(gege, 10, "Hey du gland!");
         ch.addMessageToQueue(message);
         Assert.assertEquals(1, ch.getListMessage().size());
         ch.delMessageFromQueue(gege, 10);
@@ -53,18 +55,18 @@ public class ChannelImplTest {
 
     @Test
     public void delMultipleMessageFromQueue() throws Exception {
-        Channel ch = new ChannelImpl(new HumanUser("Pierre"), "Marie");
-        HumanUser gege = new HumanUser("Ggee");
-        Message message = new Message(gege, 10, "Hey du gland!");
-        Message message1 = new Message(gege, 30, "Hey du glandos!");
-        Message message2 = new Message(gege, 50, "Hey bachi!");
-        Message message3 = new Message(gege, 60, "Hey dsfsdf");
-        Message message4 = new Message(gege, 70, "Okay");
-        Message message5 = new Message(gege, 80, "Hey du gland!");
-        Message message6 = new Message(gege, 90, "Hey du gland!");
-        Message message7 = new Message(gege, System.currentTimeMillis(), "Hey du gland!");
-        Message message8 = new Message(gege, System.currentTimeMillis(), "Hey du gland!");
-        Message message9 = new Message(gege, System.currentTimeMillis(), "Hey du gland!");
+        Channel ch = new ChannelImpl(UserFactory.createHumanUser("Pierre"), "Marie");
+        HumanUser gege = UserFactory.createHumanUser("Ggee");
+        Message message = MessageFactory.createMessage(gege, 10, "Hey du gland!");
+        Message message1 = MessageFactory.createMessage(gege, 30, "Hey du glandos!");
+        Message message2 = MessageFactory.createMessage(gege, 50, "Hey bachi!");
+        Message message3 = MessageFactory.createMessage(gege, 60, "Hey dsfsdf");
+        Message message4 = MessageFactory.createMessage(gege, 70, "Okay");
+        Message message5 = MessageFactory.createMessage(gege, 80, "Hey du gland!");
+        Message message6 = MessageFactory.createMessage(gege, 90, "Hey du gland!");
+        Message message7 = MessageFactory.createMessage(gege, System.currentTimeMillis(), "Hey du gland!");
+        Message message8 = MessageFactory.createMessage(gege, System.currentTimeMillis(), "Hey du gland!");
+        Message message9 = MessageFactory.createMessage(gege, System.currentTimeMillis(), "Hey du gland!");
         ch.addMessageToQueue(message);
         ch.addMessageToQueue(message1);
         ch.addMessageToQueue(message2);
@@ -88,17 +90,17 @@ public class ChannelImplTest {
     ////ADD USER/////
     @Test
     public void addSingleUserToChan() throws Exception {
-        Channel ch = new ChannelImpl(new HumanUser("Pierre"), "Marie");
-        HumanUser meme = new HumanUser("Meme");
+        Channel ch = new ChannelImpl(UserFactory.createHumanUser("Pierre"), "Marie");
+        HumanUser meme = UserFactory.createHumanUser("Meme");
         Assert.assertTrue(ch.addUserToChan(meme));
     }
 
     @Test
     public void addMultipleUserToChan() throws Exception {
-        Channel ch = new ChannelImpl(new HumanUser("Pierre"), "Marie");
-        HumanUser meme = new HumanUser("Meme");
-        Bot bot = new Bot("gugu", "propriete");
-        HumanUser lze = new HumanUser("lze");
+        Channel ch = new ChannelImpl(UserFactory.createHumanUser("Pierre"), "Marie");
+        HumanUser meme = UserFactory.createHumanUser("Meme");
+        Bot bot = UserFactory.createBot("gugu", "propriete");
+        HumanUser lze = UserFactory.createHumanUser("lze");
         Assert.assertTrue(ch.addUserToChan(meme));
         Assert.assertTrue(ch.addUserToChan(bot));
         Assert.assertTrue(ch.addUserToChan(lze));
@@ -106,8 +108,8 @@ public class ChannelImplTest {
 
     @Test
     public void addMultipleSameUserToChan() throws Exception {
-        Channel ch = new ChannelImpl(new HumanUser("Pierre"), "Marie");
-        HumanUser meme = new HumanUser("Meme");
+        Channel ch = new ChannelImpl(UserFactory.createHumanUser("Pierre"), "Marie");
+        HumanUser meme = UserFactory.createHumanUser("Meme");
         Assert.assertTrue(ch.addUserToChan(meme));
         Assert.assertFalse(ch.addUserToChan(meme));
     }
@@ -115,16 +117,16 @@ public class ChannelImplTest {
     /////Remove User/////
     @Test
     public void removeSingleUserFromChan() throws Exception {
-        Channel ch = new ChannelImpl(new HumanUser("Pierre"), "Marie");
-        HumanUser meme = new HumanUser("Meme");
+        Channel ch = new ChannelImpl(UserFactory.createHumanUser("Pierre"), "Marie");
+        HumanUser meme = UserFactory.createHumanUser("Meme");
         ch.addUserToChan(meme);
         Assert.assertTrue(ch.removeUserFromChan(meme));
     }
 
     @Test
     public void removeSingleUserMultipleTimeFromChan() throws Exception {
-        Channel ch = new ChannelImpl(new HumanUser("Pierre"), "Marie");
-        HumanUser meme = new HumanUser("Meme");
+        Channel ch = new ChannelImpl(UserFactory.createHumanUser("Pierre"), "Marie");
+        HumanUser meme = UserFactory.createHumanUser("Meme");
         ch.addUserToChan(meme);
         Assert.assertTrue(ch.removeUserFromChan(meme));
         Assert.assertFalse(ch.removeUserFromChan(meme));
@@ -132,10 +134,10 @@ public class ChannelImplTest {
 
     @Test
     public void removeMultipleUserSingleTimeFromChan() throws Exception {
-        Channel ch = new ChannelImpl(new HumanUser("Pierre"), "Marie");
-        HumanUser riri = new HumanUser("Meme");
-        HumanUser fifi = new HumanUser("Gege");
-        HumanUser loulou = new HumanUser("Rere");
+        Channel ch = new ChannelImpl(UserFactory.createHumanUser("Pierre"), "Marie");
+        HumanUser riri = UserFactory.createHumanUser("Meme");
+        HumanUser fifi = UserFactory.createHumanUser("Gege");
+        HumanUser loulou = UserFactory.createHumanUser("Rere");
         ch.addUserToChan(riri);
         ch.addUserToChan(fifi);
         ch.addUserToChan(loulou);
@@ -146,10 +148,10 @@ public class ChannelImplTest {
 
     @Test
     public void removeMultipleUserMultipleTimeFromChan() throws Exception {
-        Channel ch = new ChannelImpl(new HumanUser("Pierre"), "Marie");
-        HumanUser riri = new HumanUser("Meme");
-        HumanUser fifi = new HumanUser("Gege");
-        HumanUser loulou = new HumanUser("Rere");
+        Channel ch = new ChannelImpl(UserFactory.createHumanUser("Pierre"), "Marie");
+        HumanUser riri = UserFactory.createHumanUser("Meme");
+        HumanUser fifi = UserFactory.createHumanUser("Gege");
+        HumanUser loulou = UserFactory.createHumanUser("Rere");
         ch.addUserToChan(riri);
         ch.addUserToChan(fifi);
         ch.addUserToChan(loulou);
@@ -164,15 +166,15 @@ public class ChannelImplTest {
     /////GetChannelName /////
     @Test
     public void getChannelName() throws Exception {
-        Channel ch = new ChannelImpl(new HumanUser("Pierre"), "Marie");
+        Channel ch = new ChannelImpl(UserFactory.createHumanUser("Pierre"), "Marie");
         Assert.assertEquals("Marie", ch.getChannelName());
     }
 
     /////GetListUser /////
     @Test
     public void getListUser() throws Exception {
-        Channel ch = new ChannelImpl(new HumanUser("Pierre"), "Marie");
-        HumanUser schlibidi = new HumanUser("schlibidi");
+        Channel ch = new ChannelImpl(UserFactory.createHumanUser("Pierre"), "Marie");
+        HumanUser schlibidi = UserFactory.createHumanUser("schlibidi");
         ch.addUserToChan(schlibidi);
         Assert.assertEquals(1, ch.getListUser().size());
         Assert.assertTrue(ch.getListUser().contains(schlibidi));
@@ -181,47 +183,47 @@ public class ChannelImplTest {
     /////GetListUser /////
     @Test
     public void checkIfUserIsConnected() throws Exception {
-        Channel ch = new ChannelImpl(new HumanUser("Pierre"), "Marie");
-        HumanUser schlibidi = new HumanUser("schlibidi");
+        Channel ch = new ChannelImpl(UserFactory.createHumanUser("Pierre"), "Marie");
+        HumanUser schlibidi = UserFactory.createHumanUser("schlibidi");
         ch.addUserToChan(schlibidi);
         Assert.assertTrue(ch.checkIfUserIsConnected(schlibidi));
     }
 
     @Test
     public void checkIfUserIsNotConnected() throws Exception {
-        Channel ch = new ChannelImpl(new HumanUser("Pierre"), "Marie");
-        HumanUser schlibidi = new HumanUser("schlibidi");
+        Channel ch = new ChannelImpl(UserFactory.createHumanUser("Pierre"), "Marie");
+        HumanUser schlibidi = UserFactory.createHumanUser("schlibidi");
         Assert.assertFalse(ch.checkIfUserIsConnected(schlibidi));
     }
 
     ///// equals /////
     @Test
     public void equalsSame() throws Exception {
-        Channel ch = new ChannelImpl(new HumanUser("Jackie"), "Et Michelle");
+        Channel ch = new ChannelImpl(UserFactory.createHumanUser("Jackie"), "Et Michelle");
         Assert.assertEquals(ch, ch);
     }
 
 
     @Test
     public void equalsTotalDifferent() throws Exception {
-        Channel ch = new ChannelImpl(new HumanUser("Jackie"), "Et Michelle");
-        Channel ch2 = new ChannelImpl(new HumanUser("PenPineapple"), "ApplePen");
+        Channel ch = new ChannelImpl(UserFactory.createHumanUser("Jackie"), "Et Michelle");
+        Channel ch2 = new ChannelImpl(UserFactory.createHumanUser("PenPineapple"), "ApplePen");
         Assert.assertNotEquals(ch, ch2);
     }
 
 
     @Test
     public void equalsSSameCreatorDifferentName() throws Exception {
-        Channel ch = new ChannelImpl(new HumanUser("Jackie"), "Et Michelle");
-        Channel ch2 = new ChannelImpl(new HumanUser("Jackie"), "ApplePen");
+        Channel ch = new ChannelImpl(UserFactory.createHumanUser("Jackie"), "Et Michelle");
+        Channel ch2 = new ChannelImpl(UserFactory.createHumanUser("Jackie"), "ApplePen");
         Assert.assertNotEquals(ch, ch2);
     }
 
 
     @Test
     public void equalsSSameNameDifferentCreator() throws Exception {
-        Channel ch = new ChannelImpl(new HumanUser("Jackie"), "Et Michelle");
-        Channel ch2 = new ChannelImpl(new HumanUser("Didier"), "Et Michelle");
+        Channel ch = new ChannelImpl(UserFactory.createHumanUser("Jackie"), "Et Michelle");
+        Channel ch2 = new ChannelImpl(UserFactory.createHumanUser("Didier"), "Et Michelle");
         Assert.assertNotEquals(ch, ch2);
     }
 

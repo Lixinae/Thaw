@@ -1,6 +1,7 @@
 package fr.umlv.thaw.user;
 
-import fr.umlv.thaw.channel.ChannelImpl;
+import fr.umlv.thaw.channel.Channel;
+import fr.umlv.thaw.channel.ChannelFactory;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -50,7 +51,7 @@ public class HumanUserTest {
     @Test
     public void addSingleChannel() throws Exception {
         HumanUser doris = new HumanUser("Doris");
-        ChannelImpl nemo = new ChannelImpl(doris, "Nemo");
+        Channel nemo = ChannelFactory.createChannel(doris, "Nemo");
         doris.addChannel(nemo);
         Assert.assertTrue(doris.channels.contains(nemo));
     }
@@ -58,9 +59,9 @@ public class HumanUserTest {
     @Test
     public void addMultipleChannel() throws Exception {
         HumanUser pinot = new HumanUser("Pinot");
-        ChannelImpl nemo = new ChannelImpl(pinot, "Nemo");
-        ChannelImpl moris = new ChannelImpl(pinot, "Moris");
-        ChannelImpl didier = new ChannelImpl(pinot, "Didier");
+        Channel nemo = ChannelFactory.createChannel(pinot, "Nemo");
+        Channel moris = ChannelFactory.createChannel(pinot, "Moris");
+        Channel didier = ChannelFactory.createChannel(pinot, "Didier");
         pinot.addChannel(nemo);
         pinot.addChannel(moris);
         pinot.addChannel(didier);
@@ -74,7 +75,7 @@ public class HumanUserTest {
     @Test
     public void delSingleChannel() throws Exception {
         HumanUser patrice = new HumanUser("Patrice");
-        ChannelImpl clement = new ChannelImpl(patrice, "Clement");
+        Channel clement = ChannelFactory.createChannel(patrice, "Clement");
         patrice.addChannel(clement);
         Assert.assertTrue(patrice.channels.size() == 1);
         Assert.assertTrue(patrice.delChannel(clement));
@@ -84,9 +85,9 @@ public class HumanUserTest {
     @Test
     public void delMultipleChannel() throws Exception {
         HumanUser lola = new HumanUser("Lola");
-        ChannelImpl monica = new ChannelImpl(lola, "Monica");
-        ChannelImpl juliette = new ChannelImpl(lola, "Juliette");
-        ChannelImpl julie = new ChannelImpl(lola, "Julie");
+        Channel monica = ChannelFactory.createChannel(lola, "Monica");
+        Channel juliette = ChannelFactory.createChannel(lola, "Juliette");
+        Channel julie = ChannelFactory.createChannel(lola, "Julie");
         lola.addChannel(monica);
         lola.addChannel(juliette);
         lola.addChannel(julie);
@@ -102,7 +103,7 @@ public class HumanUserTest {
     @Test
     public void delSameChannel() throws Exception {
         HumanUser patrick = new HumanUser("Patrick");
-        ChannelImpl clementine = new ChannelImpl(patrick, "Clementine");
+        Channel clementine = ChannelFactory.createChannel(patrick, "Clementine");
         patrick.addChannel(clementine);
         Assert.assertTrue(patrick.delChannel(clementine));
         Assert.assertFalse(patrick.delChannel(clementine));

@@ -1,7 +1,7 @@
 package fr.umlv.thaw.message;
 
-import fr.umlv.thaw.user.HumanUser;
 import fr.umlv.thaw.user.User;
+import fr.umlv.thaw.user.UserFactory;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -24,23 +24,23 @@ public class MessageTest {
 
     @Test(expected = NullPointerException.class)
     public void constructorContentNullDatePositive() throws Exception {
-        new Message(new HumanUser("truc"), 10, null);
+        new Message(UserFactory.createHumanUser("truc"), 10, null);
     }
 
     @Test(expected = IllegalArgumentException.class)
     public void constructorDateNegative() throws Exception {
-        new Message(new HumanUser("truc"), -10, "truc");
+        new Message(UserFactory.createHumanUser("truc"), -10, "truc");
     }
 
     @Test
     public void constructorAllCorrect() throws Exception {
-        new Message(new HumanUser("truc"), 100, "truc");
+        new Message(UserFactory.createHumanUser("truc"), 100, "truc");
     }
 
     /////// GET SENDER ///////
     @Test
     public void getSender() throws Exception {
-        User user = new HumanUser("Blark");
+        User user = UserFactory.createHumanUser("Blark");
         Message test = new Message(user, 10, "monMessage");
         Assert.assertEquals(test.getSender(), user);
     }
@@ -48,7 +48,7 @@ public class MessageTest {
     /////// GET DATE ///////
     @Test
     public void getDate() throws Exception {
-        User user = new HumanUser("Blark");
+        User user = UserFactory.createHumanUser("Blark");
         Message test = new Message(user, 10, "monMessage");
         Assert.assertEquals(test.getDate(), 10);
     }
@@ -56,7 +56,7 @@ public class MessageTest {
     /////// GET CONTENT ///////
     @Test
     public void getContent() throws Exception {
-        User user = new HumanUser("Blark");
+        User user = UserFactory.createHumanUser("Blark");
         Message test = new Message(user, 10, "monMessage");
         Assert.assertEquals(test.getContent(), "monMessage");
     }
