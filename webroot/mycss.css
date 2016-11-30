@@ -77,6 +77,10 @@ textarea#TextZone{
 	overflow:auto;/*Fait apparaitre scrollbar lorsque limite de taille atteinte*/
 }
 
+.infoOnUser{
+    text-align: center;
+}
+
 #usersOnChan{
 	list-style:none;
 }
