@@ -2,11 +2,13 @@ package fr.umlv.thaw.server;
 
 
 import fr.umlv.thaw.channel.Channel;
-import fr.umlv.thaw.channel.ChannelImpl;
+import fr.umlv.thaw.channel.ChannelFactory;
 import fr.umlv.thaw.logger.ThawLogger;
 import fr.umlv.thaw.message.Message;
+import fr.umlv.thaw.message.MessageFactory;
 import fr.umlv.thaw.user.HumanUser;
 import fr.umlv.thaw.user.User;
+import fr.umlv.thaw.user.UserFactory;
 import io.vertx.core.AbstractVerticle;
 import io.vertx.core.Future;
 import io.vertx.core.http.HttpServerResponse;
@@ -144,7 +146,7 @@ public class Server extends AbstractVerticle {
                 }
                 creator = (HumanUser) tmpUser; // Todo Moche -> changer plus tard
             } else {
-                creator = new HumanUser(creatorName);
+                creator = UserFactory.createHumanUser(creatorName);
             }
             createAndAddChannel(response, newChannelName, creator);
         }
@@ -152,7 +154,7 @@ public class Server extends AbstractVerticle {
     }
 
     private void createAndAddChannel(HttpServerResponse response, String newChannelName, HumanUser creator) {
-        Channel newChannel = new ChannelImpl(creator, newChannelName);
+        Channel newChannel = ChannelFactory.createChannel(creator, newChannelName);
         channels.add(newChannel);
         creator.addChannel(newChannel);
         answerToRequest(response, 200, "Channel " + newChannelName + " successfully created");
@@ -188,7 +190,7 @@ public class Server extends AbstractVerticle {
         Optional<User> optuser = findUserInServerUserList(userName);
         User user;
         if (!optuser.isPresent()) {
-            user = new HumanUser(userName);
+            user = UserFactory.createHumanUser(userName);
             users.add(user);
         } else {
             user = optuser.get();
@@ -206,17 +208,17 @@ public class Server extends AbstractVerticle {
                     answerToRequest(response, 400, "OldChannel " + oldChannelName + " does not exist");
                 } else {
                     Channel oldChan = optChannelOld.get();
-                    establishConnection(response, user, chan, oldChan);
+                    establishConnection(user, chan, oldChan);
+                    answerToRequest(response, 200, " Successfully connected to channel " + chan.getName());
                 }
             }
         }
     }
 
-    private void establishConnection(HttpServerResponse response, User user, Channel chan, Channel oldChan) {
+    private void establishConnection(User user, Channel chan, Channel oldChan) {
         user.quitChannel(oldChan);
         user.joinChannel(chan);
-        thawLogger.log(Level.INFO, "DEBUG " + "User connected to " + chan.getName() + "channel");
-        answerToRequest(response, 200, " Successfully connected to channel " + chan.getName());
+        thawLogger.log(Level.INFO, "DEBUG " + "User " + user.getName() + " connected to " + chan.getName() + "channel");
 //        response.setStatusCode(200).end();
     }
 
@@ -286,11 +288,12 @@ public class Server extends AbstractVerticle {
                 return;
             }
             User user = optUsr.get();
-            Message mes = new Message(user, date, message);
+            Message mes = MessageFactory.createMessage(user, date, message);
 
             System.out.println(mes.getContent());
 
             user.sendMessage(chan, mes);
+            // Todo : Analyser le message si un bot est connecté
 //            chan.addMessageToQueue(mes);
             // TODO Stocker les information du message dans la base de donnée du channel
 
@@ -312,31 +315,29 @@ public class Server extends AbstractVerticle {
                 .end(Json.encodePrettily(answer));
     }
 
-//    private Optional<User> findUserInListFromChan(List<User> listUser, String userName) {
-//        for (User u : listUser) {
+
+    private Optional<User> findUserInServerUserList(String userName) {
+        return users.stream()
+                .filter(u -> u.getName().contentEquals(userName))
+                .findFirst();
+//        for (User u : users) {
 //            if (u.getName().contentEquals(userName)) {
 //                return Optional.of(u);
 //            }
 //        }
 //        return Optional.empty();
-//    }
-
-    private Optional<User> findUserInServerUserList(String userName) {
-        for (User u : users) {
-            if (u.getName().contentEquals(userName)) {
-                return Optional.of(u);
-            }
-        }
-        return Optional.empty();
     }
 
     private Optional<Channel> findChannelInList(String channelName) {
-        for (Channel c : channels) {
-            if (c.getChannelName().contentEquals(channelName)) {
-                return Optional.of(c);
-            }
-        }
-        return Optional.empty();
+        return channels.stream()
+                .filter(c -> c.getChannelName().contentEquals(channelName))
+                .findFirst();
+//        for (Channel c : channels) {
+//            if (c.getChannelName().contentEquals(channelName)) {
+//                return Optional.of(c);
+//            }
+//        }
+//        return Optional.empty();
     }
 
 
