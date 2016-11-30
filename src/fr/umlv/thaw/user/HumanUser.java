@@ -10,7 +10,7 @@ import java.util.Objects;
 public class HumanUser extends AbstractUser {
 
 
-    public HumanUser(String nickname) {
+    HumanUser(String nickname) {
         super(nickname);
     }
 

@@ -8,6 +8,8 @@ import fr.umlv.thaw.user.UserFactory;
 import org.junit.Assert;
 import org.junit.Test;
 
+import java.nio.file.Paths;
+
 /**
  * Project :Thaw
  * Created by Narex on 17/11/2016.
@@ -99,7 +101,7 @@ public class ChannelImplTest {
     public void addMultipleUserToChan() throws Exception {
         Channel ch = new ChannelImpl(UserFactory.createHumanUser("Pierre"), "Marie");
         HumanUser meme = UserFactory.createHumanUser("Meme");
-        Bot bot = UserFactory.createBot("gugu", "propriete");
+        Bot bot = UserFactory.createBot("gugu", Paths.get("test"));
         HumanUser lze = UserFactory.createHumanUser("lze");
         Assert.assertTrue(ch.addUserToChan(meme));
         Assert.assertTrue(ch.addUserToChan(bot));

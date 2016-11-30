@@ -1,5 +1,6 @@
 package fr.umlv.thaw.user;
 
+import java.nio.file.Path;
 import java.util.Objects;
 
 /**
@@ -7,18 +8,19 @@ import java.util.Objects;
  */
 public class Bot extends AbstractUser {
 
-    private final String filePropertiesName;
+    private final Path path;
 
-    public Bot(String name, String filePropertiesName) {
+
+    Bot(String name, Path path) {
         super(name);
-        this.filePropertiesName = Objects.requireNonNull(filePropertiesName);
+        this.path = Objects.requireNonNull(path);
     }
 
     @Override
     public String toString() {
         return "Bot{" +
                 "name='" + name + '\'' +
-                ", filePropertiesName='" + filePropertiesName + '\'' +
+                ", path='" + path.getFileName() + '\'' +
                 '}';
     }
 
@@ -29,23 +31,20 @@ public class Bot extends AbstractUser {
 
     @Override
     public boolean equals(Object o) {
-        if (this == o)
-            return true;
-        if (!(o instanceof Bot))
-            return false;
-        if (!super.equals(o))
-            return false;
+        if (this == o) return true;
+        if (!(o instanceof Bot)) return false;
+        if (!super.equals(o)) return false;
 
         Bot bot = (Bot) o;
 
-        return filePropertiesName != null ? filePropertiesName.equals(bot.filePropertiesName) : bot.filePropertiesName == null;
+        return path != null ? path.equals(bot.path) : bot.path == null;
 
     }
 
     @Override
     public int hashCode() {
         int result = super.hashCode();
-        result = 31 * result + (filePropertiesName != null ? filePropertiesName.hashCode() : 0);
+        result = 31 * result + (path != null ? path.hashCode() : 0);
         return result;
     }
 }
