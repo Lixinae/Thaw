@@ -19,7 +19,7 @@ public class ChannelImpl implements Channel {
     private final ConcurrentHashMap<User, ConcurrentLinkedQueue<Message>> messagesQueue;
 
 
-    public ChannelImpl(HumanUser creator, String channelName) {
+    ChannelImpl(HumanUser creator, String channelName) {
         this.creator = Objects.requireNonNull(creator);
         this.channelName = Objects.requireNonNull(channelName);
         messagesQueue = new ConcurrentHashMap<>();
@@ -112,12 +112,16 @@ public class ChannelImpl implements Channel {
      */
     @Override
     public Optional<User> findUserByName(String name) {
-        for (User u : messagesQueue.keySet()) {
-            if (u.getName().equals(name)) {
-                return Optional.of(u);
-            }
-        }
-        return Optional.empty();
+        return messagesQueue.keySet()
+                .stream()
+                .filter(u -> u.getName().contentEquals(name))
+                .findFirst();
+//        for (User u : messagesQueue.keySet()) {
+//            if (u.getName().equals(name)) {
+//                return Optional.of(u);
+//            }
+//        }
+//        return Optional.empty();
     }
 //    private Optional<User> findUserInListFromChan(List<User> listUser, String userName) {
 //        for (User u : listUser) {
