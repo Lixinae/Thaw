@@ -19,7 +19,7 @@ public class ThawLogger {
     private final boolean enabled;
 
     public ThawLogger(boolean enabled) throws IOException {
-        String fileName = "./logs/log_" + Date.from(Instant.now()).toString().replaceAll(" ", "__").replaceAll(":", "_");
+        String fileName = "./logs/log_" + Date.from(Instant.now()).toString().replaceAll(" ", "__").replaceAll(":", "_") + ".log";
         FileHandler fileHandler = new FileHandler(fileName, true);
         Logger l = Logger.getLogger("");
         fileHandler.setFormatter(new SimpleFormatter());

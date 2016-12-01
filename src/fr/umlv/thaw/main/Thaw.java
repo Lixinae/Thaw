@@ -49,37 +49,5 @@ public class Thaw {
 
 //        vertx.deployVerticle(server, options);
 
-//        List<Channel> channels = new ArrayList<>();
-//        HumanUser a = new HumanUser("Narex");
-//        HumanUser b = new HumanUser("blirk");
-//        Channel c = new ChannelImpl(a, "monSuperChan1");
-//        Channel c2 = new ChannelImpl(a, "monSuperChan2");
-//        channels.add(c);
-//        channels.add(c2);
-//        System.out.println(channels);
-//        System.out.println("############################");
-//
-//        channels.get(0).addUserToChan(a);
-//        a.addChannel(c);
-//        channels.get(1).addUserToChan(b);
-//        System.out.println(channels);
-//        System.out.println("############################");
-//
-//        Optional<Channel> channelOptional = findChannelInList(channels,"monSuperChan1");
-//        if (channelOptional.isPresent()){
-//            channelOptional.get().addUserToChan(b);
-//        }
-//        System.out.println(channels);
-//        System.out.println("############################");
-//    }
-//
-//    private static Optional<Channel> findChannelInList(List<Channel> channels,String channelName) {
-//        for (Channel c : channels) {
-//            if (c.getChannelName().contentEquals(channelName)) {
-//                return Optional.of(c);
-//            }
-//        }
-//        return Optional.empty();
-//    }
     }
 }
