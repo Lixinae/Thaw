@@ -21,7 +21,7 @@ public class HumanUser extends AbstractUser {
      * @param chan the Channel to create
      * @return true if the Channel has been created false otherwise
      */
-    public boolean addChannel(Channel chan) {
+    public boolean createChannel(Channel chan) {
         //TODO Checker si vraiment correct
         Objects.requireNonNull(chan);
         return channels.add(chan);

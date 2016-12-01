@@ -61,6 +61,39 @@ public class Server extends AbstractVerticle {
 
         listOfRequest(router);
 
+        // TEST ONLY //
+        HumanUser test1 = UserFactory.createHumanUser("test1");
+        HumanUser test2 = UserFactory.createHumanUser("test2");
+        users.add(test1);
+        users.add(test2);
+
+        Channel defaul = ChannelFactory.createChannel(test1, "default");
+        Channel channel = ChannelFactory.createChannel(test1, "Item 1");
+        Channel channel2 = ChannelFactory.createChannel(test1, "Item 2");
+//        Channel channel2 = ChannelFactory.createChannel(test2,"anotherChannel");
+//        test1.joinChannel(channel);
+//        test2.joinChannel(channel);
+        test1.joinChannel(defaul);
+        test2.joinChannel(defaul);
+
+        defaul.addUserToChan(test2);
+
+        channel2.addUserToChan(test2);
+
+        channel.addUserToChan(test1);
+        channel.addUserToChan(test2);
+
+//        channel.addUserToChan(test1);
+//        channel.addUserToChan(test2);
+
+        channels.add(defaul);
+        channels.add(channel);
+        channels.add(channel2);
+//        channels.add(channel2);
+
+
+        // TEST //
+
         // Creation d'un serveur en https avec authentification
         // Exemple ici pour creer fichier jks : https://gist.github.com/InfoSec812/a45eb3b7ba9d4b2a9b94
         // C'est à se tirer une balle le truc
@@ -109,7 +142,7 @@ public class Server extends AbstractVerticle {
         router.post("/api/connectToChannel").handler(this::connectToChannel);
         router.post("/api/sendMessage").handler(this::sendMessage);
         router.get("/api/getListChannel").handler(this::getListChannels);
-        router.get("/api/getListUserForChannel").handler(this::getListUserForChannel);
+        router.post("/api/getListUserForChannel").handler(this::getListUserForChannel);
 
     }
 
@@ -156,7 +189,7 @@ public class Server extends AbstractVerticle {
     private void createAndAddChannel(HttpServerResponse response, String newChannelName, HumanUser creator) {
         Channel newChannel = ChannelFactory.createChannel(creator, newChannelName);
         channels.add(newChannel);
-        creator.addChannel(newChannel);
+        creator.createChannel(newChannel);
         answerToRequest(response, 200, "Channel " + newChannelName + " successfully created");
     }
 
@@ -184,7 +217,7 @@ public class Server extends AbstractVerticle {
         String oldChannelName = json.getString("oldChannelName");
         String channelName = json.getString("channelName");
         String userName = json.getString("userName");
-        thawLogger.log(Level.INFO, "DEBUG " + oldChannelName + " " + userName + " " + channelName);
+        thawLogger.log(Level.INFO, "DEBUG " + "\noldChannelName : " + oldChannelName + "\nuserName : " + userName + "\nnewChannelName : " + channelName);
 //        System.out.println("DEBUG " + oldChannelName + " " + userName + " " + channelName);
         Optional<Channel> optchannel = findChannelInList(channelName);
         Optional<User> optuser = findUserInServerUserList(userName);
@@ -225,7 +258,7 @@ public class Server extends AbstractVerticle {
 
     // TODO -> A tester
     private void getListUserForChannel(RoutingContext routingContext) {
-        thawLogger.log(Level.INFO, "DEBUG " + "In getListUser request");
+        thawLogger.log(Level.INFO, "DEBUG " + "In getListUserForChannel request");
         HttpServerResponse response = routingContext.response();
         JsonObject json = routingContext.getBodyAsJson();
         if (json == null) {
@@ -314,7 +347,6 @@ public class Server extends AbstractVerticle {
                 .putHeader("content-type", "application/json")
                 .end(Json.encodePrettily(answer));
     }
-
 
     private Optional<User> findUserInServerUserList(String userName) {
         return users.stream()

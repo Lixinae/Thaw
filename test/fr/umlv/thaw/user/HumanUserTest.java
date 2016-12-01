@@ -52,7 +52,7 @@ public class HumanUserTest {
     public void addSingleChannel() throws Exception {
         HumanUser doris = new HumanUser("Doris");
         Channel nemo = ChannelFactory.createChannel(doris, "Nemo");
-        doris.addChannel(nemo);
+        doris.createChannel(nemo);
         Assert.assertTrue(doris.channels.contains(nemo));
     }
 
@@ -62,9 +62,9 @@ public class HumanUserTest {
         Channel nemo = ChannelFactory.createChannel(pinot, "Nemo");
         Channel moris = ChannelFactory.createChannel(pinot, "Moris");
         Channel didier = ChannelFactory.createChannel(pinot, "Didier");
-        pinot.addChannel(nemo);
-        pinot.addChannel(moris);
-        pinot.addChannel(didier);
+        pinot.createChannel(nemo);
+        pinot.createChannel(moris);
+        pinot.createChannel(didier);
         Assert.assertTrue(pinot.channels.contains(nemo));
         Assert.assertTrue(pinot.channels.contains(moris));
         Assert.assertTrue(pinot.channels.contains(didier));
@@ -76,7 +76,7 @@ public class HumanUserTest {
     public void delSingleChannel() throws Exception {
         HumanUser patrice = new HumanUser("Patrice");
         Channel clement = ChannelFactory.createChannel(patrice, "Clement");
-        patrice.addChannel(clement);
+        patrice.createChannel(clement);
         Assert.assertTrue(patrice.channels.size() == 1);
         Assert.assertTrue(patrice.delChannel(clement));
         Assert.assertTrue(patrice.channels.isEmpty());
@@ -88,9 +88,9 @@ public class HumanUserTest {
         Channel monica = ChannelFactory.createChannel(lola, "Monica");
         Channel juliette = ChannelFactory.createChannel(lola, "Juliette");
         Channel julie = ChannelFactory.createChannel(lola, "Julie");
-        lola.addChannel(monica);
-        lola.addChannel(juliette);
-        lola.addChannel(julie);
+        lola.createChannel(monica);
+        lola.createChannel(juliette);
+        lola.createChannel(julie);
         Assert.assertTrue(lola.channels.size() == 3);
         Assert.assertTrue(lola.delChannel(monica));
         Assert.assertTrue(lola.channels.size() == 2);
@@ -104,7 +104,7 @@ public class HumanUserTest {
     public void delSameChannel() throws Exception {
         HumanUser patrick = new HumanUser("Patrick");
         Channel clementine = ChannelFactory.createChannel(patrick, "Clementine");
-        patrick.addChannel(clementine);
+        patrick.createChannel(clementine);
         Assert.assertTrue(patrick.delChannel(clementine));
         Assert.assertFalse(patrick.delChannel(clementine));
     }
