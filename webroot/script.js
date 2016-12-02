@@ -22,17 +22,14 @@ function initialize(){
 /* Permet d'avoir un texte par defaut dans la zone de d'ecriture de message et qui disparait lors du clique sur la zone */
 function textAreaDefaultValueDisappearOnClick(){
 	$('textArea#TextZone')
-    .each(function() {
-        $(this).data('default', this.value);
-    })
-    .focusin(function() {
-        if ( this.value == $(this).data('default') ) {
-            this.value = '';    
+    .focus(function() {
+        if (this.value === this.defaultValue) {
+            this.value = '';
         }
-    })
-    .focusout(function() {
-        if ( this.value == '' ) {
-            this.value = $(this).data('default');    
+	})
+	.blur(function() {
+        if (this.value === '') {
+            this.value = this.defaultValue;
         }
 	});
 }
