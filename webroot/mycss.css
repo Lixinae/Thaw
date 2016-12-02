@@ -80,15 +80,15 @@ h2{
 
 .cadres {
 	margin:0 auto;
-	padding:15px;
-	margin: 5px auto;
+	padding:0.5%;
+	width:50%;
 }
 
 .listChannels{
 	display: inline-block;
 	border: blue thin solid;
 	margin: 0 auto;
-	width:20%;
+	width:32%;
 	padding:10px;
 	height:60%;
 	overflow:auto;/*Fait apparaitre scrollbar lorsque limite de taille atteinte*/
@@ -105,9 +105,9 @@ h2{
 
 
 .tchat{
-	display: inline-flex;
+	display: inline-block;
 	border: blue thin solid;
-	width:30%;
+	width:35%;
 	padding:10px;
 	height:60%;
 	overflow:auto;
@@ -120,7 +120,7 @@ h2{
 	display: inline-block;
 	position:relative;
 	border: blue thin solid;
-	width:20%;
+	width:32%;
 	padding:10px;
 	height:60%;
 	overflow:auto;/*Fait apparaitre scrollbar lorsque limite de taille atteinte*/
@@ -130,11 +130,13 @@ h2{
 /*La position est en relative par defaut donc pas de precision
 a donner a ce niveau la. Ne pas metttre la position en absolute*/
 	border: orange thin solid;
-	margin:10 auto;
+	margin:0 auto;
+	margin-top:0;
+	margin-bottom:10;
 	width:30%;
 	max-width:30%;
 	height:25%;
-	padding:10px;
+	padding:0.5%;
 	overflow:auto;/*Fait apparaitre scrollbar lorsque limite de taille atteinte*/
 }
 

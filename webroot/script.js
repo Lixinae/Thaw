@@ -10,16 +10,37 @@ var username = "blork";
 
 
 $(document).ready(function(){
-//			$('#paragraphe').html(valeur1);
 			$("#currentUser").html(username);
 			$("#currentChannel").html(currentChannel);
+			initialize();
 		});
+
+function initialize(){
+	textAreaDefaultValueDisappearOnClick();
+}
+
+/* Permet d'avoir un texte par defaut dans la zone de d'ecriture de message et qui disparait lors du clique sur la zone */
+function textAreaDefaultValueDisappearOnClick(){
+	$('textArea#TextZone')
+    .each(function() {
+        $(this).data('default', this.value);
+    })
+    .focusin(function() {
+        if ( this.value == $(this).data('default') ) {
+            this.value = '';    
+        }
+    })
+    .focusout(function() {
+        if ( this.value == '' ) {
+            this.value = $(this).data('default');    
+        }
+	});
+}
 
 // L'utilisateur saisie un message
 // Envoie le message au serveur qui l'ajoutera à la base de donné du channel
 function sendMessage(){
-	//var messageV= $("#textEntry");
-    var  messageV = $("#TextZone");
+    var  messageV = $('textArea#TextZone');
     //TODO : a jeter alert(messageV.val()); //pour verifier que j'ai bien recuperer la bonne chaine de caractere
 	$.post("/sendMessage",
 	    JSON.stringify({channel : currentChannel, message : messageV.val(),username : username}),
