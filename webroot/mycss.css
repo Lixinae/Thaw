@@ -1,3 +1,55 @@
+html, body, div, span, applet, object, iframe,
+h1, h2, h3, h4, h5, h6, p, blockquote, pre,
+a, abbr, acronym, address, big, cite, code,
+del, dfn, em, img, ins, kbd, q, s, samp,
+small, strike, strong, sub, sup, tt, var,
+b, u, i, center,
+dl, dt, dd, ol, ul, li,
+fieldset, form, label, legend,
+table, caption, tbody, tfoot, thead, tr, th, td,
+article, aside, canvas, details, embed, 
+figure, figcaption, footer, header, hgroup, 
+menu, nav, output, ruby, section, summary,
+time, mark, audio, video {
+	margin: 0;
+	padding: 0;
+	border: 0;
+	font-size: 100%;
+	font: inherit;
+	vertical-align: baseline;
+	-webkit-box-sizing: border-box;
+	-moz-box-sizing: border-box;
+	box-sizing: border-box;
+}
+/* HTML5 display-role reset for older browsers */
+article, aside, details, figcaption, figure, 
+footer, header, hgroup, menu, nav, section {
+	display: block;
+}
+body {
+	line-height: 1;
+}
+ol, ul {
+	list-style: none;
+}
+blockquote, q {
+	quotes: none;
+}
+blockquote:before, blockquote:after,
+q:before, q:after {
+	content: '';
+	content: none;
+}
+table {
+	border-collapse: collapse;
+	border-spacing: 0;
+}
+
+/* */
+/* */
+/* */
+
+
 body{
 	background-color:#D3D3D3;
 }
@@ -6,26 +58,39 @@ h1{
 	font-family: "Times New Roman";
 	font-size: 14;
 	text-align: center;
+	margin:10px;
 }
 
 h2{
 	font-family: "Times New Roman";
 	font-size: 12;
 	text-align: center;
+	margin:10px;
 }
 
 .background{
 	border: red thin solid;/*Seulement pour test inclusion, à virer par la suite*/
 	background-color:#D3D3E5;
+	margin:10px;
+}
+
+.infoOnUser{
+    text-align: center;
+}
+
+.cadres {
+	margin:0 auto;
+	padding:15px;
+	margin: 5px auto;
 }
 
 .listChannels{
 	display: inline-block;
 	border: blue thin solid;
-	margin-left: 10%;
-	margin-top: 10%;
+	margin: 0 auto;
 	width:20%;
-	height:60%;/*Si on met a plus que 60%, on va voir le Text Entry descendre encore plus bas*/
+	padding:10px;
+	height:60%;
 	overflow:auto;/*Fait apparaitre scrollbar lorsque limite de taille atteinte*/
 }
 
@@ -38,26 +103,38 @@ h2{
 }
 
 
+
 .tchat{
-	display: inline-block;
-	overflow:auto;/*Fait apparaitre scrollbar lorsque limite de taille atteinte*/
-	position:absolute;
+	display: inline-flex;
 	border: blue thin solid;
-	margin-left: 5%;
-	margin-top:10%;
 	width:30%;
-	height:50%;
+	padding:10px;
+	height:60%;
 	overflow:auto;
-	
+	vertical-align: top;
+	overflow:auto;/*Fait apparaitre scrollbar lorsque limite de taille atteinte*/
+	margin: 0 auto;
+}
+
+.listUsers{
+	display: inline-block;
+	position:relative;
+	border: blue thin solid;
+	width:20%;
+	padding:10px;
+	height:60%;
+	overflow:auto;/*Fait apparaitre scrollbar lorsque limite de taille atteinte*/
 }
 
 .textEntry{
 /*La position est en relative par defaut donc pas de precision
 a donner a ce niveau la. Ne pas metttre la position en absolute*/
 	border: orange thin solid;
-	margin-left: 35%;
+	margin:10 auto;
 	width:30%;
+	max-width:30%;
 	height:25%;
+	padding:10px;
 	overflow:auto;/*Fait apparaitre scrollbar lorsque limite de taille atteinte*/
 }
 
@@ -66,22 +143,9 @@ textarea#TextZone{
 	height:60%;
 }
 
-.listUsers{
-	display: inline-block;
-	position:absolute;
-	border: blue thin solid;
-	margin-left: 70%;
-	margin-top:-42.5%;/*Valeur negative permet de mieux rehausser le cadre.La virgule se fait avec un . */
-	/*Plus le nombre est petit, plus le cadre remontera (en considerant -42 < -41 par exemple)*/
-	/*top:23.5%;garder pour dire mais cette valeur n'est vraiment par adapte pour la majorite des cas*/
-	width:20%;
-	height:80%;
-	overflow:auto;/*Fait apparaitre scrollbar lorsque limite de taille atteinte*/
-}
 
-.infoOnUser{
-    text-align: center;
-}
+
+
 
 #usersOnChan{
 	list-style:none;

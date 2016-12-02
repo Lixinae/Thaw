@@ -10,76 +10,59 @@
 <div class="background">
 	<h1>THAW</h1>
 	<div class="infoOnUser">
-		<p id="currentUser">
-			truc
+        <p> User Name :
+            <text id="currentUser"> BaseUserName</text>
 		</p>
-		<p id="currentChannel">
-			bidule
+        <p> Current channel :
+            <text id="currentChannel"> Default</text>
 		</p>
 	</div>
+    <div class="cadres">
+        <!-- Todo : faire en sorte de recuperer la liste des channels-->
+        <div class="listChannels">
+            <h2>listChannels</h2>
+            <!-- Test pour affichage -->
+            <ul id="channels" onclick="selectChannel()">
+                <li>Item 1</li>
+                <li>Item 2</li>
+                <li>Item 3</li>
+            </ul>
+        </div>
 
-	<!-- Todo : faire en sorte de recuperer la liste des channels-->
-	<div class="listChannels">
-		<h2>listChannels</h2>
-        <!-- Test pour affichage -->
-        <ul id="channels" onclick="selectChannel()">
-            <li>Item 1</li>
-            <li>Item 2</li>
-            <li>Item 3</li>
-            <li>Item 3</li>
-			<li>Item 1</li>
-        </ul>
+        <div class="tchat" id="tchat">
+            <h2>Tchat</h2>
+            <!-- Test pour affichage
+
+            <p>John : Salut.</p>
+            <p>Bob : Plop.</p>
+            <p>John : La forme ?</p>
+            <p>Bob : Bof ce code html css me soul :( .</p>
+            <p>John : ...</p>
+            <p>Bob : ...</p>
+                    <p>John : ...</p>
+            <p>Bob : ...</p>
+            <p>[Connexion avec le serveur perdu ....]</p>
+            -->
+        </div>
+
+        <div class="listUsers">
+            <h2>ListUsers </h2>
+            <!-- Test pour affichage -->
+            <ul id="usersOnChan">
+                <li>Item 1</li>
+                <li>Item 2</li>
+                <li>Item 3</li>
+            </ul>
+        </div>
 	</div>
 
-    <div class="tchat" id="tchat">
-		<h2>Tchat</h2>
-        <!-- Test pour affichage
-
-		<p>John : Salut.</p>
-		<p>Bob : Plop.</p>
-		<p>John : La forme ?</p>
-		<p>Bob : Bof ce code html css me soul :( .</p>
-		<p>John : ...</p>
-		<p>Bob : ...</p>
-				<p>John : ...</p>
-		<p>Bob : ...</p>
-		<p>[Connexion avec le serveur perdu ....]</p>
-		-->
-	</div>
     <form class="textEntry" action="">
 		<h2>Text Entry</h2>
 		<textarea class="TextZone" id="TextZone">
 		</textarea>
         <input name="button" id="button" value="Send" onclick="sendMessage()"/>
     </form>
-	<div class="listUsers">
-		<h2>ListUsers </h2>
-        <!-- Test pour affichage -->
-        <ul id="usersOnChan">
-            <li>Item 1</li>
-            <li>Item 2</li>
-            <li>Item 3</li>
-			<li>Item 1</li>
-            <li>Item 2</li>
-            <li>Item 3</li>
-			<li>Item 1</li>
-            <li>Item 2</li>
-        </ul>
-	</div>
 
-    <!-- mis en commentaires pour plus de lisibilite
-        <ul id="maSuperList3" onclick="testAjax()">
-            <li>Item 4</li>
-            <li>Item 5</li>
-            <li>Item 6</li>
-        </ul>
-
-        <ul id="maSuperList4" onclick="testAjax3()">
-            <li>Item 544</li>
-            <li>Item 545</li>
-            <li>Item 645</li>
-        </ul>
-        -->
 </div>
 </body>
 </html>
