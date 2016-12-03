@@ -44,8 +44,8 @@ public class Server extends AbstractVerticle {
     }
 
     /**
-     * @param enableLogger -> Enable the logger
-     * @throws IOException -> If the logger can't find or create the file
+     * @param enableLogger  Enable the logger
+     * @throws IOException  If the logger can't find or create the file
      */
     public Server(boolean enableLogger) throws IOException {
         channels = new ArrayList<>();
