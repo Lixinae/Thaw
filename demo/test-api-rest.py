@@ -1,8 +1,6 @@
 # -*- coding: cp1252 -*-
 #!/usr/bin/python
 
-import urllib
-
 import json
 import requests
 
@@ -79,8 +77,6 @@ def getChannelsList(machineUrl):
     except :
         print("Can't reach target "+url)
         return
-    print(r.status_code)
-    print(r.json())
     return r.json()
 
 # Returns the list of all messages we want on a channel
@@ -88,21 +84,6 @@ def getChannelsList(machineUrl):
 def fetchMessage(machineName,channelName,numberMessage=10):
     # TODO
     return
-
-# This function is only to test how the REST API works
-def testSimpleGet():
-    url = "http://192.168.1.34:8080/api/test"
-    #payload = { 'username' : 'mouhahahaha' }
-    r = requests.get(url)
-    print(r.text)
-    print(r.status_code)
-    print(r.json())
-    print("##########")
-    url = "http://192.168.1.34:8080/api/testParam/"+"yooooooow"
-    r = requests.get(url)
-    print(r.text)
-    print(r.status_code)
-    print(r.json())
 
 def testSimplePost():
     payload = { 'username' : 'mouhahahaha' , 'another':'value' }
@@ -117,7 +98,7 @@ def testSimplePost():
 def sendMessageToServer(machineUrl):
     querie = "/api/sendMessage"
     url = machineUrl+querie
-    payload = { 'username' : 'Narex' , 'channelName':'monSuperChan1' , 'message':'Super message de test qui dechire' }
+    payload = {'username': 'Narex', 'channelName': 'default', 'message': 'Super message de test qui dechire'}
     headers = {'Content-type': 'application/json', 'Accept': 'text/plain'}
     try:
         r = requests.post(url,data=json.dumps(payload),headers=headers)
@@ -132,9 +113,9 @@ if __name__ == '__main__':
     #testSimpleGet()
     #testSimplePost()
     machineUrl = "http://192.168.1.34:8080"
-    #listTest = getChannelsList("http://192.168.1.34:8080")
-    #print(listTest)
-    sendMessageToServer(machineUrl)
+    listTest = getChannelsList("http://192.168.1.34:8080")
+    print(listTest)
+    # sendMessageToServer(machineUrl)
     
     #machineUrl = askMachineUrl()
     #channelName = askChannelName()
