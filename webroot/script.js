@@ -1,3 +1,29 @@
+//////// FONCTION OUTILS ALLEGEMENT CODE////////////
+
+/*Fonction formattant une chaine de message en rajoutant
+les informations de date et les balises HTML necessaires au
+bon formattage.
+
+Format actuel :
+<p>hh:mm:ss [username] : <br> monMessage <br>
+
+le split permet de recuperer les sauts de lignes et
+y inserer les balises html adequat pour le formattage
+*/
+function chatMessageFormatting(username,msg,dateAsLong){
+    var date = new Date(dateAsLong);
+    var hours = date.getHours();
+    var minutes = date.getMinutes();
+    var seconds = date.getSeconds();
+    if(msg.length > 512){
+       msg=msg.slice(0,512)
+    }
+    return "<p>"+ hours+":"+minutes+ ":"+ seconds+" ["+username+"] : "
+                                   +"<br>"+msg.split("\n").join("<br>")+"</p>"+"<br>";
+}
+
+
+
 
 
 //////// TOUT FAIRE EN AJAX ////////////
@@ -101,7 +127,7 @@ function deleteChannel(){
 function getListMessageForChannel(){
 	var listChannel = $(".listChannels");
 	listChannel.children().remove();
-	
+
 	$.post("/api/getListMessageForChannel",
 			JSON.stringify({channelName:currentChannel})
 	    .done(function(response){
