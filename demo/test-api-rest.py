@@ -65,44 +65,95 @@ def askChannelName(machineUrl):
         channelName = input("Enter a channel name to read from : ")    
     return channelName
 
+
+# Works
+def addChannel(machineUrl, newChannelName, creatorName):
+    querie = "/api/addChannel"
+    url = machineUrl + querie
+    payload = {'newChannelName': newChannelName, 'creatorName': creatorName}
+    return doPostRequestJson(url, payload)
+
+
+# Todo : Test it
+def deleteChannel(machineUrl, targetChannelName, userName):
+    querie = "/api/deleteChannel"
+    url = machineUrl + querie
+    payload = {'channelName': targetChannelName, 'userName': userName}
+    return doPostRequestJson(url, payload)
+
+
+# Works
+def connectToChannel(machineUrl, oldChannelName, channelName, userName):
+    querie = "/api/connectToChannel"
+    url = machineUrl + querie
+    payload = {'channelName': channelName, 'userName': userName, 'oldChannelName': oldChannelName}
+    return doPostRequestJson(url, payload)
+
+
+# Works
+def sendMessage(machineUrl, userName, channelName, content):
+    querie = "/api/sendMessage"
+    url = machineUrl + querie
+    payload = {'username': userName, 'channelName': channelName, 'message': content}
+    return doPostRequestJson(url, payload)
+
+
+# Returns the list of all messages we want on a given channel
+# Default value for numberMessage is 10
+# Works
+def getListMessageForChannel(machineUrl, channelName, numberMessage=10):
+    querie = "/api/getListMessageForChannel";
+    url = machineUrl + querie
+    payload = {'channelName': channelName, 'numberOfMessage': numberMessage}
+    return doPostRequestJson(url, payload)
+
 # Ask the server for all channel names
 # Return a list of all channel names
+# Works
 def getChannelsList(machineUrl):
-    # TODO
-    #url = "http://192.168.1.34:8080/api/getListChannel"
     querie = "/api/getListChannel"
     url = machineUrl+querie
+    return doGetRequest(url)
+
+
+# Works
+def getListUserForChannel(machineUrl, channelName):
+    querie = "/api/getListUserForChannel"
+    url = machineUrl + querie
+    payload = {'channelName': channelName}
+    return doPostRequestJson(url, payload)
+
+
+##def testSimplePost():
+##    payload = { 'username' : 'mouhahahaha' , 'another':'value' }
+##    url = "http://192.168.1.34:8080/api/testJson"
+##    headers = {'Content-type': 'application/json', 'Accept': 'text/plain'}
+##    print(json.dumps(payload))
+##    r = requests.post(url, data=json.dumps(payload),headers=headers)
+##    print(r.text)
+##    print(r.status_code)
+##    print(r.json())
+
+
+
+
+def doPostRequestJson(url, payload):
+    headers = {'Content-type': 'application/json', 'Accept': 'text/plain'}
     print(url)
+    print(payload)
     try:
-        r = requests.get(url)
+        r = requests.post(url, data=json.dumps(payload), headers=headers)
     except :
         print("Can't reach target "+url)
         return
-    return r.json()
-
-# Returns the list of all messages we want on a channel
-# Default value for numberMessage is 10
-def fetchMessage(machineName,channelName,numberMessage=10):
-    # TODO
-    return
-
-def testSimplePost():
-    payload = { 'username' : 'mouhahahaha' , 'another':'value' }
-    url = "http://192.168.1.34:8080/api/testJson"
-    headers = {'Content-type': 'application/json', 'Accept': 'text/plain'}
-    print(json.dumps(payload))
-    r = requests.post(url, data=json.dumps(payload),headers=headers)
-    print(r.text)
     print(r.status_code)
     print(r.json())
+    return r.json()
 
-def sendMessageToServer(machineUrl):
-    querie = "/api/sendMessage"
-    url = machineUrl+querie
-    payload = {'username': 'Narex', 'channelName': 'default', 'message': 'Super message de test qui dechire'}
-    headers = {'Content-type': 'application/json', 'Accept': 'text/plain'}
+
+def doGetRequest(url):
     try:
-        r = requests.post(url,data=json.dumps(payload),headers=headers)
+        r = requests.get(url)
     except :
         print("Can't reach target "+url)
         return
@@ -115,10 +166,27 @@ if __name__ == '__main__':
     #testSimplePost()
     ip = socket.gethostbyname(socket.gethostname())
     machineUrl = "http://" + ip + ":8080"
-    listTest = getChannelsList(machineUrl)
-    # print(listTest)
-    sendMessageToServer(machineUrl)
-    
+
+    print("########")
+    # sendMessageToServer(machineUrl)
+    print("########")
+    addChannel(machineUrl, 'Another', 'superUser')
+    print("########")
+    getChannelsList(machineUrl)
+    print("########")
+    connectToChannel(machineUrl, 'default', 'Another', 'superUser')
+    # deleteChannel(machineUrl,'Another','superUser')
+    print("########")
+    sendMessage(machineUrl, 'superUser', 'Another', "Message 2")
+    print("########")
+    sendMessage(machineUrl, 'superUser', 'Another', "Message 3")
+    print("########")
+    sendMessage(machineUrl, 'superUser', 'Another', "Message 4")
+    print("########")
+    getListMessageForChannel(machineUrl, 'Another', numberMessage=10)
+    print("########")
+    getChannelsList(machineUrl)
+    print("########")
     #machineUrl = askMachineUrl()
     #channelName = askChannelName()
     #numberMessage = askNumberMessage()
