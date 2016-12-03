@@ -3,6 +3,7 @@
 
 import json
 import requests
+import socket
 
 try:
     import urllib.request as urllib2
@@ -112,10 +113,11 @@ def sendMessageToServer(machineUrl):
 if __name__ == '__main__':
     #testSimpleGet()
     #testSimplePost()
-    machineUrl = "http://192.168.1.34:8080"
-    listTest = getChannelsList("http://192.168.1.34:8080")
-    print(listTest)
-    # sendMessageToServer(machineUrl)
+    ip = socket.gethostbyname(socket.gethostname())
+    machineUrl = "http://" + ip + ":8080"
+    listTest = getChannelsList(machineUrl)
+    # print(listTest)
+    sendMessageToServer(machineUrl)
     
     #machineUrl = askMachineUrl()
     #channelName = askChannelName()
