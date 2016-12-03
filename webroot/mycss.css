@@ -81,7 +81,7 @@ h2{
 .cadres {
 	margin:0 auto;
 	padding:0.5%;
-	width:50%;
+	width:65%/*Si on remet a 50%, meme avec une resolution 1920x1080, les cadres sont pas alignes sans dezoomer*/
 }
 
 .listChannels{
