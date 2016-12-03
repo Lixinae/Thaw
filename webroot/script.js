@@ -1,3 +1,29 @@
+//////// FONCTION OUTILS ALLEGEMENT CODE////////////
+
+/*Fonction formattant une chaine de message en rajoutant
+les informations de date et les balises HTML necessaires au
+bon formattage.
+
+Format actuel :
+<p>hh:mm:ss [username] : <br> monMessage <br>
+
+le split permet de recuperer les sauts de lignes et
+y inserer les balises html adequat pour le formattage
+*/
+function chatMessageFormatting(username,msg,dateAsLong){
+    var date = new Date(dateAsLong);
+    var hours = date.getHours();
+    var minutes = date.getMinutes();
+    var seconds = date.getSeconds();
+    if(msg.length > 512){
+       msg=msg.slice(0,512)
+    }
+    return "<p>"+ hours+":"+minutes+ ":"+ seconds+" ["+username+"] : "
+                                   +"<br>"+msg.split("\n").join("<br>")+"</p>"+"<br>";
+}
+
+
+
 
 
 //////// TOUT FAIRE EN AJAX ////////////
@@ -37,8 +63,15 @@ function textAreaDefaultValueDisappearOnClick(){
 // L'utilisateur saisie un message
 // Envoie le message au serveur qui l'ajoutera à la base de donné du channel
 function sendMessage(){
+    var dateAsLong = Date.now();/*On recupere la date en tant que long*/
     var  messageV = $('textArea#TextZone');
-    //TODO : a jeter alert(messageV.val()); //pour verifier que j'ai bien recuperer la bonne chaine de caractere
+
+	$.ajax({
+      url: "index.html",
+      context: $("#tchat")
+    }).done(function() {
+      $( this ).append(chatMessageFormatting(username,messageV.val(),dateAsLong));
+    });
 	$.post("/sendMessage",
 	    JSON.stringify({channel : currentChannel, message : messageV.val(),username : username}),
 		function(){
