@@ -81,14 +81,14 @@ h2{
 .cadres {
 	margin:0 auto;
 	padding:0.5%;
-	width:50%;
+	width:80%;
 }
 
 .listChannels{
 	display: inline-block;
 	border: blue thin solid;
 	margin: 0 auto;
-	width:32%;
+	width:32.2%;
 	padding:10px;
 	height:60%;
 	overflow:auto;/*Fait apparaitre scrollbar lorsque limite de taille atteinte*/
@@ -120,7 +120,7 @@ h2{
 	display: inline-block;
 	position:relative;
 	border: blue thin solid;
-	width:32%;
+	width:32.2%;
 	padding:10px;
 	height:60%;
 	overflow:auto;/*Fait apparaitre scrollbar lorsque limite de taille atteinte*/
