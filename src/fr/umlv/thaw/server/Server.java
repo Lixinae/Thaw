@@ -141,9 +141,33 @@ public class Server extends AbstractVerticle {
         router.post("/api/deleteChannel").handler(this::deleteChannel);
         router.post("/api/connectToChannel").handler(this::connectToChannel);
         router.post("/api/sendMessage").handler(this::sendMessage);
+        router.post("/api/getListMessageForChannel").handler(this::getListMessageForChannel);
         router.get("/api/getListChannel").handler(this::getListChannels);
         router.post("/api/getListUserForChannel").handler(this::getListUserForChannel);
 
+    }
+
+    private void getListMessageForChannel(RoutingContext routingContext) {
+        thawLogger.log(Level.INFO, "DEBUG " + "In getListMessageForChannel request");
+        HttpServerResponse response = routingContext.response();
+        JsonObject json = routingContext.getBodyAsJson();
+        if (json == null) {
+            answerToRequest(response, 400, "Wrong Json format");
+        } else {
+            analyzeGetListMessageForChannelRequest(response, json);
+        }
+    }
+
+    private void analyzeGetListMessageForChannelRequest(HttpServerResponse response, JsonObject json) {
+        String channelName = json.getString("channelName");
+        Optional<Channel> optChan = findChannelInList(channelName);
+        if (optChan.isPresent()) {
+            Channel channel = optChan.get();
+            List<Message> messages = channel.getListMessage();
+            answerToRequest(response, 200, messages);
+        } else {
+            answerToRequest(response, 400, "Channel : " + channelName + " doesn't exist");
+        }
     }
 
     // Todo -> A tester
@@ -179,7 +203,10 @@ public class Server extends AbstractVerticle {
                 }
                 creator = (HumanUser) tmpUser; // Todo Moche -> changer plus tard
             } else {
+                // Ne devrait jamais arriver en utilisation normal du server
+                // Un utilisateur sera toujours connecté au serveur lors de la demande de creation de channel
                 creator = UserFactory.createHumanUser(creatorName);
+                users.add(creator);
             }
             createAndAddChannel(response, newChannelName, creator);
         }
@@ -195,7 +222,17 @@ public class Server extends AbstractVerticle {
 
     private void deleteChannel(RoutingContext routingContext) {
         thawLogger.log(Level.INFO, "DEBUG " + "In deleteChannel request");
+        HttpServerResponse response = routingContext.response();
+        JsonObject json = routingContext.getBodyAsJson();
+        if (json == null) {
+            answerToRequest(response, 400, "Wrong Json format");
+        } else {
+            analyzeDeleteChannelRequest(response, json);
+        }
 
+    }
+
+    private void analyzeDeleteChannelRequest(HttpServerResponse response, JsonObject json) {
 
     }
 
