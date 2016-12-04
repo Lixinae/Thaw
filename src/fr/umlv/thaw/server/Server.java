@@ -113,7 +113,9 @@ public class Server extends AbstractVerticle {
         if (ssl) {
             vertx.executeBlocking(future -> {
                         HttpServerOptions httpOpts = new HttpServerOptions();
-                        generateKeyPairAndCertificate(fut, httpOpts);
+                        generateKeyPairAndCertificate(fut);
+                        httpOpts.setKeyStoreOptions(new JksOptions().setPath("./config/webserver/.keystore.jks").setPassword("password"));
+                        httpOpts.setSsl(true);
                         future.complete(httpOpts);
                     },
                     (AsyncResult<HttpServerOptions> result) -> {
@@ -131,7 +133,7 @@ public class Server extends AbstractVerticle {
         }
     }
 
-    private void generateKeyPairAndCertificate(Future<Void> fut, HttpServerOptions httpOpts) {
+    private void generateKeyPairAndCertificate(Future<Void> fut) {
         try {
             // Generate a self-signed key pair and certificate.
             KeyStore store = KeyStore.getInstance("JKS");
@@ -148,14 +150,11 @@ public class Server extends AbstractVerticle {
             try (FileOutputStream outputStream = new FileOutputStream(path)) {
                 store.store(outputStream, pass.toCharArray());
             }
-            httpOpts.setKeyStoreOptions(new JksOptions().setPath(path).setPassword(pass));
-            httpOpts.setSsl(true);
         } catch (KeyStoreException | IOException | NoSuchAlgorithmException | CertificateException | NoSuchProviderException | InvalidKeyException | SignatureException ex) {
             thawLogger.log(Level.SEVERE, "Failed to generate a self-signed cert and other SSL configuration methods failed.");
             fut.fail(ex);
         }
     }
-
 
     private void listOfRequest(Router router) {
         // route to JSON REST APIs
