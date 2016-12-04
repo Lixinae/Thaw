@@ -145,10 +145,8 @@ public class Server extends AbstractVerticle {
             X509Certificate[] chain = new X509Certificate[1];
             chain[0] = keypair.getSelfCertificate(x500Name, new Date(), (long) 365 * 24 * 60 * 60);
             store.setKeyEntry("selfsigned", privKey, "password".toCharArray(), chain);
-            String path = "./config/webserver/.keystore.jks";
-            String pass = "password";
-            try (FileOutputStream outputStream = new FileOutputStream(path)) {
-                store.store(outputStream, pass.toCharArray());
+            try (FileOutputStream outputStream = new FileOutputStream("./config/webserver/.keystore.jks")) {
+                store.store(outputStream, "password".toCharArray());
             }
         } catch (KeyStoreException | IOException | NoSuchAlgorithmException | CertificateException | NoSuchProviderException | InvalidKeyException | SignatureException ex) {
             thawLogger.log(Level.SEVERE, "Failed to generate a self-signed cert and other SSL configuration methods failed.");

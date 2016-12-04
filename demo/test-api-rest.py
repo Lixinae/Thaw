@@ -14,6 +14,11 @@ try:
 except ImportError:
     import urlparse
 
+try:
+    import ssl
+except ImportError:
+    print ("error: no ssl support")
+
 # Exemple utilisation post / get en python
 # import requests
 # url = 'https://...'
@@ -133,13 +138,9 @@ def doPostRequestJson(url, payload):
     print(payload)
     try:
         r = requests.post(url, data=json.dumps(payload), headers=headers, verify=False)
-    except e:
-        if hasattr(e, 'code'):  # HTTPError
-            print ('http error code: ', e.code)
-        elif hasattr(e, 'reason'):  # URLError
-            print ("can't connect, reason: ", e.reason)
-        else:
-            raise
+    except:
+        print("Can't reach target " + url)
+        return
     print(r.status_code)
     print(r.json())
     return r.json()        
@@ -153,7 +154,9 @@ def doGetRequest(url):
         return
     print(r.status_code)
     print(r.json())
-    return r.json()
+    return r.json()        
+
+
     
 if __name__ == '__main__':
     #testSimpleGet()
