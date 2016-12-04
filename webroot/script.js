@@ -69,25 +69,6 @@ function textAreaDefaultValueDisappearOnClick(){
 	});
 }
 
-// L'utilisateur saisie un message
-// Envoie le message au serveur qui l'ajoutera à la base de donné du channel
-function sendMessage(){
-    var  messageV = $('textArea#TextZone');
-    //TODO : a jeter alert(messageV.val()); //pour verifier que j'ai bien recuperer la bonne chaine de caractere
-	$.post("/api/sendMessage",
-	    JSON.stringify({channel : currentChannel, message : messageV.val(),username : username}))
-	    .done(function(response){
-            alert("sucess send message");
-            messageV.val("");
-	    })
-	    .fail(function(response){
-            alert("fail send message");
-		})
-		.always(function() {
-            alert( "finished" );
-        });
-
-}
 
 // Permet de creer un channel
 // Et envoie l'information au serveur
@@ -95,7 +76,7 @@ function sendMessage(){
 function createChannel(){
 
 	$.post("/api/createChannel",
-	    JSON.stringify({channelName:newChannelName,userName:username}))
+	    JSON.stringify({channelName:newChannelName,creatorName:username}))
 	    .done(function(response){
             alert("sucess send message");
         })
@@ -123,14 +104,89 @@ function deleteChannel(){
         });
 }
 
-// TODO
+
+// Fonctionne
+function selectChannel(){
+	var ul = $("#channels");
+	ul.click(function(event) {
+		var target = getEventTarget(event);
+		var tmpChannel = target.innerHTML;
+		var oldChannel = currentChannel;
+        if (!(tmpChannel == currentChannel)){
+            currentChannel=target.innerHTML;
+        }
+        else if (currentChannel == ""){
+            currentChannel=target.innerHTML;
+        }
+        else{
+            return
+        }
+		$("#currentChannel").html(currentChannel);
+        $.post("/api/connectToChannel",
+            JSON.stringify({channelName : currentChannel,userName : username,oldChannelName : oldChannel}))
+            .done(function (response){
+                getListUsersForChan(currentChannel);
+            })
+            .fail(function(response){
+                alert("fail send message");
+            })
+            .always(function() {
+                alert( "finished" );
+            });
+	});
+}
+
+// L'utilisateur saisie un message
+// Envoie le message au serveur qui l'ajoutera à la base de donné du channel
+function sendMessage(){
+    var  messageV = $('textArea#TextZone');
+    $.post("/api/sendMessage",
+	    JSON.stringify({channel : currentChannel, message : messageV.val(),username : username}))
+	    .done(function(response){
+            alert("sucess send message");
+            messageV.val("");
+	    })
+	    .fail(function(response){
+            alert("fail send message");
+		})
+		.always(function() {
+            alert( "finished" );
+        });
+
+}
+
+// TODO : Test it
 function getListMessageForChannel(){
 	var listChannel = $(".listChannels");
 	listChannel.children().remove();
 
 	$.post("/api/getListMessageForChannel",
-			JSON.stringify({channelName:currentChannel})
+			JSON.stringify({channelName:currentChannel,numberOfMessage:1000})
 	    .done(function(response){
+	        // Formater correctement les messages
+
+	        // Utiliser JSON.parse
+	        // Format reçu : l'ordre des éléments change systématiquement
+	        // L'exemple est la à titre indicatif
+	        /* [{
+                     'sender': {
+                                'userHuman': True,
+                                'name': 'superUser',
+                                'userBot': False
+                               },
+                     'content': 'Message 2',
+                     'date': 1480814172039
+	            },
+	            {
+	                 'sender': {
+                	            'userHuman': True,
+                	            'name': 'superUser',
+                	            'userBot': False
+                	            },
+                	 'content': 'Message 2',
+                	 'date': 1480814172039
+	            }]
+	             */
             alert("sucess send message");
         })
         .fail(function(response){
@@ -141,8 +197,7 @@ function getListMessageForChannel(){
         });
 }
 
-
-// TODO A changer !
+// TODO : Test it
 function getListChannels(){
 	var listChannel = $(".listChannels");
 	listChannel.children().remove();
@@ -167,45 +222,8 @@ function getListChannels(){
 }
 
 
-// Compatibilite pour IE si besoin
-function getEventTarget(e) {
-	e = e || window.event;
-	return e.target || e.srcElement;
-}
-
 // Fonctionne
-function selectChannel(){
-	var ul = $("#channels");
-	ul.click(function(event) {
-		var target = getEventTarget(event);
-		var tmpChannel = target.innerHTML;
-		var oldChannel = currentChannel;
-        if (!(tmpChannel == currentChannel)){
-            currentChannel=target.innerHTML;
-        }
-        else if (currentChannel == ""){
-            currentChannel=target.innerHTML;
-        }
-        else{
-            return
-        }
-		$("#currentChannel").html(currentChannel);
-        $.post("/api/connectToChannel",
-            JSON.stringify({channelName : currentChannel,userName : username,oldChannelName : oldChannel}))
-            .done(function (response){
-                getListUsersFromChan(currentChannel);
-            })
-            .fail(function(response){
-                alert("fail send message");
-            })
-            .always(function() {
-                alert( "finished" );
-            });
-	});
-}
-
-// Fonctionne
-function getListUsersFromChan(currentChannel){
+function getListUsersForChan(currentChannel){
 	var usersListOnChan = $(".listUsers");
 	usersListOnChan.children().remove();
 
@@ -229,21 +247,8 @@ function getListUsersFromChan(currentChannel){
 	usersListOnChan.append("</ul>");
 }
 
-//// TODO -> Test uniquement
-//function testAjax() {
-//		var username ="testify"
-//		$.get("/api/test/"+username, JSON.stringify({username: username}), function () {
-//				//load();
-//				// Do stuff
-//				alert("bla")
-//		},"json");
-//	}
-//
-//function testAjax3() {
-//  	alert("a");
-//    $.post("/api/testJson/", JSON.stringify({currentChannelName: currentChannel}), function () {
-//   	    //load();
-//   		// Do stuff
-//   	    alert("bla")
-//    },"json");
-//}
+// Compatibilite pour IE si besoin
+function getEventTarget(e) {
+	e = e || window.event;
+	return e.target || e.srcElement;
+}
