@@ -1,0 +1,6 @@
+{
+  "bind-address": "0.0.0.0",
+  "bind-port": 8080,
+  "webroot": "./webroot",
+  "ssl": true
+}
