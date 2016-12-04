@@ -153,8 +153,6 @@ public class Server extends AbstractVerticle {
         } catch (KeyStoreException | IOException | NoSuchAlgorithmException | CertificateException | NoSuchProviderException | InvalidKeyException | SignatureException ex) {
             thawLogger.log(Level.SEVERE, "Failed to generate a self-signed cert and other SSL configuration methods failed.");
             fut.fail(ex);
-        } finally {
-
         }
     }
 
