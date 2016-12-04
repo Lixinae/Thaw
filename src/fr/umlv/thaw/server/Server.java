@@ -149,7 +149,7 @@ public class Server extends AbstractVerticle {
 
     // Fonctionne
     private void addChannel(RoutingContext routingContext) {
-        thawLogger.log(Level.INFO, "DEBUG " + "In addChannel request");
+        thawLogger.log(Level.INFO, "In addChannel request");
         HttpServerResponse response = routingContext.response();
         JsonObject json = routingContext.getBodyAsJson();
         if (json == null) {
@@ -162,7 +162,7 @@ public class Server extends AbstractVerticle {
     private void analyzeCreateChannelRequest(HttpServerResponse response, JsonObject json) {
         String newChannelName = json.getString("newChannelName");
         String creatorName = json.getString("creatorName");
-        thawLogger.log(Level.INFO, "DEBUG " + newChannelName + " " + creatorName + " ");
+        thawLogger.log(Level.INFO, newChannelName + " " + creatorName + " ");
         if (verifyEmptyOrNull(newChannelName, creatorName)) {
             answerToRequest(response, 400, "Wrong JSON input");
             return;
@@ -199,7 +199,7 @@ public class Server extends AbstractVerticle {
     }
 
     private void deleteChannel(RoutingContext routingContext) {
-        thawLogger.log(Level.INFO, "DEBUG " + "In deleteChannel request");
+        thawLogger.log(Level.INFO, "In deleteChannel request");
         HttpServerResponse response = routingContext.response();
         JsonObject json = routingContext.getBodyAsJson();
         if (json == null) {
@@ -216,7 +216,7 @@ public class Server extends AbstractVerticle {
 
     // Fonctionne
     private void connectToChannel(RoutingContext routingContext) {
-        thawLogger.log(Level.INFO, "DEBUG " + "In connectToChannel request");
+        thawLogger.log(Level.INFO, "In connectToChannel request");
         HttpServerResponse response = routingContext.response();
         JsonObject json = routingContext.getBodyAsJson();
         if (json == null) {
@@ -235,7 +235,6 @@ public class Server extends AbstractVerticle {
             answerToRequest(response, 400, "Wrong JSON input");
             return;
         }
-        thawLogger.log(Level.INFO, "DEBUG " + "\noldChannelName : " + oldChannelName + "\nuserName : " + userName + "\nnewChannelName : " + channelName);
         Optional<Channel> optchannel = findChannelInList(channelName);
         Optional<User> optuser = findUserInServerUserList(userName);
         User user;
@@ -246,12 +245,12 @@ public class Server extends AbstractVerticle {
             user = optuser.get();
         }
         if (!optchannel.isPresent()) {
-            answerToRequest(response, 400, "Channel " + channelName + " does not exist");
+            answerToRequest(response, 400, "Channel :" + channelName + " does not exist");
         } else {
             Channel chan = optchannel.get();
             Optional<User> tmpUserInChan = chan.findUser(user);
             if (tmpUserInChan.isPresent()) {
-                answerToRequest(response, 400, "User " + userName + " is already connected");
+                answerToRequest(response, 400, "User :" + user + " is already connected");
             } else {
                 Optional<Channel> optChannelOld = findChannelInList(oldChannelName);
                 if (!optChannelOld.isPresent()) {
@@ -259,7 +258,8 @@ public class Server extends AbstractVerticle {
                 } else {
                     Channel oldChan = optChannelOld.get();
                     establishConnection(user, chan, oldChan);
-                    answerToRequest(response, 200, " Successfully connected to channel " + chan.getName());
+                    String answer = "User :" + user + " successfully quit channel :'" + oldChannelName + '\'' + " and connected to channel :'" + channelName + '\'';
+                    answerToRequest(response, 200, answer);
                 }
             }
         }
@@ -268,13 +268,12 @@ public class Server extends AbstractVerticle {
     private void establishConnection(User user, Channel chan, Channel oldChan) {
         user.quitChannel(oldChan);
         user.joinChannel(chan);
-        thawLogger.log(Level.INFO, "DEBUG " + "User " + user.getName() + " connected to " + chan.getName() + "channel");
     }
 
     // Fonctionne
     // TODO : Traitement des messages en cas de bot et stockage dans la base de donnée
     private void sendMessage(RoutingContext routingContext) {
-        thawLogger.log(Level.INFO, "DEBUG " + "In sendMessage request");
+        thawLogger.log(Level.INFO, "In sendMessage request");
         JsonObject json = routingContext.getBodyAsJson();
         HttpServerResponse response = routingContext.response();
         if (json == null) {
@@ -298,7 +297,7 @@ public class Server extends AbstractVerticle {
 
         Optional<Channel> channelOptional = findChannelInList(channelName);
         if (!channelOptional.isPresent()) {
-            answerToRequest(response, 400, "Channel " + channelName + " does not exist");
+            answerToRequest(response, 400, "Channel: '" + channelName + "' doesn't exist");
             return;
         }
         Channel chan = channelOptional.get();
@@ -306,28 +305,26 @@ public class Server extends AbstractVerticle {
         // This should never happen, it's only matter of security
         Optional<User> optUsr = chan.findUserByName(userName);
         if (!optUsr.isPresent()) {
-            answerToRequest(response, 400, "User " + userName + " does not exist");
+            answerToRequest(response, 400, "User: '" + userName + "' doesn't exist");
             return;
         }
         User user = optUsr.get();
         Message mes = MessageFactory.createMessage(user, date, message);
 
-//        System.out.println(mes.getContent());
-
         user.sendMessage(chan, mes);
         // Todo : Analyser le message si un bot est connecté
-//            chan.addMessageToQueue(mes);
+
         // TODO Stocker les information du message dans la base de donnée du channel
 
         // Recupère liste des message du channel
 //            List<Message> messageListTmp = chan.getListMessage();
         // TODO Renvoyer la liste des messages correctement formaté pour l'affichage
-        answerToRequest(response, 200, "Message sent correctly to channel");
+        answerToRequest(response, 200, "Message: " + mes + " sent correctly to channel '" + channelName + '\'');
     }
 
     // Fonctionne
     private void getListMessageForChannel(RoutingContext routingContext) {
-        thawLogger.log(Level.INFO, "DEBUG " + "In getListMessageForChannel request");
+        thawLogger.log(Level.INFO, "In getListMessageForChannel request");
         HttpServerResponse response = routingContext.response();
         JsonObject json = routingContext.getBodyAsJson();
         if (json == null) {
@@ -345,10 +342,9 @@ public class Server extends AbstractVerticle {
             return;
         }
         if (numberOfMessageWanted < 1) {
-            answerToRequest(response, 400, "numberOfMessage must be > 0 !");
+            answerToRequest(response, 400, "Number Of Message must be > 0 !");
             return;
         }
-
         Optional<Channel> optChan = findChannelInList(channelName);
         if (optChan.isPresent()) {
             Channel channel = optChan.get();
@@ -356,13 +352,13 @@ public class Server extends AbstractVerticle {
             List<Message> returnListMessage = tmpMess.subList(Math.max(tmpMess.size() - numberOfMessageWanted, 0), tmpMess.size());
             answerToRequest(response, 200, returnListMessage);
         } else {
-            answerToRequest(response, 400, "Channel : " + channelName + " doesn't exist");
+            answerToRequest(response, 400, "Channel: " + channelName + " doesn't exist");
         }
     }
 
     // Fonctionne
     private void getListUserForChannel(RoutingContext routingContext) {
-        thawLogger.log(Level.INFO, "DEBUG " + "In getListUserForChannel request");
+        thawLogger.log(Level.INFO, "In getListUserForChannel request");
         HttpServerResponse response = routingContext.response();
         JsonObject json = routingContext.getBodyAsJson();
         if (json == null) {
@@ -378,7 +374,7 @@ public class Server extends AbstractVerticle {
                 List<String> tmp = channelOptional.get().getListUser().stream().map(User::getName).collect(Collectors.toList());
                 answerToRequest(response, 200, tmp);
             } else {
-                answerToRequest(response, 400, "Channel " + channelName + " doesn't exist");
+                answerToRequest(response, 400, "Channel:" + channelName + " doesn't exist");
             }
 
         }
@@ -386,7 +382,7 @@ public class Server extends AbstractVerticle {
 
     // Fonctionne
     private void getListChannels(RoutingContext routingContext) {
-        thawLogger.log(Level.INFO, "DEBUG " + "In getListChannels request");
+        thawLogger.log(Level.INFO, "In getListChannels request");
         List<String> tmp = channels.stream().map(Channel::getChannelName).collect(Collectors.toList());
         HttpServerResponse response = routingContext.response();
         answerToRequest(response, 200, tmp);
@@ -394,23 +390,30 @@ public class Server extends AbstractVerticle {
 
 
     private void answerToRequest(HttpServerResponse response, int code, Object answer) {
+        String tmp = Json.encodePrettily(answer);
         if (code == 200) {
-            thawLogger.log(Level.INFO, "code " + code + " answer : " + answer);
+            thawLogger.log(Level.INFO, "code: " + code + "\nanswer: " + tmp);
         } else {
-            thawLogger.log(Level.WARNING, "code " + code + " answer : " + answer);
+            thawLogger.log(Level.WARNING, "code: " + code + "\nanswer: " + tmp);
         }
         response.setStatusCode(code)
                 .putHeader("content-type", "application/json")
-                .end(Json.encodePrettily(answer));
+                .end(tmp);
     }
 
     private Optional<User> findUserInServerUserList(String userName) {
+        if (verifyEmptyOrNull(userName)) {
+            return Optional.empty();
+        }
         return users.stream()
                 .filter(u -> u.getName().contentEquals(userName))
                 .findFirst();
     }
 
     private Optional<Channel> findChannelInList(String channelName) {
+        if (verifyEmptyOrNull(channelName)) {
+            return Optional.empty();
+        }
         return channels.stream()
                 .filter(c -> c.getChannelName().contentEquals(channelName))
                 .findFirst();
