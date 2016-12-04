@@ -45,10 +45,10 @@ public class Server extends AbstractVerticle {
 
     private static final int KB = 1024;
     private static final int MB = 1024 * KB;
+    private final static int maxUploadSize = 50 * MB;
     private final List<Channel> channels;
     private final List<User> users;
     private final ThawLogger thawLogger;
-    private final int maxUploadSize = 50 * MB;
 
     public Server() throws IOException {
         channels = new ArrayList<>();
@@ -143,12 +143,18 @@ public class Server extends AbstractVerticle {
             X509Certificate[] chain = new X509Certificate[1];
             chain[0] = keypair.getSelfCertificate(x500Name, new Date(), (long) 365 * 24 * 60 * 60);
             store.setKeyEntry("selfsigned", privKey, "password".toCharArray(), chain);
-            store.store(new FileOutputStream("./config/webserver/.keystore.jks"), "password".toCharArray());
-            httpOpts.setKeyStoreOptions(new JksOptions().setPath("./config/webserver/.keystore.jks").setPassword("password"));
+            String path = "./config/webserver/.keystore.jks";
+            String pass = "password";
+            try (FileOutputStream outputStream = new FileOutputStream(path)) {
+                store.store(outputStream, pass.toCharArray());
+            }
+            httpOpts.setKeyStoreOptions(new JksOptions().setPath(path).setPassword(pass));
             httpOpts.setSsl(true);
         } catch (KeyStoreException | IOException | NoSuchAlgorithmException | CertificateException | NoSuchProviderException | InvalidKeyException | SignatureException ex) {
             thawLogger.log(Level.SEVERE, "Failed to generate a self-signed cert and other SSL configuration methods failed.");
             fut.fail(ex);
+        } finally {
+
         }
     }
 
