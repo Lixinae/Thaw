@@ -26,7 +26,6 @@ function chatMessageFormatting(username,msg,dateAsLong){
 
 
 
-//////// TOUT FAIRE EN AJAX ////////////
 
 var currentChannel = "default";
 var username = "blork";
@@ -49,9 +48,9 @@ function initialize(){
 }
 
 function setReloadInterval(){
-
-    setInterval(getListChannels,500);
-    setInterval(getListMessageForChannel,600);
+    // Intervals will be much lower once live
+    setInterval(getListChannels,10000);// 10 000 for debug
+    setInterval(getListMessageForChannel,10000); // 10 000 for debug
 }
 
 /* Permet d'avoir un texte par defaut dans la zone de d'ecriture de message et qui disparait lors du clique sur la zone */
@@ -78,13 +77,13 @@ function createChannel(){
 	$.post("/api/createChannel",
 	    JSON.stringify({channelName:newChannelName,creatorName:username}))
 	    .done(function(response){
-            alert("sucess send message");
+            alert("success create channel");
         })
         .fail(function(response){
-            alert("fail send message");
+            alert("fail create channel");
         })
         .always(function() {
-            alert( "finished" );
+
         });
 }
 
@@ -94,13 +93,13 @@ function deleteChannel(){
 	$.post("/api/deleteChannel",
 	    JSON.stringify({channelName:target,userName:username}))
 	    .done(function(response){
-            alert("sucess send message");
+            alert("success delete channel");
         })
         .fail(function(response){
-            alert("fail send message");
+            alert("fail delete channel");
         })
         .always(function() {
-            alert( "finished" );
+
         });
 }
 
@@ -128,10 +127,10 @@ function selectChannel(){
                 getListUsersForChan(currentChannel);
             })
             .fail(function(response){
-                alert("fail send message");
+                alert("fail connectToChannel");
             })
             .always(function() {
-                alert( "finished" );
+
             });
 	});
 }
@@ -143,14 +142,14 @@ function sendMessage(){
     $.post("/api/sendMessage",
 	    JSON.stringify({channel : currentChannel, message : messageV.val(),username : username}))
 	    .done(function(response){
-            alert("sucess send message");
+            alert("success send message");
             messageV.val("");
 	    })
 	    .fail(function(response){
             alert("fail send message");
 		})
-		.always(function() {
-            alert( "finished" );
+		.always(function(){
+
         });
 
 }
@@ -161,7 +160,7 @@ function getListMessageForChannel(){
 	listChannel.children().remove();
 
 	$.post("/api/getListMessageForChannel",
-			JSON.stringify({channelName:currentChannel,numberOfMessage:1000})
+		JSON.stringify({channelName:currentChannel,numberOfMessage:1000}))
 	    .done(function(response){
 	        // Formater correctement les messages
 
@@ -187,13 +186,13 @@ function getListMessageForChannel(){
                 	 'date': 1480814172039
 	            }]
 	             */
-            alert("sucess send message");
+            //alert("success getListMessageForChannel");
         })
         .fail(function(response){
-            alert("fail send message");
+            //alert("fail getListMessageForChannel");
         })
         .always(function() {
-            alert( "finished" );
+
         });
 }
 
@@ -202,23 +201,26 @@ function getListChannels(){
 	var listChannel = $(".listChannels");
 	listChannel.children().remove();
 
-	// Va creer une liste cliquable avec chacun des channel
-	listChannel.append("<h2>List of Channels</h2>");
-	listChannel.append("<ul id=\"channels\" onclick=\"selectChannel()\">");
-	$.get("/api/getListChannels")
+    //listChannel.load("index.html .listChannels");
+	$.get("/api/getListChannel")
 	        .done(function(response){
+				// Provoque un effet "On/Off" au chargement
+				var string = "<h2>Channels</h2>"+"<ul id=\"channels\" onclick=\"selectChannel()\">"
                 $.each(response,function(key,val){
-                    listChannel.append("<li> "+ val+" </li>");
+                    string = string +"<li> "+ val+" </li>";
                 });
+                string = string +"</ul>";
+                alert(string);
+                listChannel.append(string);
+
             })
             .fail(function(response){
-                alert("fail send message");
+                //alert("fail getListChannels");
             })
             .always(function() {
-                alert( "finished" );
+
             });
-        ;
-	listChannel.append("</ul>");
+
 }
 
 
@@ -227,24 +229,24 @@ function getListUsersForChan(currentChannel){
 	var usersListOnChan = $(".listUsers");
 	usersListOnChan.children().remove();
 
-    usersListOnChan.append("<h2>ListUsers </h2>");
-	usersListOnChan.append("<ul id=\"usersOnChan\">");
+
 	$.post("/api/getListUserForChannel",
 	    JSON.stringify({channelName : currentChannel}))
 	    .done(function(response){
             alert(response);
+            var string ="<h2>Users</h2>"+"<ul id=\"usersOnChan\">";
             $.each(response,function(key,val){
-                usersListOnChan.append("<li> "+ val+" </li>");
+                string = string +"<li> "+ val+" </li>";
             });
+            string = string + "</ul>";
+            usersListOnChan.append(string);
         })
         .fail(function(response){
-            alert("fail send message");
+            //alert("fail getListUsersForChan");
         })
         .always(function() {
-            alert( "finished" );
+
         });
-    );
-	usersListOnChan.append("</ul>");
 }
 
 // Compatibilite pour IE si besoin

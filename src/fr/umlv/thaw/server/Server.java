@@ -10,17 +10,27 @@ import fr.umlv.thaw.user.HumanUser;
 import fr.umlv.thaw.user.User;
 import fr.umlv.thaw.user.UserFactory;
 import io.vertx.core.AbstractVerticle;
+import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
+import io.vertx.core.http.HttpServerOptions;
 import io.vertx.core.http.HttpServerResponse;
 import io.vertx.core.json.Json;
 import io.vertx.core.json.JsonObject;
+import io.vertx.core.net.JksOptions;
 import io.vertx.ext.web.Router;
 import io.vertx.ext.web.RoutingContext;
 import io.vertx.ext.web.handler.BodyHandler;
 import io.vertx.ext.web.handler.StaticHandler;
+import sun.security.tools.keytool.CertAndKeyGen;
+import sun.security.x509.X500Name;
 
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.security.*;
+import java.security.cert.CertificateException;
+import java.security.cert.X509Certificate;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 import java.util.logging.Level;
@@ -33,9 +43,12 @@ import java.util.stream.Collectors;
  */
 public class Server extends AbstractVerticle {
 
+    private static final int KB = 1024;
+    private static final int MB = 1024 * KB;
     private final List<Channel> channels;
     private final List<User> users;
     private final ThawLogger thawLogger;
+    private final int maxUploadSize = 50 * MB;
 
     public Server() throws IOException {
         channels = new ArrayList<>();
@@ -54,12 +67,8 @@ public class Server extends AbstractVerticle {
     }
 
     @Override
-    public void start(Future<Void> fut) {
-        Router router = Router.router(vertx);
+    public void start(Future<Void> fut) throws Exception {
 
-        router.route().handler(BodyHandler.create());
-
-        listOfRequest(router);
 
         // TEST ONLY //
         HumanUser superUser = UserFactory.createHumanUser("superUser");
@@ -70,9 +79,7 @@ public class Server extends AbstractVerticle {
         Channel defaul = ChannelFactory.createChannel(superUser, "default");
         Channel channel = ChannelFactory.createChannel(superUser, "Item 1");
         Channel channel2 = ChannelFactory.createChannel(superUser, "Item 2");
-//        Channel channel2 = ChannelFactory.addChannel(test2,"anotherChannel");
-//        superUser.joinChannel(channel);
-//        test2.joinChannel(channel);
+
         superUser.joinChannel(defaul);
         test2.joinChannel(defaul);
 
@@ -82,61 +89,72 @@ public class Server extends AbstractVerticle {
 
         channel.addUserToChan(superUser);
         channel.addUserToChan(test2);
-
-//        channel.addUserToChan(superUser);
-//        channel.addUserToChan(test2);
-
         channels.add(defaul);
         channels.add(channel);
         channels.add(channel2);
 //        channels.add(channel2);
-
-
         // TEST //
 
-        // Creation d'un serveur en https avec authentification
-        // Exemple ici pour creer fichier jks : https://gist.github.com/InfoSec812/a45eb3b7ba9d4b2a9b94
-        // C'est à se tirer une balle le truc
-        // Sinon voila un exemple avec un fichier jks fourni
-        // Fichier jks -> permet de stocker les certificat et autres trucs
-//        HttpServer server =
-//                vertx.createHttpServer(new HttpServerOptions().setSsl(true).setKeyStoreOptions(
-//                        new JksOptions().setPath("server-keystore.jks").setPassword("wibble")
-//                ));
-//
-////        server.requestHandler(req -> {
-////            req.response().putHeader("content-type", "text/html").end("<html><body><h1>Hello from vert.x!</h1></body></html>");
-////        }).listen(8080);
-//        server.requestHandler(router::accept).listen(8080);
-
-// Plutot que de mettre le port de manière direct -> aller le chercher dans la configuration
-//        vertx.createHttpServer().requestHandler(router::accept).listen(config().getInteger("http.port", 8080),
-//                result -> {
-//                    if (result.succeeded()) {
-//                        fut.complete();
-//                    } else {
-//                        fut.fail(result.cause());
-//                    }
-//                });
-//        System.out.println("listen on port "+config().getInteger("http.port"));
-
+//        Router router = Router.router(vertx);
+//        listOfRequest(router);
+//        router.route().handler(BodyHandler.create().setBodyLimit(maxUploadSize));
         // otherwise serve static pages
-        router.route().handler(StaticHandler.create());
-        vertx.createHttpServer().requestHandler(router::accept).listen(8080);
-        System.out.println("listen on port 8080");
+//        router.route().handler(StaticHandler.create());
+//        vertx.createHttpServer().requestHandler(router::accept).listen(8080);
+//        System.out.println("listen on port 8080");
+//        fut.complete();
+/////////////////////////////////////////////////////////////////////////////////
+        final int bindPort = 8080;
+        final boolean ssl = true;
+        Router router2 = Router.router(vertx);
+        router2.route().handler(BodyHandler.create().setBodyLimit(maxUploadSize));
+        listOfRequest(router2);
+        router2.route().handler(StaticHandler.create());
+        if (ssl) {
+            vertx.executeBlocking(future -> {
+                        HttpServerOptions httpOpts = new HttpServerOptions();
+                        generateKeyPairAndCertificate(fut, httpOpts);
+                        future.complete(httpOpts);
+                    },
+                    (AsyncResult<HttpServerOptions> result) -> {
+                        if (!result.failed()) {
+                            vertx.createHttpServer(result.result()).requestHandler(router2::accept).listen(bindPort);
+                            thawLogger.log(Level.INFO, "SSL Web server now listening on port :" + bindPort);
+                            fut.complete();
+                        }
+                    });
+        } else {
+            // No SSL requested, start a non-SSL HTTP server.
+            vertx.createHttpServer().requestHandler(router2::accept).listen(bindPort);
+            thawLogger.log(Level.INFO, "Web server now listening");
+            fut.complete();
+        }
+    }
+
+    private void generateKeyPairAndCertificate(Future<Void> fut, HttpServerOptions httpOpts) {
+        try {
+            // Generate a self-signed key pair and certificate.
+            KeyStore store = KeyStore.getInstance("JKS");
+            store.load(null, null);
+            CertAndKeyGen keypair = new CertAndKeyGen("RSA", "SHA256WithRSA", null);
+            X500Name x500Name = new X500Name("localhost", "IT", "unknown", "unknown", "unknown", "unknown");
+            keypair.generate(1024);
+            PrivateKey privKey = keypair.getPrivateKey();
+            X509Certificate[] chain = new X509Certificate[1];
+            chain[0] = keypair.getSelfCertificate(x500Name, new Date(), (long) 365 * 24 * 60 * 60);
+            store.setKeyEntry("selfsigned", privKey, "password".toCharArray(), chain);
+            store.store(new FileOutputStream("./config/webserver/.keystore.jks"), "password".toCharArray());
+            httpOpts.setKeyStoreOptions(new JksOptions().setPath("./config/webserver/.keystore.jks").setPassword("password"));
+            httpOpts.setSsl(true);
+        } catch (KeyStoreException | IOException | NoSuchAlgorithmException | CertificateException | NoSuchProviderException | InvalidKeyException | SignatureException ex) {
+            thawLogger.log(Level.SEVERE, "Failed to generate a self-signed cert and other SSL configuration methods failed.");
+            fut.fail(ex);
+        }
     }
 
 
     private void listOfRequest(Router router) {
         // route to JSON REST APIs
-
-        ///////////////////////////////////
-        // Remove after finishing test !!!
-//        router.get("/api/testParam/:username").handler(this::testAjax);
-//        router.get("/api/test").handler(this::testAjax2);
-//        router.post("/api/testJson").handler(this::testAjax3);
-        ///////////////////////////////////
-
         router.post("/api/addChannel").handler(this::addChannel);
         router.post("/api/deleteChannel").handler(this::deleteChannel);
         router.post("/api/connectToChannel").handler(this::connectToChannel);
