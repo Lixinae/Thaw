@@ -249,6 +249,21 @@ function getListUsersForChan(currentChannel){
         });
 }
 
+function disconnectFromServer(){
+		$.post("/api/disconnectFromServer",
+	    JSON.stringify({userName : userName}))
+	    .done(function(response){
+
+        })
+        .fail(function(response){
+            //alert("fail getListUsersForChan");
+        })
+        .always(function() {
+
+        });
+	
+}
+
 // Compatibilite pour IE si besoin
 function getEventTarget(e) {
 	e = e || window.event;
