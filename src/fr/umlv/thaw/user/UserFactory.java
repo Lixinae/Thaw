@@ -13,8 +13,8 @@ public class UserFactory {
     }
 
     // todo A changer
-    public static Bot createBot(String name, Path path) {
-        return new Bot(name, path);
+    public static Bot createBot(String name, Path path, byte[] hashPassword) {
+        return new Bot(name, path, hashPassword);
     }
 
 //    public static Bot createBot(String nickname){

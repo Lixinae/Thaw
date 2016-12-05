@@ -15,11 +15,11 @@ abstract class AbstractUser implements User {
 
     final String name;
     final ConcurrentLinkedQueue<Channel> channels;
-    final byte[] passwordHash;
+    private final byte[] passwordHash;
 
     AbstractUser(String name, byte[] passwordHash) {
         this.name = Objects.requireNonNull(name);
-        this.passwordHash = passwordHash;
+        this.passwordHash = Objects.requireNonNull(passwordHash);
         channels = new ConcurrentLinkedQueue<>();
     }
 

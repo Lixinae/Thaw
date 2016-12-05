@@ -5,52 +5,54 @@ import fr.umlv.thaw.channel.ChannelFactory;
 import org.junit.Assert;
 import org.junit.Test;
 
+import static fr.umlv.thaw.server.handlers.Tools.hashToSha256;
+
 
 public class HumanUserTest {
 
     ////////// CONSTRUCTOR ///////////////
     @Test(expected = NullPointerException.class)
     public void constructorNameNull() throws Exception {
-        new HumanUser(null);
+        new HumanUser(null, null);
     }
 
     @Test
     public void constructorCorrect() throws Exception {
-        new HumanUser("truc");
+        new HumanUser("truc", hashToSha256("nop"));
     }
 
     ////////// IS_USER_HUMAN AND IS_USER_BOT///////////////
     @Test
     public void isUserHumanTrue() throws Exception {
-        HumanUser humanUser = new HumanUser("test");
+        HumanUser humanUser = new HumanUser("test", hashToSha256("password"));
         Assert.assertTrue(humanUser.isUserHuman());
     }
 
     @Test
     public void isUserBotFalse() throws Exception {
-        HumanUser humanUser = new HumanUser("test");
+        HumanUser humanUser = new HumanUser("test", hashToSha256("password"));
         Assert.assertFalse(humanUser.isUserBot());
     }
 
     ////////// EQUALS ///////////////
     @Test
     public void equalEqualsSameName() throws Exception {
-        User humanUser = new HumanUser("nameTest");
-        User humanUser1 = new HumanUser("nameTest");
+        User humanUser = new HumanUser("nameTest", hashToSha256("password"));
+        User humanUser1 = new HumanUser("nameTest", hashToSha256("password"));
         Assert.assertEquals(humanUser1, humanUser);
     }
 
     @Test
     public void notEqualEqualsDifferentName() throws Exception {
-        User humanUser = new HumanUser("nameTest");
-        User humanUser1 = new HumanUser("nameTestdshufdji");
+        User humanUser = new HumanUser("nameTest", hashToSha256("password"));
+        User humanUser1 = new HumanUser("nameTestdshufdji", hashToSha256("password"));
         Assert.assertNotEquals(humanUser1, humanUser);
     }
 
     ////////// ADD CHANNEL ///////////////
     @Test
     public void addSingleChannel() throws Exception {
-        HumanUser doris = new HumanUser("Doris");
+        HumanUser doris = new HumanUser("Doris", hashToSha256("password"));
         Channel nemo = ChannelFactory.createChannel(doris, "Nemo");
         doris.addChannel(nemo);
         Assert.assertTrue(doris.channels.contains(nemo));
@@ -58,7 +60,7 @@ public class HumanUserTest {
 
     @Test
     public void addMultipleChannel() throws Exception {
-        HumanUser pinot = new HumanUser("Pinot");
+        HumanUser pinot = new HumanUser("Pinot", hashToSha256("password"));
         Channel nemo = ChannelFactory.createChannel(pinot, "Nemo");
         Channel moris = ChannelFactory.createChannel(pinot, "Moris");
         Channel didier = ChannelFactory.createChannel(pinot, "Didier");
@@ -74,7 +76,7 @@ public class HumanUserTest {
     ////////// DELETE CHANNEL ///////////////
     @Test
     public void delSingleChannel() throws Exception {
-        HumanUser patrice = new HumanUser("Patrice");
+        HumanUser patrice = new HumanUser("Patrice", hashToSha256("password"));
         Channel clement = ChannelFactory.createChannel(patrice, "Clement");
         patrice.addChannel(clement);
         Assert.assertTrue(patrice.channels.size() == 1);
@@ -84,7 +86,7 @@ public class HumanUserTest {
 
     @Test
     public void delMultipleChannel() throws Exception {
-        HumanUser lola = new HumanUser("Lola");
+        HumanUser lola = new HumanUser("Lola", hashToSha256("password"));
         Channel monica = ChannelFactory.createChannel(lola, "Monica");
         Channel juliette = ChannelFactory.createChannel(lola, "Juliette");
         Channel julie = ChannelFactory.createChannel(lola, "Julie");
@@ -102,7 +104,7 @@ public class HumanUserTest {
 
     @Test
     public void delSameChannel() throws Exception {
-        HumanUser patrick = new HumanUser("Patrick");
+        HumanUser patrick = new HumanUser("Patrick", hashToSha256("password"));
         Channel clementine = ChannelFactory.createChannel(patrick, "Clementine");
         patrick.addChannel(clementine);
         Assert.assertTrue(patrick.deleteChannel(clementine));

@@ -11,8 +11,8 @@ public class Bot extends AbstractUser {
     private final Path path;
 
 
-    Bot(String name, Path path) {
-        super(name);
+    Bot(String name, Path path, byte[] hashPassword) {
+        super(name, hashPassword);
         this.path = Objects.requireNonNull(path);
     }
 
