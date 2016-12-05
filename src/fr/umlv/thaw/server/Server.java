@@ -4,11 +4,7 @@ package fr.umlv.thaw.server;
 import fr.umlv.thaw.channel.Channel;
 import fr.umlv.thaw.channel.ChannelFactory;
 import fr.umlv.thaw.logger.ThawLogger;
-import fr.umlv.thaw.message.Message;
-import fr.umlv.thaw.message.MessageFactory;
-import fr.umlv.thaw.server.handlers.AddChannelHandler;
-import fr.umlv.thaw.server.handlers.ConnectToServerHandler;
-import fr.umlv.thaw.server.handlers.ThawAuthHandler;
+import fr.umlv.thaw.server.handlers.*;
 import fr.umlv.thaw.user.HumanUser;
 import fr.umlv.thaw.user.User;
 import fr.umlv.thaw.user.UserFactory;
@@ -16,11 +12,8 @@ import io.vertx.core.AbstractVerticle;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
 import io.vertx.core.http.HttpServerOptions;
-import io.vertx.core.http.HttpServerResponse;
-import io.vertx.core.json.JsonObject;
 import io.vertx.core.net.JksOptions;
 import io.vertx.ext.web.Router;
-import io.vertx.ext.web.RoutingContext;
 import io.vertx.ext.web.handler.BodyHandler;
 import io.vertx.ext.web.handler.CookieHandler;
 import io.vertx.ext.web.handler.SessionHandler;
@@ -37,9 +30,7 @@ import java.security.cert.X509Certificate;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
-import java.util.Optional;
 import java.util.logging.Level;
-import java.util.stream.Collectors;
 
 
 /**
@@ -150,9 +141,7 @@ public class Server extends AbstractVerticle {
 //        AuthHandler basicAuthHandler = BasicAuthHandler.create(authProvider);
 
         // Redirige vers le lien /api/connectToServer
-        router.route("/api/connectToServer").handler(routingContext -> {
-            ConnectToServerHandler.create(routingContext, thawLogger, authorizedUsers);
-        });
+        router.route("/api/connectToServer").handler(routingContext -> ConnectToServerHandler.create(routingContext, thawLogger));
         router.route("/api/private/*").handler(routingContext -> {
             ThawAuthHandler.create(routingContext, thawLogger);
         });
@@ -207,26 +196,26 @@ public class Server extends AbstractVerticle {
     private void listOfRequest(Router router) {
         // route to JSON REST APIs
 //        router.post("/api/connectToServer").handler(this::connectToServer);
-        router.post("/api/private/addChannel").handler(routingContexte -> AddChannelHandler.create(routingContexte, thawLogger, channels, authorizedUsers));
-        router.post("/api/private/deleteChannel").handler(this::deleteChannel);
-        router.post("/api/private/connectToChannel").handler(this::connectToChannel);
-        router.post("/api/private/sendMessage").handler(this::sendMessage);
-        router.post("/api/private/getListMessageForChannel").handler(this::getListMessageForChannel);
-        router.get("/api/private/getListChannel").handler(this::getListChannels);
-        router.post("/api/private/getListUserForChannel").handler(this::getListUserForChannel);
-        router.route("/api/private/disconnectFromServer").handler(this::disconnectFromServer);
+        router.post("/api/private/addChannel").handler(routingContext -> AddChannelHandler.create(routingContext, thawLogger, channels, users));
+        router.post("/api/private/deleteChannel").handler(routingContext -> DelChannelHandler.deleteChannel(routingContext, thawLogger, channels, users));
+        router.post("/api/private/connectToChannel").handler(routingContext -> ConnectToChannelHandler.connectToChannel(routingContext, thawLogger, channels, users));
+        router.post("/api/private/sendMessage").handler(routingContext -> SendMessageHandler.sendMessage(routingContext, thawLogger, channels, users));
+        router.post("/api/private/getListMessageForChannel").handler(routingContext -> GetListMessageForChannelHandler.getListMessageForChannel(routingContext, thawLogger, channels, users));
+        router.get("/api/private/getListChannel").handler(routingContext -> GetListChannelsHandler.getListChannels(routingContext, thawLogger, channels));
+        router.post("/api/private/getListUserForChannel").handler(routingContext -> GetListUserForChannelHandler.getListUserForChannel(routingContext, thawLogger, channels, users));
+        router.route("/api/private/disconnectFromServer").handler(routingContext -> DisconnectFromServerHandler.disconnectFromServer(routingContext, thawLogger, channels, users));
 
     }
 
-    private void disconnectFromServer(RoutingContext routingContext) {
-        routingContext.clearUser();
-        routingContext.response().putHeader("location", "/").setStatusCode(302).end();
-    }
-
-    private void analyzDisconnectFromServerRequest(HttpServerResponse response, JsonObject json) {
-
-
-    }
+//    private void disconnectFromServer(RoutingContext routingContext) {
+//        routingContext.clearUser();
+//        routingContext.response().putHeader("location", "/").setStatusCode(302).end();
+//    }
+//
+//    private void analyzDisconnectFromServerRequest(HttpServerResponse response, JsonObject json) {
+//
+//
+//    }
 //    private void connectToServer(RoutingContext routingContext, AuthProvider authProvider) {
 //        thawLogger.log(Level.INFO, "In connectToServer request");
 //
@@ -306,233 +295,233 @@ public class Server extends AbstractVerticle {
 //        creator.addChannel(newChannel);
 //    }
 
-    private void deleteChannel(RoutingContext routingContext) {
-        thawLogger.log(Level.INFO, "In deleteChannel request");
-        HttpServerResponse response = routingContext.response();
-        JsonObject json = routingContext.getBodyAsJson();
-        if (json == null) {
-            answerToRequest(response, 400, "Wrong Json format");
-        } else {
-            analyzeDeleteChannelRequest(response, json);
-        }
-    }
+//    private void deleteChannel(RoutingContext routingContext) {
+//        thawLogger.log(Level.INFO, "In deleteChannel request");
+//        HttpServerResponse response = routingContext.response();
+//        JsonObject json = routingContext.getBodyAsJson();
+//        if (json == null) {
+//            answerToRequest(response, 400, "Wrong Json format");
+//        } else {
+//            analyzeDeleteChannelRequest(response, json);
+//        }
+//    }
 
-    private void analyzeDeleteChannelRequest(HttpServerResponse response, JsonObject json) {
-        // TODO : Deconnecter tout les utilisateur du channel avant sa destruction et les
-        // remettre sur le channel "default"
-    }
-
-    // Fonctionne
-    private void connectToChannel(RoutingContext routingContext) {
-        thawLogger.log(Level.INFO, "In connectToChannel request");
-        HttpServerResponse response = routingContext.response();
-        JsonObject json = routingContext.getBodyAsJson();
-        if (json == null) {
-            answerToRequest(response, 400, "Wrong Json format");
-        } else {
-            analyzeConnecToChannelRequest(response, json);
-        }
-    }
-
-    //TODO : refactoriser davantage le code
-    private void analyzeConnecToChannelRequest(HttpServerResponse response, JsonObject json) {
-        String oldChannelName = json.getString("oldChannelName");
-        String channelName = json.getString("channelName");
-        String userName = json.getString("userName");
-
-        if (verifyEmptyOrNull(oldChannelName, channelName, userName)) {
-            answerToRequest(response, 400, "Wrong JSON input");
-            return;
-        }
-        Optional<Channel> optchannel = findChannelInList(channelName);
-        Optional<User> optuser = findUserInServerUserList(userName);
-        User user;
-        if (!optuser.isPresent()) {
-            answerToRequest(response, 400, "User " + userName + " is not connected to server");
-            return;
-        } else {
-            user = optuser.get();
-        }
-        if (!optchannel.isPresent()) {
-            answerToRequest(response, 400, "Channel :" + channelName + " does not exist");
-        } else {
-            Channel chan = optchannel.get();
-            Optional<User> tmpUserInChan = chan.findUser(user);
-            if (tmpUserInChan.isPresent()) {
-                answerToRequest(response, 400, "User :" + user + " is already connected");
-            } else {
-                Optional<Channel> optChannelOld = findChannelInList(oldChannelName);
-                if (!optChannelOld.isPresent()) {
-                    answerToRequest(response, 400, "OldChannel " + oldChannelName + " does not exist");
-                } else {
-                    Channel oldChan = optChannelOld.get();
-                    establishConnection(user, chan, oldChan);
-                    String answer = "User :" + user + " successfully quit channel :'" + oldChannelName + '\'' + " and connected to channel :'" + channelName + '\'';
-                    answerToRequest(response, 200, answer);
-                }
-            }
-        }
-    }
-
-    private void establishConnection(User user, Channel chan, Channel oldChan) {
-        user.quitChannel(oldChan);
-        user.joinChannel(chan);
-    }
+//    private void analyzeDeleteChannelRequest(HttpServerResponse response, JsonObject json) {
+//        // TODO : Deconnecter tout les utilisateur du channel avant sa destruction et les
+//        // remettre sur le channel "default"
+//    }
 
     // Fonctionne
-    // TODO : Traitement des messages en cas de bot et stockage dans la base de donnée
-    private void sendMessage(RoutingContext routingContext) {
-        thawLogger.log(Level.INFO, "In sendMessage request");
-        JsonObject json = routingContext.getBodyAsJson();
-        HttpServerResponse response = routingContext.response();
-        if (json == null) {
-            answerToRequest(response, 400, "Wrong Json format");
-        } else {
-            analyzeSendMessageRequest(response, json);
-        }
-    }
+//    private void connectToChannel(RoutingContext routingContext) {
+//        thawLogger.log(Level.INFO, "In connectToChannel request");
+//        HttpServerResponse response = routingContext.response();
+//        JsonObject json = routingContext.getBodyAsJson();
+//        if (json == null) {
+//            answerToRequest(response, 400, "Wrong Json format");
+//        } else {
+//            analyzeConnecToChannelRequest(response, json);
+//        }
+//    }
+//
+//    //TODO : refactoriser davantage le code
+//    private void analyzeConnecToChannelRequest(HttpServerResponse response, JsonObject json) {
+//        String oldChannelName = json.getString("oldChannelName");
+//        String channelName = json.getString("channelName");
+//        String userName = json.getString("userName");
+//
+//        if (verifyEmptyOrNull(oldChannelName, channelName, userName)) {
+//            answerToRequest(response, 400, "Wrong JSON input");
+//            return;
+//        }
+//        Optional<Channel> optchannel = findChannelInList(channelName);
+//        Optional<User> optuser = findUserInServerUserList(userName);
+//        User user;
+//        if (!optuser.isPresent()) {
+//            answerToRequest(response, 400, "User " + userName + " is not connected to server");
+//            return;
+//        } else {
+//            user = optuser.get();
+//        }
+//        if (!optchannel.isPresent()) {
+//            answerToRequest(response, 400, "Channel :" + channelName + " does not exist");
+//        } else {
+//            Channel chan = optchannel.get();
+//            Optional<User> tmpUserInChan = chan.findUser(user);
+//            if (tmpUserInChan.isPresent()) {
+//                answerToRequest(response, 400, "User :" + user + " is already connected");
+//            } else {
+//                Optional<Channel> optChannelOld = findChannelInList(oldChannelName);
+//                if (!optChannelOld.isPresent()) {
+//                    answerToRequest(response, 400, "OldChannel " + oldChannelName + " does not exist");
+//                } else {
+//                    Channel oldChan = optChannelOld.get();
+//                    establishConnection(user, chan, oldChan);
+//                    String answer = "User :" + user + " successfully quit channel :'" + oldChannelName + '\'' + " and connected to channel :'" + channelName + '\'';
+//                    answerToRequest(response, 200, answer);
+//                }
+//            }
+//        }
+//    }
+//
+//    private void establishConnection(User user, Channel chan, Channel oldChan) {
+//        user.quitChannel(oldChan);
+//        user.joinChannel(chan);
+//    }
 
-    private void analyzeSendMessageRequest(HttpServerResponse response, JsonObject json) {
-        long date = System.currentTimeMillis();
+//    // Fonctionne
+//    // TODO : Traitement des messages en cas de bot et stockage dans la base de donnée
+//    private void sendMessage(RoutingContext routingContext) {
+//        thawLogger.log(Level.INFO, "In sendMessage request");
+//        JsonObject json = routingContext.getBodyAsJson();
+//        HttpServerResponse response = routingContext.response();
+//        if (json == null) {
+//            answerToRequest(response, 400, "Wrong Json format");
+//        } else {
+//            analyzeSendMessageRequest(response, json);
+//        }
+//    }
+//
+//    private void analyzeSendMessageRequest(HttpServerResponse response, JsonObject json) {
+//        long date = System.currentTimeMillis();
+//
+//        String message = json.getString("message");
+//        String userName = json.getString("username");
+//        String channelName = json.getString("channelName");
+//
+//        if (verifyEmptyOrNull(message, userName, channelName)) {
+//            answerToRequest(response, 400, "Wrong JSON input");
+//            return;
+//        }
+//        if (!isUserConnected(userName)) {
+//            answerToRequest(response, 400, "User " + userName + " is not connected to server");
+//            return;
+//        }
+//
+//        Optional<Channel> channelOptional = findChannelInList(channelName);
+//        if (!channelOptional.isPresent()) {
+//            answerToRequest(response, 400, "Channel: '" + channelName + "' doesn't exist");
+//            return;
+//        }
+//        Channel chan = channelOptional.get();
+//
+//        // This should never happen, it's only matter of security
+//        Optional<User> optUsr = chan.findUserByName(userName);
+//        if (!optUsr.isPresent()) {
+//            answerToRequest(response, 400, "User: '" + userName + "' doesn't exist");
+//            return;
+//        }
+//        User user = optUsr.get();
+//        Message mes = MessageFactory.createMessage(user, date, message);
+//
+//        user.sendMessage(chan, mes);
+//        // Todo : Analyser le message si un bot est connecté
+//
+//        // TODO Stocker les information du message dans la base de donnée du channel
+//
+//        // Recupère liste des message du channel
+////            List<Message> messageListTmp = chan.getListMessage();
+//        // TODO Renvoyer la liste des messages correctement formaté pour l'affichage
+//        answerToRequest(response, 200, "Message: " + mes + " sent correctly to channel '" + channelName + '\'');
+//    }
 
-        String message = json.getString("message");
-        String userName = json.getString("username");
-        String channelName = json.getString("channelName");
+//    // Fonctionne
+//    private void getListMessageForChannel(RoutingContext routingContext) {
+//        thawLogger.log(Level.INFO, "In getListMessageForChannel request");
+//        HttpServerResponse response = routingContext.response();
+//        JsonObject json = routingContext.getBodyAsJson();
+//        if (json == null) {
+//            answerToRequest(response, 400, "Wrong Json format");
+//        } else {
+//            analyzeGetListMessageForChannelRequest(response, json);
+//        }
+//    }
+//
+//    private void analyzeGetListMessageForChannelRequest(HttpServerResponse response, JsonObject json) {
+//        String channelName = json.getString("channelName");
+//        Integer numberOfMessageWanted = json.getInteger("numberOfMessage");
+//        String userName = json.getString("userName");
+//        if (!securityCheckGetListMessageForChannel(response, channelName, numberOfMessageWanted, userName)) {
+//            return;
+//        }
+//        Optional<Channel> optChan = findChannelInList(channelName);
+//        if (optChan.isPresent()) {
+//            Channel channel = optChan.get();
+//            List<Message> tmpMess = channel.getListMessage();
+//            List<Message> returnListMessage = tmpMess.subList(Math.max(tmpMess.size() - numberOfMessageWanted, 0), tmpMess.size());
+//            answerToRequest(response, 200, returnListMessage);
+//        } else {
+//            answerToRequest(response, 400, "Channel: " + channelName + " doesn't exist");
+//        }
+//    }
+//
+//    private boolean securityCheckGetListMessageForChannel(HttpServerResponse response, String channelName, Integer numberOfMessageWanted, String userName) {
+//        if (verifyEmptyOrNull(channelName)) {
+//            answerToRequest(response, 400, "No channelName given");
+//            return false;
+//        }
+//        if (!isUserConnected(userName)) {
+//            answerToRequest(response, 400, "User " + userName + " is not connected to server");
+//            return false;
+//        }
+//        if (numberOfMessageWanted < 1) {
+//            answerToRequest(response, 400, "Number Of Message must be > 0 !");
+//            return false;
+//        }
+//        return true;
+//    }
 
-        if (verifyEmptyOrNull(message, userName, channelName)) {
-            answerToRequest(response, 400, "Wrong JSON input");
-            return;
-        }
-        if (!isUserConnected(userName)) {
-            answerToRequest(response, 400, "User " + userName + " is not connected to server");
-            return;
-        }
+//    // Fonctionne
+//    private void getListUserForChannel(RoutingContext routingContext) {
+//        thawLogger.log(Level.INFO, "In getListUserForChannel request");
+//        HttpServerResponse response = routingContext.response();
+//        JsonObject json = routingContext.getBodyAsJson();
+//        if (json == null) {
+//            routingContext.response().setStatusCode(400).end();
+//        } else {
+//            analyzegetListUserForChannelRequest(response, json);
+//        }
+//    }
+//
+//    private void analyzegetListUserForChannelRequest(HttpServerResponse response, JsonObject json) {
+//        String channelName = json.getString("channelName");
+//        String userName = json.getString("userName");
+//        if (!securityCheckGetListUserForChannel(response, channelName, userName)) {
+//            return;
+//        }
+//
+//        Optional<Channel> channelOptional = findChannelInList(channelName);
+//        if (channelOptional.isPresent()) {
+//            List<String> tmp = channelOptional.get().getListUser().stream().map(User::getName).collect(Collectors.toList());
+//            answerToRequest(response, 200, tmp);
+//        } else {
+//            answerToRequest(response, 400, "Channel:" + channelName + " doesn't exist");
+//        }
+//    }
+//
+//    private boolean securityCheckGetListUserForChannel(HttpServerResponse response, String channelName, String userName) {
+//        if (verifyEmptyOrNull(channelName, userName)) {
+//            answerToRequest(response, 400, "No channelName or userName given");
+//            return false;
+//        }
+//        if (!isUserConnected(userName)) {
+//            answerToRequest(response, 400, "User " + userName + " is not connected to server");
+//            return false;
+//        }
+//        return true;
+//    }
 
-        Optional<Channel> channelOptional = findChannelInList(channelName);
-        if (!channelOptional.isPresent()) {
-            answerToRequest(response, 400, "Channel: '" + channelName + "' doesn't exist");
-            return;
-        }
-        Channel chan = channelOptional.get();
-
-        // This should never happen, it's only matter of security
-        Optional<User> optUsr = chan.findUserByName(userName);
-        if (!optUsr.isPresent()) {
-            answerToRequest(response, 400, "User: '" + userName + "' doesn't exist");
-            return;
-        }
-        User user = optUsr.get();
-        Message mes = MessageFactory.createMessage(user, date, message);
-
-        user.sendMessage(chan, mes);
-        // Todo : Analyser le message si un bot est connecté
-
-        // TODO Stocker les information du message dans la base de donnée du channel
-
-        // Recupère liste des message du channel
-//            List<Message> messageListTmp = chan.getListMessage();
-        // TODO Renvoyer la liste des messages correctement formaté pour l'affichage
-        answerToRequest(response, 200, "Message: " + mes + " sent correctly to channel '" + channelName + '\'');
-    }
-
-    // Fonctionne
-    private void getListMessageForChannel(RoutingContext routingContext) {
-        thawLogger.log(Level.INFO, "In getListMessageForChannel request");
-        HttpServerResponse response = routingContext.response();
-        JsonObject json = routingContext.getBodyAsJson();
-        if (json == null) {
-            answerToRequest(response, 400, "Wrong Json format");
-        } else {
-            analyzeGetListMessageForChannelRequest(response, json);
-        }
-    }
-
-    private void analyzeGetListMessageForChannelRequest(HttpServerResponse response, JsonObject json) {
-        String channelName = json.getString("channelName");
-        Integer numberOfMessageWanted = json.getInteger("numberOfMessage");
-        String userName = json.getString("userName");
-        if (!securityCheckGetListMessageForChannel(response, channelName, numberOfMessageWanted, userName)) {
-            return;
-        }
-        Optional<Channel> optChan = findChannelInList(channelName);
-        if (optChan.isPresent()) {
-            Channel channel = optChan.get();
-            List<Message> tmpMess = channel.getListMessage();
-            List<Message> returnListMessage = tmpMess.subList(Math.max(tmpMess.size() - numberOfMessageWanted, 0), tmpMess.size());
-            answerToRequest(response, 200, returnListMessage);
-        } else {
-            answerToRequest(response, 400, "Channel: " + channelName + " doesn't exist");
-        }
-    }
-
-    private boolean securityCheckGetListMessageForChannel(HttpServerResponse response, String channelName, Integer numberOfMessageWanted, String userName) {
-        if (verifyEmptyOrNull(channelName)) {
-            answerToRequest(response, 400, "No channelName given");
-            return false;
-        }
-        if (!isUserConnected(userName)) {
-            answerToRequest(response, 400, "User " + userName + " is not connected to server");
-            return false;
-        }
-        if (numberOfMessageWanted < 1) {
-            answerToRequest(response, 400, "Number Of Message must be > 0 !");
-            return false;
-        }
-        return true;
-    }
-
-    // Fonctionne
-    private void getListUserForChannel(RoutingContext routingContext) {
-        thawLogger.log(Level.INFO, "In getListUserForChannel request");
-        HttpServerResponse response = routingContext.response();
-        JsonObject json = routingContext.getBodyAsJson();
-        if (json == null) {
-            routingContext.response().setStatusCode(400).end();
-        } else {
-            analyzegetListUserForChannelRequest(response, json);
-        }
-    }
-
-    private void analyzegetListUserForChannelRequest(HttpServerResponse response, JsonObject json) {
-        String channelName = json.getString("channelName");
-        String userName = json.getString("userName");
-        if (!securityCheckGetListUserForChannel(response, channelName, userName)) {
-            return;
-        }
-
-        Optional<Channel> channelOptional = findChannelInList(channelName);
-        if (channelOptional.isPresent()) {
-            List<String> tmp = channelOptional.get().getListUser().stream().map(User::getName).collect(Collectors.toList());
-            answerToRequest(response, 200, tmp);
-        } else {
-            answerToRequest(response, 400, "Channel:" + channelName + " doesn't exist");
-        }
-    }
-
-    private boolean securityCheckGetListUserForChannel(HttpServerResponse response, String channelName, String userName) {
-        if (verifyEmptyOrNull(channelName, userName)) {
-            answerToRequest(response, 400, "No channelName or userName given");
-            return false;
-        }
-        if (!isUserConnected(userName)) {
-            answerToRequest(response, 400, "User " + userName + " is not connected to server");
-            return false;
-        }
-        return true;
-    }
-
-    // Fonctionne
-    private void getListChannels(RoutingContext routingContext) {
-        thawLogger.log(Level.INFO, "In getListChannels request");
-        List<String> tmp = channels.stream().map(Channel::getChannelName).collect(Collectors.toList());
-        HttpServerResponse response = routingContext.response();
-        answerToRequest(response, 200, tmp);
-    }
+//    // Fonctionne
+//    private void getListChannels(RoutingContext routingContext) {
+//        thawLogger.log(Level.INFO, "In getListChannels request");
+//        List<String> tmp = channels.stream().map(Channel::getChannelName).collect(Collectors.toList());
+//        HttpServerResponse response = routingContext.response();
+//        answerToRequest(response, 200, tmp);
+//    }
 
 
-    private boolean isUserConnected(String userName) {
-        return findUserInServerUserList(userName).isPresent();
-    }
+//    private boolean isUserConnected(String userName) {
+//        return findUserInServerUserList(userName).isPresent();
+//    }
 
 
 }
