@@ -71,12 +71,6 @@ public interface Channel {
     List<Message> getListMessage();
 
     /**
-     * @param name Name of the user you want to find
-     * @return The user if he exists, optional.empty otherwise
-     */
-    Optional<User> findUserByName(String name);
-
-    /**
      * @param user The user you want to find
      * @return The user if he exists, optional.empty otherwise
      */

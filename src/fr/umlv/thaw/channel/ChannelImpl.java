@@ -35,14 +35,12 @@ public class ChannelImpl implements Channel {
 
     @Override
     public boolean addMessageToQueue(Message message) {
-//        Objects.requireNonNull(user);
         Objects.requireNonNull(message);
         User user = message.getSender();
         if (!messagesQueue.containsKey(message.getSender())) {
             addUserToChan(message.getSender());
         }
         ConcurrentLinkedQueue<Message> lq = messagesQueue.get(user);
-//        Message msg = new Message(user, date, message);
         if (lq.add(message)) {
             messagesQueue.put(user, lq);
             return messagesQueue.get(user).contains(message);
@@ -83,7 +81,6 @@ public class ChannelImpl implements Channel {
 
     @Override
     public List<User> getListUser() {
-        // TODO
         List<User> tmp = new ArrayList<>();
         messagesQueue.forEach((k, v) -> tmp.add(k));
         return tmp;
@@ -105,32 +102,6 @@ public class ChannelImpl implements Channel {
         messagesQueue.forEach((key, value) -> tmp.addAll(value));
         return Collections.unmodifiableList(tmp);
     }
-
-    /**
-     * @param name Name of the user you want to find
-     * @return The user if he exists, optional.empty otherwise
-     */
-    @Override
-    public Optional<User> findUserByName(String name) {
-        return messagesQueue.keySet()
-                .stream()
-                .filter(u -> u.getName().contentEquals(name))
-                .findFirst();
-//        for (User u : messagesQueue.keySet()) {
-//            if (u.getName().equals(name)) {
-//                return Optional.of(u);
-//            }
-//        }
-//        return Optional.empty();
-    }
-//    private Optional<User> findUserInListFromChan(List<User> listUser, String userName) {
-//        for (User u : listUser) {
-//            if (u.getName().contentEquals(userName)) {
-//                return Optional.of(u);
-//            }
-//        }
-//        return Optional.empty();
-//    }
 
     /**
      * @param user The user you want to find
