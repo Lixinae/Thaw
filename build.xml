@@ -72,6 +72,10 @@
                compiler="javac1.9">
             <src path="${src.dir}"/>
             <classpath refid="compile.classpath"/>
+            <compilerarg value="--add-exports=java.base/sun.security.x509=ALL-UNNAMED">
+            </compilerarg>
+            <compilerarg value="--add-exports=java.base/sun.security.tools.keytool=ALL-UNNAMED">
+            </compilerarg>
         </javac>
         <echo message="Compiling done"/>
     </target>
