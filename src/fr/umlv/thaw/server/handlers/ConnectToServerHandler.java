@@ -54,18 +54,26 @@ public class ConnectToServerHandler {
         String password = json.getString("password");
         byte[] passwordHash;
         try {
-            passwordHash = Tools.hash(password);
+            passwordHash = Tools.hashToSha256(password);
         } catch (NoSuchAlgorithmException e) {
             e.printStackTrace();
             return;
         }
         byte[] finalPasswordHash = passwordHash;
         for (User u : authorizedUsers) {
-            if (u.compareHash(finalPasswordHash)) {
-                session.put("user", userName);
+            if (u.getName().contentEquals(userName) && u.compareHash(finalPasswordHash)) {
+                session.put("user", u);
                 break;
             }
         }
-        Tools.answerToRequest(response, 204, "User: '" + userName + " authenticated", thawLogger);
+        if (session.get("user") == null) {
+            response.setStatusCode(400)
+//                .putHeader("content-type", "application/json")
+                    .end("User: '" + userName + "' authentication failed");
+        }
+        response.setStatusCode(204)
+//                .putHeader("content-type", "application/json")
+                .end("User: '" + userName + "' authentication success");
+//        Tools.answerToRequest(response, 204, "User: '" + userName + "' authenticated", thawLogger);
     }
 }

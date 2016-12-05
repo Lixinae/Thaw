@@ -58,26 +58,16 @@ public class Server extends AbstractVerticle {
      */
     public Server(boolean enableLogger) throws IOException {
         channels = new ArrayList<>();
-        authorizedUsers = new ArrayList<>();
+        authorizedUsers = new ArrayList<>(); // Need to construct authorized list
         thawLogger = new ThawLogger(enableLogger);// Enable or not the logs of the server
     }
 
 
-    // Only use for test
-    private byte[] hash(String password) throws NoSuchAlgorithmException {
-        MessageDigest sha256 = MessageDigest.getInstance("SHA-256");
-        byte[] passBytes = password.getBytes();
-        return sha256.digest(passBytes);
-    }
-
     @Override
     public void start(Future<Void> fut) throws Exception {
-
-
         // TEST ONLY //
-        byte[] hashPassword = hash("password");
-        byte[] hashPassword2 = hash("password2");
-
+        byte[] hashPassword = Tools.hashToSha256("password");
+        byte[] hashPassword2 = Tools.hashToSha256("password2");
 
         HumanUser superUser = UserFactory.createHumanUser("superUser", hashPassword);
         HumanUser test2 = UserFactory.createHumanUser("test2", hashPassword2);
@@ -85,7 +75,6 @@ public class Server extends AbstractVerticle {
         authorizedUsers.add(test2);
 //        authorizedUsers.add(superUser);
 //        authorizedUsers.add(test2);
-
         Channel defaul = ChannelFactory.createChannel(superUser, "default");
         Channel channel = ChannelFactory.createChannel(superUser, "Item 1");
         Channel channel2 = ChannelFactory.createChannel(superUser, "Item 2");
@@ -136,40 +125,43 @@ public class Server extends AbstractVerticle {
         router.route().handler(BodyHandler.create().setBodyLimit(maxUploadSize));
 
         router.route().handler(SessionHandler.create(LocalSessionStore.create(vertx)));
-//        io.vertx.ext.auth.AuthProvider authProvider = new MyAuthProvider();
-//        router.route().handler(UserSessionHandler.create(authProvider));
-//        AuthHandler basicAuthHandler = BasicAuthHandler.create(authProvider);
 
-        // Redirige vers le lien /api/connectToServer
-        router.route("/api/connectToServer").handler(routingContext -> ConnectToServerHandler.create(routingContext, thawLogger));
-        router.route("/api/private/*").handler(routingContext -> {
-            ThawAuthHandler.create(routingContext, thawLogger);
-        });
-
+        router.route("/api/connectToServer").handler(routingContext -> ConnectToServerHandler.create(routingContext, thawLogger, authorizedUsers));
+        router.route("/api/createAccount").handler(routingContext -> CreateAccount.create(routingContext, thawLogger, authorizedUsers));
+        //        router.route("/api/private/*").handler(routingContext -> ThawAuthHandler.create(routingContext, thawLogger));
+//        router.route("/api/private/*").handler(routingContext -> ThawAuthHandler.create(routingContext, thawLogger,authorizedUsers));
 
         listOfRequest(router);
         router.route().handler(StaticHandler.create());
         if (ssl) {
-            vertx.executeBlocking(future -> {
-                        HttpServerOptions httpOpts = new HttpServerOptions();
-                        generateKeyPairAndCertificate(fut);
-                        httpOpts.setKeyStoreOptions(new JksOptions().setPath("./config/webserver/.keystore.jks").setPassword("password"));
-                        httpOpts.setSsl(true);
-                        future.complete(httpOpts);
-                    },
-                    (AsyncResult<HttpServerOptions> result) -> {
-                        if (!result.failed()) {
-                            vertx.createHttpServer(result.result()).requestHandler(router::accept).listen(bindPort);
-                            thawLogger.log(Level.INFO, "SSL Web server now listening on port :" + bindPort);
-                            fut.complete();
-                        }
-                    });
+            startSSLserver(fut, bindPort, router);
         } else {
             // No SSL requested, start a non-SSL HTTP server.
-            vertx.createHttpServer().requestHandler(router::accept).listen(bindPort);
-            thawLogger.log(Level.INFO, "Web server now listening");
-            fut.complete();
+            startNonSSLserver(fut, bindPort, router);
         }
+    }
+
+    private void startNonSSLserver(Future<Void> fut, int bindPort, Router router) {
+        vertx.createHttpServer().requestHandler(router::accept).listen(bindPort);
+        thawLogger.log(Level.INFO, "Web server now listening");
+        fut.complete();
+    }
+
+    private void startSSLserver(Future<Void> fut, int bindPort, Router router) {
+        vertx.executeBlocking(future -> {
+                    HttpServerOptions httpOpts = new HttpServerOptions();
+                    generateKeyPairAndCertificate(fut);
+                    httpOpts.setKeyStoreOptions(new JksOptions().setPath("./config/webserver/.keystore.jks").setPassword("password"));
+                    httpOpts.setSsl(true);
+                    future.complete(httpOpts);
+                },
+                (AsyncResult<HttpServerOptions> result) -> {
+                    if (!result.failed()) {
+                        vertx.createHttpServer(result.result()).requestHandler(router::accept).listen(bindPort);
+                        thawLogger.log(Level.INFO, "SSL Web server now listening on port :" + bindPort);
+                        fut.complete();
+                    }
+                });
     }
 
     private void generateKeyPairAndCertificate(Future<Void> fut) {
@@ -196,14 +188,14 @@ public class Server extends AbstractVerticle {
     private void listOfRequest(Router router) {
         // route to JSON REST APIs
 //        router.post("/api/connectToServer").handler(this::connectToServer);
-        router.post("/api/private/addChannel").handler(routingContext -> AddChannelHandler.create(routingContext, thawLogger, channels, users));
-        router.post("/api/private/deleteChannel").handler(routingContext -> DelChannelHandler.deleteChannel(routingContext, thawLogger, channels, users));
-        router.post("/api/private/connectToChannel").handler(routingContext -> ConnectToChannelHandler.connectToChannel(routingContext, thawLogger, channels, users));
-        router.post("/api/private/sendMessage").handler(routingContext -> SendMessageHandler.sendMessage(routingContext, thawLogger, channels, users));
-        router.post("/api/private/getListMessageForChannel").handler(routingContext -> GetListMessageForChannelHandler.getListMessageForChannel(routingContext, thawLogger, channels, users));
+        router.post("/api/private/addChannel").handler(routingContext -> AddChannelHandler.create(routingContext, thawLogger, channels, authorizedUsers));
+        router.post("/api/private/deleteChannel").handler(routingContext -> DelChannelHandler.deleteChannel(routingContext, thawLogger, channels));
+        router.post("/api/private/connectToChannel").handler(routingContext -> ConnectToChannelHandler.connectToChannel(routingContext, thawLogger, channels, authorizedUsers));
+        router.post("/api/private/sendMessage").handler(routingContext -> SendMessageHandler.sendMessage(routingContext, thawLogger, channels));
+        router.post("/api/private/getListMessageForChannel").handler(routingContext -> GetListMessageForChannelHandler.getListMessageForChannel(routingContext, thawLogger, channels));
         router.get("/api/private/getListChannel").handler(routingContext -> GetListChannelsHandler.getListChannels(routingContext, thawLogger, channels));
-        router.post("/api/private/getListUserForChannel").handler(routingContext -> GetListUserForChannelHandler.getListUserForChannel(routingContext, thawLogger, channels, users));
-        router.route("/api/private/disconnectFromServer").handler(routingContext -> DisconnectFromServerHandler.disconnectFromServer(routingContext, thawLogger, channels, users));
+        router.post("/api/private/getListUserForChannel").handler(routingContext -> GetListUserForChannelHandler.getListUserForChannel(routingContext, thawLogger, channels));
+        router.route("/api/private/disconnectFromServer").handler(routingContext -> DisconnectFromServerHandler.disconnectFromServer(routingContext, thawLogger, channels, authorizedUsers));
 
     }
 

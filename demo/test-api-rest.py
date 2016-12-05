@@ -44,6 +44,8 @@ except ImportError:
 # Get ou post avec authentification
 #  r = requests.get('https://my.website.com/rest/path', auth=('myusername', 'mybasicpass'))
 
+
+
 # Asks the user on which machine he wants to log on 
 def askMachineUrl():
     print("Format must be https://[adresse]:[port]")
@@ -70,30 +72,37 @@ def askChannelName(machineUrl):
     return channelName
 
 
+#
+def connectToServer(machineUrl, userName, password):
+    querie = "/api/connectToServer"
+    url = machineUrl + querie
+    payload = {'userName': userName, 'password': password}
+    return doPostRequestJson(url, payload)
+
 # Works
 def addChannel(machineUrl, newChannelName, creatorName):
-    querie = "/api/addChannel"
+    querie = "/api/private/addChannel"
     url = machineUrl + querie
     payload = {'newChannelName': newChannelName, 'creatorName': creatorName}
     return doPostRequestJson(url, payload)
 
 # Todo : Test it
 def deleteChannel(machineUrl, targetChannelName, userName):
-    querie = "/api/deleteChannel"
+    querie = "/api/private/deleteChannel"
     url = machineUrl + querie
     payload = {'channelName': targetChannelName, 'userName': userName}
     return doPostRequestJson(url, payload)
 
 # Works
 def connectToChannel(machineUrl, oldChannelName, channelName, userName):
-    querie = "/api/connectToChannel"
+    querie = "/api/private/connectToChannel"
     url = machineUrl + querie
     payload = {'channelName': channelName, 'userName': userName, 'oldChannelName': oldChannelName}
     return doPostRequestJson(url, payload)
 
 # Works
 def sendMessage(machineUrl, userName, channelName, content):
-    querie = "/api/sendMessage"
+    querie = "/api/private/sendMessage"
     url = machineUrl + querie
     payload = {'username': userName, 'channelName': channelName, 'message': content}
     return doPostRequestJson(url, payload)
@@ -102,7 +111,7 @@ def sendMessage(machineUrl, userName, channelName, content):
 # Default value for numberMessage is 10
 # Works
 def getListMessageForChannel(machineUrl, channelName, numberMessage=10):
-    querie = "/api/getListMessageForChannel";
+    querie = "/api/private/getListMessageForChannel";
     url = machineUrl + querie
     payload = {'channelName': channelName, 'numberOfMessage': numberMessage}
     return doPostRequestJson(url, payload)
@@ -111,13 +120,13 @@ def getListMessageForChannel(machineUrl, channelName, numberMessage=10):
 # Return a list of all channel names
 # Works
 def getChannelsList(machineUrl):
-    querie = "/api/getListChannel"
+    querie = "/api/private/getListChannel"
     url = machineUrl+querie
     return doGetRequest(url)
 
 # Works
 def getListUserForChannel(machineUrl, channelName):
-    querie = "/api/getListUserForChannel"
+    querie = "/api/private/getListUserForChannel"
     url = machineUrl + querie
     payload = {'channelName': channelName}
     return doPostRequestJson(url, payload)
@@ -131,24 +140,24 @@ def getListUserForChannel(machineUrl, channelName):
 ##    print(r.text)
 ##    print(r.status_code)
 ##    print(r.json())
-
+session = requests.session()
 def doPostRequestJson(url, payload):
     headers = {'Content-type': 'application/json', 'Accept': 'text/plain'}
     print(url)
     print(payload)
     try:
-        r = requests.post(url, data=json.dumps(payload), headers=headers, verify=False)
+        r = session.post(url, data=json.dumps(payload), headers=headers, verify=False)
     except:
         print("Can't reach target " + url)
         return
     print(r.status_code)
-    print(r.json())
-    return r.json()        
+    print(r.text)
+    return r.text      
 
 
 def doGetRequest(url):
     try:
-        r = requests.get(url, verify=False)
+        r = session.get(url, verify=False)
     except :
         print("Can't reach target "+url)
         return
@@ -164,9 +173,10 @@ if __name__ == '__main__':
     ##    ip = socket.gethostbyname(socket.gethostname())
     ip = "localhost"
     machineUrl = "https://" + ip + ":8080"
+
     
     print("########")
-    # sendMessageToServer(machineUrl)
+    connectToServer(machineUrl, 'superUser3', "password")
     print("########")
     addChannel(machineUrl, 'Another', 'superUser')
     print("########")

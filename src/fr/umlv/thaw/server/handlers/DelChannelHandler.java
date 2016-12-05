@@ -6,8 +6,10 @@ import fr.umlv.thaw.user.User;
 import io.vertx.core.http.HttpServerResponse;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.RoutingContext;
+import io.vertx.ext.web.Session;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.logging.Level;
 
 /**
@@ -16,20 +18,26 @@ import java.util.logging.Level;
  */
 public class DelChannelHandler {
 
-    public static void deleteChannel(RoutingContext routingContext, ThawLogger thawLogger, List<Channel> channels, List<User> users) {
+    public static void deleteChannel(RoutingContext routingContext, ThawLogger thawLogger, List<Channel> channels) {
         thawLogger.log(Level.INFO, "In deleteChannel request");
         HttpServerResponse response = routingContext.response();
         JsonObject json = routingContext.getBodyAsJson();
+        Session session = routingContext.session();
+
         if (json == null) {
             Tools.answerToRequest(response, 400, "Wrong Json format", thawLogger);
         } else {
-            analyzeDeleteChannelRequest(response, json);
+            analyzeDeleteChannelRequest(response, session, json, thawLogger);
         }
     }
 
-    private static void analyzeDeleteChannelRequest(HttpServerResponse response, JsonObject json) {
+    private static void analyzeDeleteChannelRequest(HttpServerResponse response, Session session, JsonObject json, ThawLogger thawLogger) {
         // TODO : Deconnecter tout les utilisateur du channel avant sa destruction et les
         // remettre sur le channel "default"
+        Optional<User> optUser = Tools.checkIfUserIsConnectedAndAuthorized(session, response, thawLogger);
+        if (!optUser.isPresent()) {
+            return;
+        }
     }
 
 }

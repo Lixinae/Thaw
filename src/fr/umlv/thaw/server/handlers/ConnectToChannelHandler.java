@@ -6,6 +6,7 @@ import fr.umlv.thaw.user.User;
 import io.vertx.core.http.HttpServerResponse;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.RoutingContext;
+import io.vertx.ext.web.Session;
 
 import java.util.List;
 import java.util.Optional;
@@ -17,15 +18,16 @@ public class ConnectToChannelHandler {
         thawLogger.log(Level.INFO, "In connectToChannel request");
         HttpServerResponse response = routingContext.response();
         JsonObject json = routingContext.getBodyAsJson();
+        Session session = routingContext.session();
         if (json == null) {
             Tools.answerToRequest(response, 400, "Wrong Json format", thawLogger);
         } else {
-            analyzeConnecToChannelRequest(response, json, thawLogger, channels, users);
+            analyzeConnecToChannelRequest(response, session, json, thawLogger, channels, users);
         }
     }
 
     //TODO : refactoriser davantage le code
-    private static void analyzeConnecToChannelRequest(HttpServerResponse response, JsonObject json, ThawLogger thawLogger, List<Channel> channels, List<User> users) {
+    private static void analyzeConnecToChannelRequest(HttpServerResponse response, Session session, JsonObject json, ThawLogger thawLogger, List<Channel> channels, List<User> users) {
         String oldChannelName = json.getString("oldChannelName");
         String channelName = json.getString("channelName");
         String userName = json.getString("userName");
@@ -35,18 +37,25 @@ public class ConnectToChannelHandler {
             return;
         }
         Optional<Channel> optchannel = Tools.findChannelInList(channels, channelName);
-        Optional<User> optuser = Tools.findUserInServerUserList(users, userName);
-        User user;
-        if (!optuser.isPresent()) {
-            Tools.answerToRequest(response, 400, "User " + userName + " is not connected to server", thawLogger);
+
+
+//        Optional<User> optuser = Tools.findUserInServerUserList(users, userName);
+        Optional<User> optUser = Tools.checkIfUserIsConnectedAndAuthorized(session, response, thawLogger);
+        if (!optUser.isPresent()) {
             return;
-        } else {
-            user = optuser.get();
         }
+//        User user;
+//        if (!optuser.isPresent()) {
+//            Tools.answerToRequest(response, 400, "User " + userName + " is not connected to server", thawLogger);
+//            return;
+//        } else {
+//            user = optuser.get();
+//        }
         if (!optchannel.isPresent()) {
             Tools.answerToRequest(response, 400, "Channel :" + channelName + " does not exist", thawLogger);
         } else {
             Channel chan = optchannel.get();
+            User user = optUser.get();
             Optional<User> tmpUserInChan = chan.findUser(user);
             if (tmpUserInChan.isPresent()) {
                 Tools.answerToRequest(response, 400, "User :" + user + " is already connected", thawLogger);

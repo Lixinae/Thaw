@@ -41,25 +41,25 @@ public class AddChannelHandler {
             Tools.answerToRequest(response, 400, "Wrong JSON input", thawLogger);
             return;
         }
+        Optional<User> optUser = Tools.checkIfUserIsConnectedAndAuthorized(session, response, thawLogger);
+        if (!optUser.isPresent()) {
+            return;
+        }
+
         Optional<Channel> optChannel = Tools.findChannelInList(channels, newChannelName);
         if (optChannel.isPresent()) {
             Tools.answerToRequest(response, 400, "Channel " + newChannelName + " already exists", thawLogger);
         } else {
-            Optional<User> optUser = Tools.findUserInServerUserList(users, creatorName);
-            User tmpUser;  // new HumanUser(creatorName);
+//            Optional<User> optUser = Tools.findUserInServerUserList(users, creatorName);
+//            User tmpUser;  // new HumanUser(creatorName);
+            User user = optUser.get();
             HumanUser creator;
-            if (!optUser.isPresent()) {
+            if (user.isUserBot()) {
+                Tools.answerToRequest(response, 400, "Bots can't create channels ! Bot name = " + creatorName, thawLogger);
                 return;
-
-
-            } else {
-                tmpUser = optUser.get();
-                if (tmpUser.isUserBot()) {
-                    Tools.answerToRequest(response, 400, "Bots can't create channels ! Bot name = " + creatorName, thawLogger);
-                    return;
-                }
-                creator = (HumanUser) tmpUser; // Todo Moche -> changer plus tard
             }
+            creator = (HumanUser) user; // Todo Moche -> changer plus tard
+
 //            } else {
 //                // Ne devrait jamais arriver en utilisation normal du server
 //                // Un utilisateur sera toujours connecté au serveur lors de la demande de creation de channel
@@ -71,6 +71,7 @@ public class AddChannelHandler {
             Tools.answerToRequest(response, 200, "Channel " + newChannelName + " successfully created", thawLogger);
         }
     }
+
 
     private static void createAndAddChannel(String newChannelName, HumanUser creator, List<Channel> channels) {
         Channel newChannel = ChannelFactory.createChannel(creator, newChannelName);

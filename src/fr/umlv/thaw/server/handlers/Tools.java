@@ -5,6 +5,7 @@ import fr.umlv.thaw.logger.ThawLogger;
 import fr.umlv.thaw.user.User;
 import io.vertx.core.http.HttpServerResponse;
 import io.vertx.core.json.Json;
+import io.vertx.ext.web.Session;
 
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
@@ -16,9 +17,9 @@ import java.util.logging.Level;
  * Project :Thaw
  * Created by Narex on 05/12/2016.
  */
-class Tools {
+public class Tools {
 
-    static byte[] hash(String password) throws NoSuchAlgorithmException {
+    public static byte[] hashToSha256(String password) throws NoSuchAlgorithmException {
         MessageDigest sha256 = MessageDigest.getInstance("SHA-256");
         byte[] passBytes = password.getBytes();
         return sha256.digest(passBytes);
@@ -26,24 +27,26 @@ class Tools {
 
     static void answerToRequest(HttpServerResponse response, int code, Object answer, ThawLogger thawLogger) {
         String tmp = Json.encodePrettily(answer);
-        if (code == 200) {
+        if (code > 200 && code < 300) {
             thawLogger.log(Level.INFO, "code: " + code + "\nanswer: " + tmp);
         } else {
             thawLogger.log(Level.WARNING, "code: " + code + "\nanswer: " + tmp);
         }
+
         response.setStatusCode(code)
                 .putHeader("content-type", "application/json")
                 .end(tmp);
     }
 
-    static Optional<User> findUserInServerUserList(List<User> users, String userName) {
-        if (verifyEmptyOrNull(userName)) {
+    static Optional<User> checkIfUserIsConnectedAndAuthorized(Session session, HttpServerResponse response, ThawLogger thawLogger) {
+        User user = session.get("user");
+        if (user == null) {
+            Tools.answerToRequest(response, 400, "User not in authorized list", thawLogger);
             return Optional.empty();
         }
-        return users.stream()
-                .filter(u -> u.getName().contentEquals(userName))
-                .findFirst();
+        return Optional.of(user);
     }
+
 
     static Optional<Channel> findChannelInList(List<Channel> channels, String channelName) {
         if (verifyEmptyOrNull(channelName)) {

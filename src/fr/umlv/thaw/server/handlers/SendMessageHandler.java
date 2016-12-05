@@ -8,6 +8,7 @@ import fr.umlv.thaw.user.User;
 import io.vertx.core.http.HttpServerResponse;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.RoutingContext;
+import io.vertx.ext.web.Session;
 
 import java.util.List;
 import java.util.Optional;
@@ -16,18 +17,19 @@ import java.util.logging.Level;
 public class SendMessageHandler {
     // Fonctionne
     // TODO : Traitement des messages en cas de bot et stockage dans la base de donnée
-    public static void sendMessage(RoutingContext routingContext, ThawLogger thawLogger, List<Channel> channels, List<User> users) {
+    public static void sendMessage(RoutingContext routingContext, ThawLogger thawLogger, List<Channel> channels) {
         thawLogger.log(Level.INFO, "In sendMessage request");
         JsonObject json = routingContext.getBodyAsJson();
         HttpServerResponse response = routingContext.response();
+        Session session = routingContext.session();
         if (json == null) {
             Tools.answerToRequest(response, 400, "Wrong Json format", thawLogger);
         } else {
-            analyzeSendMessageRequest(response, json, thawLogger, channels, users);
+            analyzeSendMessageRequest(response, session, json, thawLogger, channels);
         }
     }
 
-    private static void analyzeSendMessageRequest(HttpServerResponse response, JsonObject json, ThawLogger thawLogger, List<Channel> channels, List<User> users) {
+    private static void analyzeSendMessageRequest(HttpServerResponse response, Session session, JsonObject json, ThawLogger thawLogger, List<Channel> channels) {
         long date = System.currentTimeMillis();
 
         String message = json.getString("message");
@@ -38,11 +40,10 @@ public class SendMessageHandler {
             Tools.answerToRequest(response, 400, "Wrong JSON input", thawLogger);
             return;
         }
-        if (!isUserConnected(userName, users)) {
-            Tools.answerToRequest(response, 400, "User " + userName + " is not connected to server", thawLogger);
+        Optional<User> optUser = Tools.checkIfUserIsConnectedAndAuthorized(session, response, thawLogger);
+        if (!optUser.isPresent()) {
             return;
         }
-
         Optional<Channel> channelOptional = Tools.findChannelInList(channels, channelName);
         if (!channelOptional.isPresent()) {
             Tools.answerToRequest(response, 400, "Channel: '" + channelName + "' doesn't exist", thawLogger);
@@ -68,9 +69,5 @@ public class SendMessageHandler {
 //            List<Message> messageListTmp = chan.getListMessage();
         // TODO Renvoyer la liste des messages correctement formaté pour l'affichage
         Tools.answerToRequest(response, 200, "Message: " + mes + " sent correctly to channel '" + channelName + '\'', thawLogger);
-    }
-
-    private static boolean isUserConnected(String userName, List<User> users) {
-        return Tools.findUserInServerUserList(users, userName).isPresent();
     }
 }
