@@ -3,11 +3,9 @@ package fr.umlv.thaw.server.handlers;
 import fr.umlv.thaw.channel.Channel;
 import fr.umlv.thaw.logger.ThawLogger;
 import fr.umlv.thaw.message.Message;
-import fr.umlv.thaw.user.User;
 import io.vertx.core.http.HttpServerResponse;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.RoutingContext;
-import io.vertx.ext.web.Session;
 
 import java.util.List;
 import java.util.Optional;
@@ -19,28 +17,19 @@ public class GetListMessageForChannelHandler {
         thawLogger.log(Level.INFO, "In getListMessageForChannel request");
         HttpServerResponse response = routingContext.response();
         JsonObject json = routingContext.getBodyAsJson();
-        Session session = routingContext.session();
         if (json == null) {
             Tools.answerToRequest(response, 400, "Wrong Json format", thawLogger);
-        }
-        if (session == null) {
-            Tools.answerToRequest(response, 400, "Session does not exist", thawLogger);
         } else {
-            analyzeGetListMessageForChannelRequest(response, session, json, thawLogger, channels);
+            analyzeGetListMessageForChannelRequest(response, json, thawLogger, channels);
         }
     }
 
-    private static void analyzeGetListMessageForChannelRequest(HttpServerResponse response, Session session, JsonObject json, ThawLogger thawLogger, List<Channel> channels) {
+    private static void analyzeGetListMessageForChannelRequest(HttpServerResponse response, JsonObject json, ThawLogger thawLogger, List<Channel> channels) {
         String channelName = json.getString("channelName");
         Integer numberOfMessageWanted = json.getInteger("numberOfMessage");
         if (!securityCheckGetListMessageForChannel(response, channelName, numberOfMessageWanted, thawLogger)) {
             return;
         }
-        Optional<User> optUser = Tools.checkIfUserIsConnectedAndAuthorized(session, response, thawLogger);
-        if (!optUser.isPresent()) {
-            return;
-        }
-
         Optional<Channel> optChan = Tools.findChannelInList(channels, channelName);
         if (optChan.isPresent()) {
             Channel channel = optChan.get();

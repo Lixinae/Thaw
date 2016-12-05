@@ -2,14 +2,12 @@ package fr.umlv.thaw.server.handlers;
 
 import fr.umlv.thaw.channel.Channel;
 import fr.umlv.thaw.logger.ThawLogger;
-import fr.umlv.thaw.user.User;
 import io.vertx.core.http.HttpServerResponse;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.RoutingContext;
 import io.vertx.ext.web.Session;
 
 import java.util.List;
-import java.util.Optional;
 import java.util.logging.Level;
 
 /**
@@ -34,10 +32,7 @@ public class DelChannelHandler {
     private static void analyzeDeleteChannelRequest(HttpServerResponse response, Session session, JsonObject json, ThawLogger thawLogger) {
         // TODO : Deconnecter tout les utilisateur du channel avant sa destruction et les
         // remettre sur le channel "default"
-        Optional<User> optUser = Tools.checkIfUserIsConnectedAndAuthorized(session, response, thawLogger);
-        if (!optUser.isPresent()) {
-            return;
-        }
+//        User user = session.get("user");
     }
 
 }

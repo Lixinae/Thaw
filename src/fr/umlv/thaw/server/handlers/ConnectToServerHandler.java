@@ -68,12 +68,11 @@ public class ConnectToServerHandler {
         }
         if (session.get("user") == null) {
             response.setStatusCode(400)
-//                .putHeader("content-type", "application/json")
                     .end("User: '" + userName + "' authentication failed");
+        } else {
+            response.setStatusCode(204)
+                    .end("User: '" + userName + "' authentication success");
         }
-        response.setStatusCode(204)
-//                .putHeader("content-type", "application/json")
-                .end("User: '" + userName + "' authentication success");
 //        Tools.answerToRequest(response, 204, "User: '" + userName + "' authenticated", thawLogger);
     }
 }

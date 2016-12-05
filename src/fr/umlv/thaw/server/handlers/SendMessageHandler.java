@@ -29,6 +29,7 @@ public class SendMessageHandler {
         }
     }
 
+    // Todo
     private static void analyzeSendMessageRequest(HttpServerResponse response, Session session, JsonObject json, ThawLogger thawLogger, List<Channel> channels) {
         long date = System.currentTimeMillis();
 
@@ -40,24 +41,19 @@ public class SendMessageHandler {
             Tools.answerToRequest(response, 400, "Wrong JSON input", thawLogger);
             return;
         }
-        Optional<User> optUser = Tools.checkIfUserIsConnectedAndAuthorized(session, response, thawLogger);
-        if (!optUser.isPresent()) {
-            return;
-        }
         Optional<Channel> channelOptional = Tools.findChannelInList(channels, channelName);
         if (!channelOptional.isPresent()) {
             Tools.answerToRequest(response, 400, "Channel: '" + channelName + "' doesn't exist", thawLogger);
             return;
         }
         Channel chan = channelOptional.get();
+        User user = session.get("user");
 
-        // This should never happen, it's only matter of security
-        Optional<User> optUsr = chan.findUserByName(userName);
-        if (!optUsr.isPresent()) {
-            Tools.answerToRequest(response, 400, "User: '" + userName + "' doesn't exist", thawLogger);
+        if (!chan.checkIfUserIsConnected(user)) {
+            Tools.answerToRequest(response, 400, "User: '" + user.getName() + "' is not connected to chan", thawLogger);
             return;
         }
-        User user = optUsr.get();
+
         Message mes = MessageFactory.createMessage(user, date, message);
 
         user.sendMessage(chan, mes);

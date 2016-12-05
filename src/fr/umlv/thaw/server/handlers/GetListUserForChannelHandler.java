@@ -6,7 +6,6 @@ import fr.umlv.thaw.user.User;
 import io.vertx.core.http.HttpServerResponse;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.RoutingContext;
-import io.vertx.ext.web.Session;
 
 import java.util.List;
 import java.util.Optional;
@@ -19,22 +18,17 @@ public class GetListUserForChannelHandler {
         thawLogger.log(Level.INFO, "In getListUserForChannel request");
         HttpServerResponse response = routingContext.response();
         JsonObject json = routingContext.getBodyAsJson();
-        Session session = routingContext.session();
         if (json == null) {
             routingContext.response().setStatusCode(400).end();
         } else {
-            analyzegetListUserForChannelRequest(response, session, json, thawLogger, channels);
+            analyzegetListUserForChannelRequest(response, json, thawLogger, channels);
         }
     }
 
-    private static void analyzegetListUserForChannelRequest(HttpServerResponse response, Session session, JsonObject json, ThawLogger thawLogger, List<Channel> channels) {
+    private static void analyzegetListUserForChannelRequest(HttpServerResponse response, JsonObject json, ThawLogger thawLogger, List<Channel> channels) {
         String channelName = json.getString("channelName");
         String userName = json.getString("userName");
         if (!securityCheckGetListUserForChannel(response, channelName, userName, thawLogger)) {
-            return;
-        }
-        Optional<User> optUser = Tools.checkIfUserIsConnectedAndAuthorized(session, response, thawLogger);
-        if (!optUser.isPresent()) {
             return;
         }
         Optional<Channel> channelOptional = Tools.findChannelInList(channels, channelName);

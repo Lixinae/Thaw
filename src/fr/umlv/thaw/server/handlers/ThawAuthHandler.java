@@ -22,7 +22,9 @@ public class ThawAuthHandler {
         if (user == null || !authorizedUsers.contains(user)) {
             Tools.answerToRequest(response, 403, "User does not have the access to private api ", thawLogger);
         } else {
-            Tools.answerToRequest(response, 200, "All good", thawLogger);
+            // Poursuis sur celui sur lequel il pointais avant d'arriver la
+            routingContext.next();
+//            Tools.answerToRequest(response, 200, "All good", thawLogger);
         }
     }
 

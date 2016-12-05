@@ -38,24 +38,11 @@ public class ConnectToChannelHandler {
         }
         Optional<Channel> optchannel = Tools.findChannelInList(channels, channelName);
 
-
-//        Optional<User> optuser = Tools.findUserInServerUserList(users, userName);
-        Optional<User> optUser = Tools.checkIfUserIsConnectedAndAuthorized(session, response, thawLogger);
-        if (!optUser.isPresent()) {
-            return;
-        }
-//        User user;
-//        if (!optuser.isPresent()) {
-//            Tools.answerToRequest(response, 400, "User " + userName + " is not connected to server", thawLogger);
-//            return;
-//        } else {
-//            user = optuser.get();
-//        }
         if (!optchannel.isPresent()) {
             Tools.answerToRequest(response, 400, "Channel :" + channelName + " does not exist", thawLogger);
         } else {
             Channel chan = optchannel.get();
-            User user = optUser.get();
+            User user = session.get("user");
             Optional<User> tmpUserInChan = chan.findUser(user);
             if (tmpUserInChan.isPresent()) {
                 Tools.answerToRequest(response, 400, "User :" + user + " is already connected", thawLogger);

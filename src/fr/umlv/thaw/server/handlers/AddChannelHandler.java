@@ -41,32 +41,16 @@ public class AddChannelHandler {
             Tools.answerToRequest(response, 400, "Wrong JSON input", thawLogger);
             return;
         }
-        Optional<User> optUser = Tools.checkIfUserIsConnectedAndAuthorized(session, response, thawLogger);
-        if (!optUser.isPresent()) {
-            return;
-        }
-
         Optional<Channel> optChannel = Tools.findChannelInList(channels, newChannelName);
         if (optChannel.isPresent()) {
             Tools.answerToRequest(response, 400, "Channel " + newChannelName + " already exists", thawLogger);
         } else {
-//            Optional<User> optUser = Tools.findUserInServerUserList(users, creatorName);
-//            User tmpUser;  // new HumanUser(creatorName);
-            User user = optUser.get();
-            HumanUser creator;
+            User user = session.get("user");
             if (user.isUserBot()) {
                 Tools.answerToRequest(response, 400, "Bots can't create channels ! Bot name = " + creatorName, thawLogger);
                 return;
             }
-            creator = (HumanUser) user; // Todo Moche -> changer plus tard
-
-//            } else {
-//                // Ne devrait jamais arriver en utilisation normal du server
-//                // Un utilisateur sera toujours connecté au serveur lors de la demande de creation de channel
-//                creator = UserFactory.createHumanUser(creatorName);
-//
-//                users.add(creator);
-//            }
+            HumanUser creator = (HumanUser) user; // Todo Moche -> changer plus tard
             createAndAddChannel(newChannelName, creator, channels);
             Tools.answerToRequest(response, 200, "Channel " + newChannelName + " successfully created", thawLogger);
         }

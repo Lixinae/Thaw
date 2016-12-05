@@ -2,10 +2,8 @@ package fr.umlv.thaw.server.handlers;
 
 import fr.umlv.thaw.channel.Channel;
 import fr.umlv.thaw.logger.ThawLogger;
-import fr.umlv.thaw.user.User;
 import io.vertx.core.http.HttpServerResponse;
 import io.vertx.core.json.Json;
-import io.vertx.ext.web.Session;
 
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
@@ -28,7 +26,7 @@ public class Tools {
 
     static void answerToRequest(HttpServerResponse response, int code, Object answer, ThawLogger thawLogger) {
         String tmp = Json.encodePrettily(answer);
-        if (code > 200 && code < 300) {
+        if (code >= 200 && code < 300) {
             thawLogger.log(Level.INFO, "code: " + code + "\nanswer: " + tmp);
         } else {
             thawLogger.log(Level.WARNING, "code: " + code + "\nanswer: " + tmp);
@@ -38,16 +36,6 @@ public class Tools {
                 .putHeader("content-type", "application/json")
                 .end(tmp);
     }
-
-    static Optional<User> checkIfUserIsConnectedAndAuthorized(Session session, HttpServerResponse response, ThawLogger thawLogger) {
-        User user = session.get("user");
-        if (user == null) {
-            Tools.answerToRequest(response, 400, "User not in authorized list", thawLogger);
-            return Optional.empty();
-        }
-        return Optional.of(user);
-    }
-
 
     static Optional<Channel> findChannelInList(List<Channel> channels, String channelName) {
         if (verifyEmptyOrNull(channelName)) {
