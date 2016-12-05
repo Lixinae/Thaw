@@ -71,7 +71,6 @@ def askChannelName(machineUrl):
         channelName = input("Enter a channel name to read from : ")    
     return channelName
 
-
 #
 def connectToServer(machineUrl, userName, password):
     querie = "/api/connectToServer"
@@ -163,10 +162,10 @@ def doGetRequest(url):
         return
     print(r.status_code)
     print(r.json())
-    return r.json()        
+    return r.json()
 
 
-    
+requests.packages.urllib3.disable_warnings()   
 if __name__ == '__main__':
     #testSimpleGet()
     #testSimplePost()
@@ -176,7 +175,7 @@ if __name__ == '__main__':
 
     
     print("########")
-    connectToServer(machineUrl, 'superUser3', "password")
+    connectToServer(machineUrl, 'superUser', "password")
     print("########")
     addChannel(machineUrl, 'Another', 'superUser')
     print("########")
