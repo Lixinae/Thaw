@@ -2,7 +2,6 @@ package fr.umlv.thaw.user;
 
 import fr.umlv.thaw.channel.Channel;
 
-import java.util.Arrays;
 import java.util.Objects;
 
 /**
@@ -10,17 +9,10 @@ import java.util.Objects;
  */
 public class HumanUser extends AbstractUser {
 
-    private final byte[] passworHash;
-
-    HumanUser(String nickname, byte[] passworHash) {
-        super(nickname);
-        this.passworHash = passworHash;
+    HumanUser(String nickname, byte[] passwordHash) {
+        super(nickname, passwordHash);
     }
 
-
-    public boolean compareHash(final byte[] passworHash) {
-        return Arrays.equals(this.passworHash, passworHash);
-    }
 
     /**
      * This method create a new channel with the current HumanUser as creator

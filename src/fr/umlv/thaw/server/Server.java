@@ -8,6 +8,7 @@ import fr.umlv.thaw.message.Message;
 import fr.umlv.thaw.message.MessageFactory;
 import fr.umlv.thaw.server.handlers.AddChannelHandler;
 import fr.umlv.thaw.server.handlers.ConnectToServerHandler;
+import fr.umlv.thaw.server.handlers.ThawAuthHandler;
 import fr.umlv.thaw.user.HumanUser;
 import fr.umlv.thaw.user.User;
 import fr.umlv.thaw.user.UserFactory;
@@ -51,12 +52,12 @@ public class Server extends AbstractVerticle {
     private static final int MB = 1024 * KB;
     private final static int maxUploadSize = 50 * MB;
     private final List<Channel> channels;
-    private final List<User> users;
+    private final List<User> authorizedUsers;
     private final ThawLogger thawLogger;
 
     public Server() throws IOException {
         channels = new ArrayList<>();
-        users = new ArrayList<>();
+        authorizedUsers = new ArrayList<>();
         thawLogger = new ThawLogger(false);
     }
 
@@ -66,15 +67,18 @@ public class Server extends AbstractVerticle {
      */
     public Server(boolean enableLogger) throws IOException {
         channels = new ArrayList<>();
-        users = new ArrayList<>();
+        authorizedUsers = new ArrayList<>();
         thawLogger = new ThawLogger(enableLogger);// Enable or not the logs of the server
     }
 
+
+    // Only use for test
     private byte[] hash(String password) throws NoSuchAlgorithmException {
         MessageDigest sha256 = MessageDigest.getInstance("SHA-256");
         byte[] passBytes = password.getBytes();
         return sha256.digest(passBytes);
     }
+
     @Override
     public void start(Future<Void> fut) throws Exception {
 
@@ -86,10 +90,10 @@ public class Server extends AbstractVerticle {
 
         HumanUser superUser = UserFactory.createHumanUser("superUser", hashPassword);
         HumanUser test2 = UserFactory.createHumanUser("test2", hashPassword2);
-        users.add(superUser);
-        users.add(test2);
-//        users.add(superUser);
-//        users.add(test2);
+        authorizedUsers.add(superUser);
+        authorizedUsers.add(test2);
+//        authorizedUsers.add(superUser);
+//        authorizedUsers.add(test2);
 
         Channel defaul = ChannelFactory.createChannel(superUser, "default");
         Channel channel = ChannelFactory.createChannel(superUser, "Item 1");
@@ -147,10 +151,10 @@ public class Server extends AbstractVerticle {
 
         // Redirige vers le lien /api/connectToServer
         router.route("/api/connectToServer").handler(routingContext -> {
-            ConnectToServerHandler.create(routingContext, thawLogger);
+            ConnectToServerHandler.create(routingContext, thawLogger, authorizedUsers);
         });
         router.route("/api/private/*").handler(routingContext -> {
-
+            ThawAuthHandler.create(routingContext, thawLogger);
         });
 
 
@@ -203,7 +207,7 @@ public class Server extends AbstractVerticle {
     private void listOfRequest(Router router) {
         // route to JSON REST APIs
 //        router.post("/api/connectToServer").handler(this::connectToServer);
-        router.post("/api/private/addChannel").handler(routingContexte -> AddChannelHandler.create(routingContexte, thawLogger, channels, users));
+        router.post("/api/private/addChannel").handler(routingContexte -> AddChannelHandler.create(routingContexte, thawLogger, channels, authorizedUsers));
         router.post("/api/private/deleteChannel").handler(this::deleteChannel);
         router.post("/api/private/connectToChannel").handler(this::connectToChannel);
         router.post("/api/private/sendMessage").handler(this::sendMessage);
@@ -289,7 +293,7 @@ public class Server extends AbstractVerticle {
 ////                // Un utilisateur sera toujours connecté au serveur lors de la demande de creation de channel
 ////                creator = UserFactory.createHumanUser(creatorName);
 ////
-////                users.add(creator);
+////                authorizedUsers.add(creator);
 ////            }
 //            createAndAddChannel(newChannelName, creator);
 //            answerToRequest(response, 200, "Channel " + newChannelName + " successfully created");

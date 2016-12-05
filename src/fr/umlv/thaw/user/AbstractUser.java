@@ -3,6 +3,7 @@ package fr.umlv.thaw.user;
 import fr.umlv.thaw.channel.Channel;
 import fr.umlv.thaw.message.Message;
 
+import java.util.Arrays;
 import java.util.Objects;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
@@ -14,9 +15,11 @@ abstract class AbstractUser implements User {
 
     final String name;
     final ConcurrentLinkedQueue<Channel> channels;
+    final byte[] passwordHash;
 
-    AbstractUser(String name) {
+    AbstractUser(String name, byte[] passwordHash) {
         this.name = Objects.requireNonNull(name);
+        this.passwordHash = passwordHash;
         channels = new ConcurrentLinkedQueue<>();
     }
 
@@ -93,6 +96,10 @@ abstract class AbstractUser implements User {
      */
     public boolean isUserHuman() {
         return false;
+    }
+
+    public boolean compareHash(final byte[] passworHash) {
+        return Arrays.equals(this.passwordHash, passworHash);
     }
 
 }

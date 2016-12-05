@@ -6,6 +6,8 @@ import fr.umlv.thaw.user.User;
 import io.vertx.core.http.HttpServerResponse;
 import io.vertx.core.json.Json;
 
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.util.List;
 import java.util.Optional;
 import java.util.logging.Level;
@@ -15,6 +17,12 @@ import java.util.logging.Level;
  * Created by Narex on 05/12/2016.
  */
 class Tools {
+
+    static byte[] hash(String password) throws NoSuchAlgorithmException {
+        MessageDigest sha256 = MessageDigest.getInstance("SHA-256");
+        byte[] passBytes = password.getBytes();
+        return sha256.digest(passBytes);
+    }
 
     static void answerToRequest(HttpServerResponse response, int code, Object answer, ThawLogger thawLogger) {
         String tmp = Json.encodePrettily(answer);

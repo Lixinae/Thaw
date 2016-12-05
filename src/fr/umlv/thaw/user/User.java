@@ -47,4 +47,6 @@ public interface User {
      */
     boolean isUserHuman();
 
+    boolean compareHash(final byte[] passworHash);
+
 }
