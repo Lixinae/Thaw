@@ -1,69 +1,20 @@
 <html>
 <head>
-	<meta charset="UTF-8">
-	<link rel="stylesheet" href="mycss.css" type="text/css" media="all"/>
-	<script src="asset/jquery-3.1.1.js"></script>
-    <script src="script.js"></script>
-
+    <link rel="stylesheet" type="text/css" href="login.css">
+	<script src="login.js"></script>
 </head>
 <body>
-<div class="background">
-	<h1>THAW</h1>
-	<div class="infoOnUser">
-        <p> User Name :
-            <text id="currentUser"> BaseUserName</text>
-		</p>
-        <p> Current channel :
-            <text id="currentChannel"> Default</text>
-		</p>
-	</div>
-    <div class="cadres">
-        <!-- Todo : faire en sorte de recuperer la liste des channels-->
-        <div class="listChannels">
-            <h2>Channels</h2>
-            <!-- Test pour affichage -->
-            <ul id="channels" onclick="selectChannel()">
-                <li>Item 1</li>
-                <li>Item 2</li>
-                <li>Item 3</li>
-            </ul>
-        </div>
-
-        <div class="tchat" id="tchat">
-            <h2>Tchat</h2>
-            <!-- Test pour affichage
-
-            <p>John : Salut.</p>
-            <p>Bob : Plop.</p>
-            <p>John : La forme ?</p>
-            <p>Bob : Bof ce code html css me soul :( .</p>
-            <p>John : ...</p>
-            <p>Bob : ...</p>
-                    <p>John : ...</p>
-            <p>Bob : ...</p>
-            <p>[Connexion avec le serveur perdu ....]</p>
-            -->
-        </div>
-
-        <div class="listUsers">
-            <h2>Users</h2>
-            <!-- Test pour affichage -->
-            <ul id="usersOnChan">
-                <li>Item 1</li>
-                <li>Item 2</li>
-                <li>Item 3</li>
-            </ul>
-        </div>
-	</div>
-
-    <div class="textEntry">
-		<h2>Text Entry</h2>
-		<textarea id="TextZone">
-			Enter a message...
-		</textarea>
-        <button name="button" id="button" onclick="sendMessage()"> Send </button>
+<form action="action_page.php">
+    <div class="container">
+        <p class="title">Connexion &agrave; l'outils Thaw</p>
     </div>
-
-</div>
+    <div class="container">
+        <label><b>Nom utilisateur</b></label>
+        <input type="text" placeholder="Enter Username" name="uname" required>
+        <label><b>Mot de passe</b></label>
+        <input type="password" placeholder="Enter Password" name="psw" required>
+        <button type="submit">Connexion</button>
+    </div>
+</form>
 </body>
 </html>
