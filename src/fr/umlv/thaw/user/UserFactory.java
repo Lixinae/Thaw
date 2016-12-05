@@ -8,8 +8,8 @@ import java.nio.file.Path;
  */
 public class UserFactory {
 
-    public static HumanUser createHumanUser(String nickname) {
-        return new HumanUser(nickname);
+    public static HumanUser createHumanUser(String nickname, byte[] passwordHash) {
+        return new HumanUser(nickname, passwordHash);
     }
 
     // todo A changer

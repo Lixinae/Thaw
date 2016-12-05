@@ -6,6 +6,8 @@ import fr.umlv.thaw.channel.ChannelFactory;
 import fr.umlv.thaw.logger.ThawLogger;
 import fr.umlv.thaw.message.Message;
 import fr.umlv.thaw.message.MessageFactory;
+import fr.umlv.thaw.server.handlers.AddChannelHandler;
+import fr.umlv.thaw.server.handlers.ConnectToServerHandler;
 import fr.umlv.thaw.user.HumanUser;
 import fr.umlv.thaw.user.User;
 import fr.umlv.thaw.user.UserFactory;
@@ -14,13 +16,15 @@ import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
 import io.vertx.core.http.HttpServerOptions;
 import io.vertx.core.http.HttpServerResponse;
-import io.vertx.core.json.Json;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.net.JksOptions;
 import io.vertx.ext.web.Router;
 import io.vertx.ext.web.RoutingContext;
 import io.vertx.ext.web.handler.BodyHandler;
+import io.vertx.ext.web.handler.CookieHandler;
+import io.vertx.ext.web.handler.SessionHandler;
 import io.vertx.ext.web.handler.StaticHandler;
+import io.vertx.ext.web.sstore.LocalSessionStore;
 import sun.security.tools.keytool.CertAndKeyGen;
 import sun.security.x509.X500Name;
 
@@ -66,15 +70,26 @@ public class Server extends AbstractVerticle {
         thawLogger = new ThawLogger(enableLogger);// Enable or not the logs of the server
     }
 
+    private byte[] hash(String password) throws NoSuchAlgorithmException {
+        MessageDigest sha256 = MessageDigest.getInstance("SHA-256");
+        byte[] passBytes = password.getBytes();
+        return sha256.digest(passBytes);
+    }
     @Override
     public void start(Future<Void> fut) throws Exception {
 
 
         // TEST ONLY //
-        HumanUser superUser = UserFactory.createHumanUser("superUser");
-        HumanUser test2 = UserFactory.createHumanUser("test2");
+        byte[] hashPassword = hash("password");
+        byte[] hashPassword2 = hash("password2");
+
+
+        HumanUser superUser = UserFactory.createHumanUser("superUser", hashPassword);
+        HumanUser test2 = UserFactory.createHumanUser("test2", hashPassword2);
         users.add(superUser);
         users.add(test2);
+//        users.add(superUser);
+//        users.add(test2);
 
         Channel defaul = ChannelFactory.createChannel(superUser, "default");
         Channel channel = ChannelFactory.createChannel(superUser, "Item 1");
@@ -92,6 +107,21 @@ public class Server extends AbstractVerticle {
         channels.add(defaul);
         channels.add(channel);
         channels.add(channel2);
+
+//        AuthProvider authProvider = AuthOptions
+//        JsonObject authInfo = new JsonObject().put("username", "tim").put("password", "mypassword");
+//
+//        authProvider.authenticate(authInfo, res -> {
+//            if (res.succeeded()) {
+//
+//                io.vertx.ext.auth.User user = res.result();
+//
+//                System.out.println("User " + user.principal() + " is now authenticated");
+//
+//            } else {
+//                res.cause().printStackTrace();
+//            }
+//        });
 //        channels.add(channel2);
         // TEST //
 
@@ -106,10 +136,26 @@ public class Server extends AbstractVerticle {
 /////////////////////////////////////////////////////////////////////////////////
         final int bindPort = 8080;
         final boolean ssl = true;
-        Router router2 = Router.router(vertx);
-        router2.route().handler(BodyHandler.create().setBodyLimit(maxUploadSize));
-        listOfRequest(router2);
-        router2.route().handler(StaticHandler.create());
+        Router router = Router.router(vertx);
+        router.route().handler(CookieHandler.create());
+        router.route().handler(BodyHandler.create().setBodyLimit(maxUploadSize));
+
+        router.route().handler(SessionHandler.create(LocalSessionStore.create(vertx)));
+//        io.vertx.ext.auth.AuthProvider authProvider = new MyAuthProvider();
+//        router.route().handler(UserSessionHandler.create(authProvider));
+//        AuthHandler basicAuthHandler = BasicAuthHandler.create(authProvider);
+
+        // Redirige vers le lien /api/connectToServer
+        router.route("/api/connectToServer").handler(routingContext -> {
+            ConnectToServerHandler.create(routingContext, thawLogger);
+        });
+        router.route("/api/private/*").handler(routingContext -> {
+
+        });
+
+
+        listOfRequest(router);
+        router.route().handler(StaticHandler.create());
         if (ssl) {
             vertx.executeBlocking(future -> {
                         HttpServerOptions httpOpts = new HttpServerOptions();
@@ -120,14 +166,14 @@ public class Server extends AbstractVerticle {
                     },
                     (AsyncResult<HttpServerOptions> result) -> {
                         if (!result.failed()) {
-                            vertx.createHttpServer(result.result()).requestHandler(router2::accept).listen(bindPort);
+                            vertx.createHttpServer(result.result()).requestHandler(router::accept).listen(bindPort);
                             thawLogger.log(Level.INFO, "SSL Web server now listening on port :" + bindPort);
                             fut.complete();
                         }
                     });
         } else {
             // No SSL requested, start a non-SSL HTTP server.
-            vertx.createHttpServer().requestHandler(router2::accept).listen(bindPort);
+            vertx.createHttpServer().requestHandler(router::accept).listen(bindPort);
             thawLogger.log(Level.INFO, "Web server now listening");
             fut.complete();
         }
@@ -156,66 +202,105 @@ public class Server extends AbstractVerticle {
 
     private void listOfRequest(Router router) {
         // route to JSON REST APIs
-        router.post("/api/addChannel").handler(this::addChannel);
-        router.post("/api/deleteChannel").handler(this::deleteChannel);
-        router.post("/api/connectToChannel").handler(this::connectToChannel);
-        router.post("/api/sendMessage").handler(this::sendMessage);
-        router.post("/api/getListMessageForChannel").handler(this::getListMessageForChannel);
-        router.get("/api/getListChannel").handler(this::getListChannels);
-        router.post("/api/getListUserForChannel").handler(this::getListUserForChannel);
+//        router.post("/api/connectToServer").handler(this::connectToServer);
+        router.post("/api/private/addChannel").handler(routingContexte -> AddChannelHandler.create(routingContexte, thawLogger, channels, users));
+        router.post("/api/private/deleteChannel").handler(this::deleteChannel);
+        router.post("/api/private/connectToChannel").handler(this::connectToChannel);
+        router.post("/api/private/sendMessage").handler(this::sendMessage);
+        router.post("/api/private/getListMessageForChannel").handler(this::getListMessageForChannel);
+        router.get("/api/private/getListChannel").handler(this::getListChannels);
+        router.post("/api/private/getListUserForChannel").handler(this::getListUserForChannel);
+        router.route("/api/private/disconnectFromServer").handler(this::disconnectFromServer);
 
     }
 
-    // Fonctionne
-    private void addChannel(RoutingContext routingContext) {
-        thawLogger.log(Level.INFO, "In addChannel request");
-        HttpServerResponse response = routingContext.response();
-        JsonObject json = routingContext.getBodyAsJson();
-        if (json == null) {
-            answerToRequest(response, 400, "Wrong Json format");
-        } else {
-            analyzeCreateChannelRequest(response, json);
-        }
+    private void disconnectFromServer(RoutingContext routingContext) {
+        routingContext.clearUser();
+        routingContext.response().putHeader("location", "/").setStatusCode(302).end();
     }
 
-    private void analyzeCreateChannelRequest(HttpServerResponse response, JsonObject json) {
-        String newChannelName = json.getString("newChannelName");
-        String creatorName = json.getString("creatorName");
-        thawLogger.log(Level.INFO, newChannelName + " " + creatorName + " ");
-        if (verifyEmptyOrNull(newChannelName, creatorName)) {
-            answerToRequest(response, 400, "Wrong JSON input");
-            return;
-        }
-        Optional<Channel> optChannel = findChannelInList(newChannelName);
-        if (optChannel.isPresent()) {
-            answerToRequest(response, 400, "Channel " + newChannelName + " already exists");
-        } else {
-            Optional<User> optUser = findUserInServerUserList(creatorName);
-            User tmpUser;  // new HumanUser(creatorName);
-            HumanUser creator;
-            if (optUser.isPresent()) {
-                tmpUser = optUser.get();
-                if (tmpUser.isUserBot()) {
-                    answerToRequest(response, 400, "Bots can't create channels ! Bot name = " + creatorName);
-                    return;
-                }
-                creator = (HumanUser) tmpUser; // Todo Moche -> changer plus tard
-            } else {
-                // Ne devrait jamais arriver en utilisation normal du server
-                // Un utilisateur sera toujours connecté au serveur lors de la demande de creation de channel
-                creator = UserFactory.createHumanUser(creatorName);
-                users.add(creator);
-            }
-            createAndAddChannel(newChannelName, creator);
-            answerToRequest(response, 200, "Channel " + newChannelName + " successfully created");
-        }
-    }
+    private void analyzDisconnectFromServerRequest(HttpServerResponse response, JsonObject json) {
 
-    private void createAndAddChannel(String newChannelName, HumanUser creator) {
-        Channel newChannel = ChannelFactory.createChannel(creator, newChannelName);
-        channels.add(newChannel);
-        creator.addChannel(newChannel);
+
     }
+//    private void connectToServer(RoutingContext routingContext, AuthProvider authProvider) {
+//        thawLogger.log(Level.INFO, "In connectToServer request");
+//
+//        HttpServerResponse response = routingContext.response();
+//        JsonObject json = routingContext.getBodyAsJson();
+//        Session session = routingContext.session();
+//        authProvider.authenticate(json,userAsyncResult -> {
+//            String userName = json.
+//                    session.put("user",)
+//        });
+//        if (json == null) {
+//            answerToRequest(response, 400, "Wrong Json format");
+//        } else {
+//            analyzeConnecToServerRequest(response,json);
+//        }
+//    }
+//
+//    private void analyzeConnecToServerRequest(HttpServerResponse response, JsonObject json) {
+//
+//
+//    }
+
+//    // Fonctionne
+//    private void addChannel(RoutingContext routingContext) {
+//        thawLogger.log(Level.INFO, "In addChannel request");
+//        HttpServerResponse response = routingContext.response();
+//        JsonObject json = routingContext.getBodyAsJson();
+//        if (json == null) {
+//            answerToRequest(response, 400, "Wrong Json format");
+//        } else {
+//            analyzeCreateChannelRequest(response, json);
+//        }
+//    }
+//
+//    private void analyzeCreateChannelRequest(HttpServerResponse response, JsonObject json) {
+//        String newChannelName = json.getString("newChannelName");
+//        String creatorName = json.getString("creatorName");
+//        thawLogger.log(Level.INFO, newChannelName + " " + creatorName + " ");
+//        if (verifyEmptyOrNull(newChannelName, creatorName)) {
+//            answerToRequest(response, 400, "Wrong JSON input");
+//            return;
+//        }
+//        Optional<Channel> optChannel = findChannelInList(newChannelName);
+//        if (optChannel.isPresent()) {
+//            answerToRequest(response, 400, "Channel " + newChannelName + " already exists");
+//        } else {
+//            Optional<User> optUser = findUserInServerUserList(creatorName);
+//            User tmpUser;  // new HumanUser(creatorName);
+//            HumanUser creator;
+//            if (!optUser.isPresent()) {
+//                return;
+//
+//
+//            } else{
+//                tmpUser = optUser.get();
+//                if (tmpUser.isUserBot()) {
+//                    answerToRequest(response, 400, "Bots can't create channels ! Bot name = " + creatorName);
+//                    return;
+//                }
+//                creator = (HumanUser) tmpUser; // Todo Moche -> changer plus tard
+//            }
+////            } else {
+////                // Ne devrait jamais arriver en utilisation normal du server
+////                // Un utilisateur sera toujours connecté au serveur lors de la demande de creation de channel
+////                creator = UserFactory.createHumanUser(creatorName);
+////
+////                users.add(creator);
+////            }
+//            createAndAddChannel(newChannelName, creator);
+//            answerToRequest(response, 200, "Channel " + newChannelName + " successfully created");
+//        }
+//    }
+
+//    private void createAndAddChannel(String newChannelName, HumanUser creator) {
+//        Channel newChannel = ChannelFactory.createChannel(creator, newChannelName);
+//        channels.add(newChannel);
+//        creator.addChannel(newChannel);
+//    }
 
     private void deleteChannel(RoutingContext routingContext) {
         thawLogger.log(Level.INFO, "In deleteChannel request");
@@ -250,6 +335,7 @@ public class Server extends AbstractVerticle {
         String oldChannelName = json.getString("oldChannelName");
         String channelName = json.getString("channelName");
         String userName = json.getString("userName");
+
         if (verifyEmptyOrNull(oldChannelName, channelName, userName)) {
             answerToRequest(response, 400, "Wrong JSON input");
             return;
@@ -258,8 +344,8 @@ public class Server extends AbstractVerticle {
         Optional<User> optuser = findUserInServerUserList(userName);
         User user;
         if (!optuser.isPresent()) {
-            user = UserFactory.createHumanUser(userName);
-            users.add(user);
+            answerToRequest(response, 400, "User " + userName + " is not connected to server");
+            return;
         } else {
             user = optuser.get();
         }
@@ -313,6 +399,10 @@ public class Server extends AbstractVerticle {
             answerToRequest(response, 400, "Wrong JSON input");
             return;
         }
+        if (!isUserConnected(userName)) {
+            answerToRequest(response, 400, "User " + userName + " is not connected to server");
+            return;
+        }
 
         Optional<Channel> channelOptional = findChannelInList(channelName);
         if (!channelOptional.isPresent()) {
@@ -356,12 +446,8 @@ public class Server extends AbstractVerticle {
     private void analyzeGetListMessageForChannelRequest(HttpServerResponse response, JsonObject json) {
         String channelName = json.getString("channelName");
         Integer numberOfMessageWanted = json.getInteger("numberOfMessage");
-        if (verifyEmptyOrNull(channelName)) {
-            answerToRequest(response, 400, "No channelName given");
-            return;
-        }
-        if (numberOfMessageWanted < 1) {
-            answerToRequest(response, 400, "Number Of Message must be > 0 !");
+        String userName = json.getString("userName");
+        if (!securityCheckGetListMessageForChannel(response, channelName, numberOfMessageWanted, userName)) {
             return;
         }
         Optional<Channel> optChan = findChannelInList(channelName);
@@ -375,6 +461,22 @@ public class Server extends AbstractVerticle {
         }
     }
 
+    private boolean securityCheckGetListMessageForChannel(HttpServerResponse response, String channelName, Integer numberOfMessageWanted, String userName) {
+        if (verifyEmptyOrNull(channelName)) {
+            answerToRequest(response, 400, "No channelName given");
+            return false;
+        }
+        if (!isUserConnected(userName)) {
+            answerToRequest(response, 400, "User " + userName + " is not connected to server");
+            return false;
+        }
+        if (numberOfMessageWanted < 1) {
+            answerToRequest(response, 400, "Number Of Message must be > 0 !");
+            return false;
+        }
+        return true;
+    }
+
     // Fonctionne
     private void getListUserForChannel(RoutingContext routingContext) {
         thawLogger.log(Level.INFO, "In getListUserForChannel request");
@@ -383,20 +485,36 @@ public class Server extends AbstractVerticle {
         if (json == null) {
             routingContext.response().setStatusCode(400).end();
         } else {
-            String channelName = json.getString("channelName");
-            if (verifyEmptyOrNull(channelName)) {
-                answerToRequest(response, 400, "No channelName given");
-                return;
-            }
-            Optional<Channel> channelOptional = findChannelInList(channelName);
-            if (channelOptional.isPresent()) {
-                List<String> tmp = channelOptional.get().getListUser().stream().map(User::getName).collect(Collectors.toList());
-                answerToRequest(response, 200, tmp);
-            } else {
-                answerToRequest(response, 400, "Channel:" + channelName + " doesn't exist");
-            }
-
+            analyzegetListUserForChannelRequest(response, json);
         }
+    }
+
+    private void analyzegetListUserForChannelRequest(HttpServerResponse response, JsonObject json) {
+        String channelName = json.getString("channelName");
+        String userName = json.getString("userName");
+        if (!securityCheckGetListUserForChannel(response, channelName, userName)) {
+            return;
+        }
+
+        Optional<Channel> channelOptional = findChannelInList(channelName);
+        if (channelOptional.isPresent()) {
+            List<String> tmp = channelOptional.get().getListUser().stream().map(User::getName).collect(Collectors.toList());
+            answerToRequest(response, 200, tmp);
+        } else {
+            answerToRequest(response, 400, "Channel:" + channelName + " doesn't exist");
+        }
+    }
+
+    private boolean securityCheckGetListUserForChannel(HttpServerResponse response, String channelName, String userName) {
+        if (verifyEmptyOrNull(channelName, userName)) {
+            answerToRequest(response, 400, "No channelName or userName given");
+            return false;
+        }
+        if (!isUserConnected(userName)) {
+            answerToRequest(response, 400, "User " + userName + " is not connected to server");
+            return false;
+        }
+        return true;
     }
 
     // Fonctionne
@@ -408,42 +526,9 @@ public class Server extends AbstractVerticle {
     }
 
 
-    private void answerToRequest(HttpServerResponse response, int code, Object answer) {
-        String tmp = Json.encodePrettily(answer);
-        if (code == 200) {
-            thawLogger.log(Level.INFO, "code: " + code + "\nanswer: " + tmp);
-        } else {
-            thawLogger.log(Level.WARNING, "code: " + code + "\nanswer: " + tmp);
-        }
-        response.setStatusCode(code)
-                .putHeader("content-type", "application/json")
-                .end(tmp);
+    private boolean isUserConnected(String userName) {
+        return findUserInServerUserList(userName).isPresent();
     }
 
-    private Optional<User> findUserInServerUserList(String userName) {
-        if (verifyEmptyOrNull(userName)) {
-            return Optional.empty();
-        }
-        return users.stream()
-                .filter(u -> u.getName().contentEquals(userName))
-                .findFirst();
-    }
 
-    private Optional<Channel> findChannelInList(String channelName) {
-        if (verifyEmptyOrNull(channelName)) {
-            return Optional.empty();
-        }
-        return channels.stream()
-                .filter(c -> c.getChannelName().contentEquals(channelName))
-                .findFirst();
-    }
-
-    private boolean verifyEmptyOrNull(String... strings) {
-        for (String s : strings) {
-            if (s == null || s.isEmpty()) {
-                return true;
-            }
-        }
-        return false;
-    }
 }

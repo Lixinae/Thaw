@@ -2,6 +2,7 @@ package fr.umlv.thaw.user;
 
 import fr.umlv.thaw.channel.Channel;
 
+import java.util.Arrays;
 import java.util.Objects;
 
 /**
@@ -9,11 +10,17 @@ import java.util.Objects;
  */
 public class HumanUser extends AbstractUser {
 
+    private final byte[] passworHash;
 
-    HumanUser(String nickname) {
+    HumanUser(String nickname, byte[] passworHash) {
         super(nickname);
+        this.passworHash = passworHash;
     }
 
+
+    public boolean compareHash(final byte[] passworHash) {
+        return Arrays.equals(this.passworHash, passworHash);
+    }
 
     /**
      * This method create a new channel with the current HumanUser as creator
@@ -62,4 +69,5 @@ public class HumanUser extends AbstractUser {
     public int hashCode() {
         return super.hashCode();
     }
+
 }
