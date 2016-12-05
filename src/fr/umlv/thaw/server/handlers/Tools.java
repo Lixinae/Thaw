@@ -7,6 +7,7 @@ import io.vertx.core.http.HttpServerResponse;
 import io.vertx.core.json.Json;
 import io.vertx.ext.web.Session;
 
+import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.List;
@@ -21,7 +22,7 @@ public class Tools {
 
     public static byte[] hashToSha256(String password) throws NoSuchAlgorithmException {
         MessageDigest sha256 = MessageDigest.getInstance("SHA-256");
-        byte[] passBytes = password.getBytes();
+        byte[] passBytes = password.getBytes(StandardCharsets.UTF_8);
         return sha256.digest(passBytes);
     }
 
