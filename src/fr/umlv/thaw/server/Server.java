@@ -4,7 +4,6 @@ package fr.umlv.thaw.server;
 import fr.umlv.thaw.channel.Channel;
 import fr.umlv.thaw.channel.ChannelFactory;
 import fr.umlv.thaw.logger.ThawLogger;
-import fr.umlv.thaw.server.handlers.*;
 import fr.umlv.thaw.user.HumanUser;
 import fr.umlv.thaw.user.User;
 import fr.umlv.thaw.user.UserFactory;
@@ -46,20 +45,24 @@ public class Server extends AbstractVerticle {
     private final List<User> authorizedUsers;
     private final ThawLogger thawLogger;
 
+    private final boolean ssl;
+
     public Server() throws IOException {
         channels = new ArrayList<>();
         authorizedUsers = new ArrayList<>();
         thawLogger = new ThawLogger(false);
+        this.ssl = false;
     }
 
     /**
      * @param enableLogger Enable the logger
      * @throws IOException If the logger can't find or create the file
      */
-    public Server(boolean enableLogger) throws IOException {
+    public Server(boolean enableLogger, boolean ssl) throws IOException {
         channels = new ArrayList<>();
         authorizedUsers = new ArrayList<>(); // Need to construct authorized list
         thawLogger = new ThawLogger(enableLogger);// Enable or not the logs of the server
+        this.ssl = ssl;
     }
 
 
@@ -119,17 +122,12 @@ public class Server extends AbstractVerticle {
 //        fut.complete();
 /////////////////////////////////////////////////////////////////////////////////
         final int bindPort = 8080;
-        final boolean ssl = true;
         Router router = Router.router(vertx);
         router.route().handler(CookieHandler.create());
         router.route().handler(BodyHandler.create().setBodyLimit(maxUploadSize));
 
         router.route().handler(SessionHandler.create(LocalSessionStore.create(vertx)));
 
-        router.route("/api/connectToServer").handler(routingContext -> ConnectToServerHandler.create(routingContext, thawLogger, authorizedUsers));
-        router.route("/api/createAccount").handler(routingContext -> CreateAccount.create(routingContext, thawLogger, authorizedUsers));
-        //        router.route("/api/private/*").handler(routingContext -> ThawAuthHandler.create(routingContext, thawLogger));
-        router.route("/api/private/*").handler(routingContext -> ThawAuthHandler.create(routingContext, thawLogger, authorizedUsers));
 
         listOfRequest(router);
         router.route().handler(StaticHandler.create());
@@ -185,17 +183,24 @@ public class Server extends AbstractVerticle {
         }
     }
 
+    // All requests that the server can use
     private void listOfRequest(Router router) {
-        // route to JSON REST APIs
-//        router.post("/api/connectToServer").handler(this::connectToServer);
-        router.post("/api/private/addChannel").handler(routingContext -> AddChannelHandler.create(routingContext, thawLogger, channels, authorizedUsers));
-        router.post("/api/private/deleteChannel").handler(routingContext -> DelChannelHandler.deleteChannel(routingContext, thawLogger, channels));
-        router.post("/api/private/connectToChannel").handler(routingContext -> ConnectToChannelHandler.connectToChannel(routingContext, thawLogger, channels, authorizedUsers));
-        router.post("/api/private/sendMessage").handler(routingContext -> SendMessageHandler.sendMessage(routingContext, thawLogger, channels));
-        router.post("/api/private/getListMessageForChannel").handler(routingContext -> GetListMessageForChannelHandler.getListMessageForChannel(routingContext, thawLogger, channels));
-        router.get("/api/private/getListChannel").handler(routingContext -> GetListChannelsHandler.getListChannels(routingContext, thawLogger, channels));
-        router.post("/api/private/getListUserForChannel").handler(routingContext -> GetListUserForChannelHandler.getListUserForChannel(routingContext, thawLogger, channels));
-        router.route("/api/private/disconnectFromServer").handler(routingContext -> DisconnectFromServerHandler.disconnectFromServer(routingContext, thawLogger, channels, authorizedUsers));
+
+        // No need of post or get for these
+        router.route("/api/connectToServer").handler(routingContext -> Handlers.connectToServerHandle(routingContext, thawLogger, authorizedUsers));
+        router.route("/api/private/disconnectFromServer").handler(routingContext -> Handlers.disconnectFromServerHandle(routingContext, thawLogger));
+        router.route("/api/createAccount").handler(routingContext -> Handlers.createAccountHandle(routingContext, thawLogger, authorizedUsers));
+        router.route("/api/private/*").handler(routingContext -> Handlers.securityCheckHandle(routingContext, thawLogger, authorizedUsers));
+
+
+        // Post & get requests
+        router.post("/api/private/addChannel").handler(routingContext -> Handlers.addChannelHandle(routingContext, thawLogger, channels, authorizedUsers));
+        router.post("/api/private/deleteChannel").handler(routingContext -> Handlers.deleteChannelHandle(routingContext, thawLogger, channels));
+        router.post("/api/private/connectToChannel").handler(routingContext -> Handlers.connectToChannelHandle(routingContext, thawLogger, channels, authorizedUsers));
+        router.post("/api/private/sendMessage").handler(routingContext -> Handlers.sendMessageHandle(routingContext, thawLogger, channels));
+        router.post("/api/private/getListMessageForChannel").handler(routingContext -> Handlers.getListMessageForChannelHandle(routingContext, thawLogger, channels));
+        router.post("/api/private/getListUserForChannel").handler(routingContext -> Handlers.getListUserForChannelHandle(routingContext, thawLogger, channels));
+        router.get("/api/private/getListChannel").handler(routingContext -> Handlers.getListChannelHandle(routingContext, thawLogger, channels));
 
     }
 }

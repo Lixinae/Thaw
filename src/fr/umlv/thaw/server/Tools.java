@@ -1,4 +1,4 @@
-package fr.umlv.thaw.server.handlers;
+package fr.umlv.thaw.server;
 
 import fr.umlv.thaw.channel.Channel;
 import fr.umlv.thaw.logger.ThawLogger;

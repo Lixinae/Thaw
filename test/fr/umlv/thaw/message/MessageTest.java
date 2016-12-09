@@ -5,7 +5,7 @@ import fr.umlv.thaw.user.UserFactory;
 import org.junit.Assert;
 import org.junit.Test;
 
-import static fr.umlv.thaw.server.handlers.Tools.hashToSha256;
+import static fr.umlv.thaw.server.Tools.hashToSha256;
 
 /**
  * Project :Thaw

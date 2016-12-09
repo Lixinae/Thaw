@@ -5,7 +5,7 @@ import fr.umlv.thaw.channel.ChannelFactory;
 import org.junit.Assert;
 import org.junit.Test;
 
-import static fr.umlv.thaw.server.handlers.Tools.hashToSha256;
+import static fr.umlv.thaw.server.Tools.hashToSha256;
 
 
 public class HumanUserTest {

@@ -10,7 +10,7 @@ import org.junit.Test;
 
 import java.nio.file.Paths;
 
-import static fr.umlv.thaw.server.handlers.Tools.hashToSha256;
+import static fr.umlv.thaw.server.Tools.hashToSha256;
 
 /**
  * Project :Thaw
