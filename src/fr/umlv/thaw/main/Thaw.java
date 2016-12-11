@@ -43,7 +43,7 @@ public class Thaw {
         // obviously, this line should be commented in production
 
         System.setProperty("vertx.disableFileCaching", "true");
-        Server server = new Server(true);
+        Server server = new Server(true, true);
         Vertx vertx = Vertx.vertx();
         vertx.deployVerticle(server);
 
