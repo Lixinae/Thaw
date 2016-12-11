@@ -1,6 +1,7 @@
 package fr.umlv.thaw.database;
 
 
+import java.security.NoSuchAlgorithmException;
 import java.sql.Date;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -63,17 +64,6 @@ public interface Database {
 
 
     /**
-     * Execute each request prepared from the batch
-     * and send them to the database
-     *
-     * @throws SQLException if a database access error occurs,
-     *                      this method is called on a closed
-     *                      <code>Statement</code> or the
-     *                      driver does not support batch statements.
-     */
-    void exeBatch() throws SQLException;
-
-    /**
      * Execute a Query that would update the database such as INSERT,
      * DELETE, DROP or any DDL requests. We can also provide an SQL request
      * that will return nothing.
@@ -89,18 +79,24 @@ public interface Database {
      */
     void exeUpda(String query) throws SQLException;
 
+
     /**
-     * This method tell to the database if we must validate after each request the
-     * modifications.
+     * Execute every request that has been registered on th batch
      *
-     * @param b true if we want to commit automatically after a request
-     *          false otherwise
-     * @throws SQLException if a database access error occurs,
-     *                      setAutoCommit(true) is called while participating
-     *                      in a distributed transaction,
-     *                      or this method is called on a closed connection
+     * @throws SQLException if an access errors occurs on the database
      */
-    void setAutoCommit(boolean b) throws SQLException;
+    void executeRegisteredTask() throws SQLException;
+
+    /**
+     * This method insert a new user into the table if he doesn't exist yet.
+     * The password will be ecrypt inside the function.
+     *
+     * @param login    the login of the user
+     * @param password the password that's gonna be encrypt
+     * @throws NoSuchAlgorithmException if we cannot encrypt with our Algorithm
+     * @throws SQLException             if a database access errors occurs
+     */
+    void createLogin(String login, String password) throws NoSuchAlgorithmException, SQLException;
 
     /**
      * Close the connections that may been opened by the database
