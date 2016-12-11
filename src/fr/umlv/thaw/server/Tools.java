@@ -64,7 +64,7 @@ public class Tools {
             return Optional.empty();
         }
         return channels.stream()
-                .filter(c -> c.getChannelName().contentEquals(channelName))
+                .filter(c -> c.getChannelName().equals(channelName))
                 .findFirst();
     }
 

@@ -1,8 +1,8 @@
 package fr.umlv.thaw.channel;
 
 import fr.umlv.thaw.message.Message;
-import fr.umlv.thaw.user.HumanUser;
 import fr.umlv.thaw.user.User;
+import fr.umlv.thaw.user.humanUser.HumanUser;
 
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;

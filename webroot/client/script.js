@@ -6,7 +6,7 @@
 
 
 var currentChannel = "default";
-var username = "blork";
+var username = "empty"; // todo recuperer le nom du user donné dans le login.html
 
 // var  messageV = $("#TextZone"); -> Textzone est un id
 // var  messageV = $(".TextZone"); -> TextZone est une classe
@@ -87,25 +87,16 @@ function selectChannel(){
 	var ul = $("#channels");
 	ul.click(function(event) {
 		var target = getEventTarget(event);
-		var tmpChannel = target.innerHTML;
-		var oldChannel = currentChannel;
-        if (!(tmpChannel == currentChannel)){
-            currentChannel=target.innerHTML;
-        }
-        else if (currentChannel == ""){
-            currentChannel=target.innerHTML;
-        }
-        else{
-            return
-        }
-		$("#currentChannel").html(currentChannel);
+        var targetChannel = target.innerHTML;
+        var oldChannel = $("#currentChannel").html();
         $.post("/api/private/connectToChannel",
-            JSON.stringify({channelName : currentChannel,userName : username,oldChannelName : oldChannel}))
+            JSON.stringify({channelName : targetChannel,userName : username,oldChannelName : oldChannel}))
             .done(function (response){
+                $("#currentChannel").html(targetChannel);
                 getListUsersForChan(currentChannel);
             })
             .fail(function(response){
-                alert("fail connectToChannel");
+//                alert("fail connectToChannel");
             })
             .always(function() {
 
@@ -185,10 +176,10 @@ function getListChannels(){
 				// Provoque un effet "On/Off" au chargement
 				var string = "<h2>Channels</h2>"+"<ul id=\"channels\" onclick=\"selectChannel()\">"
                 $.each(response,function(key,val){
-                    string = string +"<li> "+ val+" </li>";
+                    string = string +"<li>"+ val+"</li>";
                 });
                 string = string +"</ul>";
-                alert(string);
+//                alert(string);
                 listChannel.append(string);
 
             })
@@ -207,14 +198,14 @@ function getListUsersForChan(currentChannel){
 	var usersListOnChan = $(".listUsers");
 	usersListOnChan.children().remove();
 
-
+    var currentChannel = $("#currentChannel").html();
 	$.post("/api/private/getListUserForChannel",
 	    JSON.stringify({channelName : currentChannel}))
 	    .done(function(response){
-            alert(response);
+//            alert(response);
             var string ="<h2>Users</h2>"+"<ul id=\"usersOnChan\">";
             $.each(response,function(key,val){
-                string = string +"<li> "+ val+" </li>";
+                string = string +"<li>"+ val+"</li>";
             });
             string = string + "</ul>";
             usersListOnChan.append(string);

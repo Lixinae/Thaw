@@ -5,8 +5,8 @@ import fr.umlv.thaw.channel.ChannelFactory;
 import fr.umlv.thaw.logger.ThawLogger;
 import fr.umlv.thaw.message.Message;
 import fr.umlv.thaw.message.MessageFactory;
-import fr.umlv.thaw.user.HumanUser;
 import fr.umlv.thaw.user.User;
+import fr.umlv.thaw.user.humanUser.HumanUser;
 import io.vertx.core.http.HttpServerResponse;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.RoutingContext;
@@ -30,7 +30,7 @@ class Handlers {
     /*##############################################################*/
     /////////////////// Connect to server Handler ///////////////////
     /*##############################################################*/
-    static void connectToServerHandle(RoutingContext routingContext, ThawLogger thawLogger, final List<User> authorizedUsers) {
+    static void connectToServerHandle(RoutingContext routingContext, ThawLogger thawLogger, final List<HumanUser> authorizedHumanUsers) {
         thawLogger.log(Level.INFO, "In connectToServer request");
         HttpServerResponse response = routingContext.response();
         JsonObject json = routingContext.getBodyAsJson();
@@ -42,11 +42,11 @@ class Handlers {
         if (session == null) {
             Tools.answerToRequest(response, 400, "No session", thawLogger);
         } else {
-            analyzeConnecToServerRequest(session, response, json, thawLogger, authorizedUsers);
+            analyzeConnecToServerRequest(session, response, json, thawLogger, authorizedHumanUsers);
         }
     }
 
-    private static void analyzeConnecToServerRequest(Session session, HttpServerResponse response, JsonObject json, ThawLogger thawLogger, List<User> authorizedUsers) {
+    private static void analyzeConnecToServerRequest(Session session, HttpServerResponse response, JsonObject json, ThawLogger thawLogger, List<HumanUser> authorizedHumanUsers) {
         String userName = json.getString("userName");
         String password = json.getString("password");
         byte[] passwordHash;
@@ -57,7 +57,7 @@ class Handlers {
             return;
         }
         byte[] finalPasswordHash = passwordHash;
-        for (User u : authorizedUsers) {
+        for (HumanUser u : authorizedHumanUsers) {
             if (u.getName().contentEquals(userName) && u.compareHash(finalPasswordHash)) {
                 session.put("user", u);
                 break;
@@ -65,12 +65,12 @@ class Handlers {
         }
         if (session.get("user") == null) {
             response.setStatusCode(400)
-                    .end("User: '" + userName + "' authentication failed");
+                    .end("HumanUser: '" + userName + "' authentication failed");
         } else {
             response.setStatusCode(204)
-                    .end("User: '" + userName + "' authentication success");
+                    .end("HumanUser: '" + userName + "' authentication success");
         }
-//        Tools.answerToRequest(response, 204, "User: '" + userName + "' authenticated", thawLogger);
+//        Tools.answerToRequest(response, 204, "HumanUser: '" + userName + "' authenticated", thawLogger);
     }
 
 
@@ -96,7 +96,7 @@ class Handlers {
     /////////////////// Create Account Handler ///////////////////
     /*############################################################*/
 
-    static void createAccountHandle(RoutingContext routingContext, ThawLogger thawLogger, List<User> authorizedUsers) {
+    static void createAccountHandle(RoutingContext routingContext, ThawLogger thawLogger, List<HumanUser> authorizedHumanUsers) {
 
     }
 
@@ -106,12 +106,12 @@ class Handlers {
     /*############################################################*/
     // Todo
     // Check if the user is connected to the server
-    static void securityCheckHandle(RoutingContext routingContext, ThawLogger thawLogger, List<User> authorizedUsers) {
+    static void securityCheckHandle(RoutingContext routingContext, ThawLogger thawLogger, List<HumanUser> authorizedHumanUsers) {
         Session session = routingContext.session();
         HttpServerResponse response = routingContext.response();
-        User user = session.get("user");
-        if (user == null || !authorizedUsers.contains(user)) {
-            Tools.answerToRequest(response, 403, "User does not have the access to private api ", thawLogger);
+        HumanUser humanUser = session.get("user");
+        if (humanUser == null || !authorizedHumanUsers.contains(humanUser)) {
+            Tools.answerToRequest(response, 403, "HumanUser does not have the access to private api ", thawLogger);
         } else {
             // Poursuis sur celui sur lequel il pointais avant d'arriver la
             routingContext.next();
@@ -125,7 +125,7 @@ class Handlers {
     /////////////////// Add Channel Handler ///////////////////
     /*########################################################*/
 
-    static void addChannelHandle(RoutingContext routingContext, ThawLogger thawLogger, List<Channel> channels, List<User> users) {
+    static void addChannelHandle(RoutingContext routingContext, ThawLogger thawLogger, List<Channel> channels, List<HumanUser> humanUsers) {
         thawLogger.log(Level.INFO, "In addChannel request");
         HttpServerResponse response = routingContext.response();
         Session session = routingContext.session();
@@ -133,11 +133,11 @@ class Handlers {
         if (json == null) {
             Tools.answerToRequest(response, 400, "Wrong JSON input", thawLogger);
         } else {
-            analyzeAddChannelRequest(session, response, json, thawLogger, channels, users);
+            analyzeAddChannelRequest(session, response, json, thawLogger, channels, humanUsers);
         }
     }
 
-    private static void analyzeAddChannelRequest(Session session, HttpServerResponse response, JsonObject json, ThawLogger thawLogger, List<Channel> channels, List<User> users) {
+    private static void analyzeAddChannelRequest(Session session, HttpServerResponse response, JsonObject json, ThawLogger thawLogger, List<Channel> channels, List<HumanUser> humanUsers) {
         String newChannelName = json.getString("newChannelName");
         String creatorName = json.getString("creatorName");
         thawLogger.log(Level.INFO, newChannelName + " " + creatorName + " ");
@@ -149,12 +149,7 @@ class Handlers {
         if (optChannel.isPresent()) {
             Tools.answerToRequest(response, 400, "Channel " + newChannelName + " already exists", thawLogger);
         } else {
-            User user = session.get("user");
-            if (user.isUserBot()) {
-                Tools.answerToRequest(response, 400, "Bots can't create channels ! Bot name = " + creatorName, thawLogger);
-                return;
-            }
-            HumanUser creator = (HumanUser) user; // Todo Moche -> changer plus tard
+            HumanUser creator = session.get("user");
             createAndAddChannel(newChannelName, creator, channels);
             Tools.answerToRequest(response, 200, "Channel " + newChannelName + " successfully created", thawLogger);
         }
@@ -188,7 +183,7 @@ class Handlers {
     private static void analyzeDeleteChannelRequest(HttpServerResponse response, Session session, JsonObject json, ThawLogger thawLogger) {
         // TODO : Deconnecter tout les utilisateur du channel avant sa destruction et les
         // remettre sur le channel "default"
-//        User user = session.get("user");
+//        HumanUser user = session.get("user");
     }
 
 
@@ -197,7 +192,7 @@ class Handlers {
     /////////////////// Connect to Channel Handler ///////////////////
     /*################################################################*/
 
-    static void connectToChannelHandle(RoutingContext routingContext, ThawLogger thawLogger, List<Channel> channels, List<User> users) {
+    static void connectToChannelHandle(RoutingContext routingContext, ThawLogger thawLogger, List<Channel> channels) {
         thawLogger.log(Level.INFO, "In connectToChannel request");
         HttpServerResponse response = routingContext.response();
         JsonObject json = routingContext.getBodyAsJson();
@@ -205,47 +200,51 @@ class Handlers {
         if (json == null) {
             Tools.answerToRequest(response, 400, "Wrong Json format", thawLogger);
         } else {
-            analyzeConnecToChannelRequest(response, session, json, thawLogger, channels, users);
+            analyzeConnecToChannelRequest(response, session, json, thawLogger, channels);
         }
     }
 
     //TODO : refactoriser davantage le code
-    private static void analyzeConnecToChannelRequest(HttpServerResponse response, Session session, JsonObject json, ThawLogger thawLogger, List<Channel> channels, List<User> users) {
+    private static void analyzeConnecToChannelRequest(HttpServerResponse response, Session session, JsonObject json, ThawLogger thawLogger, List<Channel> channels) {
         String oldChannelName = json.getString("oldChannelName");
         String channelName = json.getString("channelName");
-        String userName = json.getString("userName");
 
-        if (Tools.verifyEmptyOrNull(oldChannelName, channelName, userName)) {
+        if (Tools.verifyEmptyOrNull(oldChannelName, channelName)) {
             Tools.answerToRequest(response, 400, "Wrong JSON input", thawLogger);
             return;
         }
         Optional<Channel> optchannel = Tools.findChannelInList(channels, channelName);
-
+        System.out.println("optChan : " + optchannel);
         if (!optchannel.isPresent()) {
             Tools.answerToRequest(response, 400, "Channel :" + channelName + " does not exist", thawLogger);
         } else {
             Channel chan = optchannel.get();
-            User user = session.get("user");
-            Optional<User> tmpUserInChan = chan.findUser(user);
+            HumanUser humanUser = session.get("user");
+            Optional<User> tmpUserInChan = chan.findUser(humanUser);
+            // Check if the user is already connected to the given channel
             if (tmpUserInChan.isPresent()) {
-                Tools.answerToRequest(response, 400, "User :" + user + " is already connected", thawLogger);
+                Tools.answerToRequest(response, 400, "HumanUser :" + humanUser.getName() + " is already connected", thawLogger);
             } else {
                 Optional<Channel> optChannelOld = Tools.findChannelInList(channels, oldChannelName);
                 if (!optChannelOld.isPresent()) {
                     Tools.answerToRequest(response, 400, "OldChannel " + oldChannelName + " does not exist", thawLogger);
                 } else {
                     Channel oldChan = optChannelOld.get();
-                    establishConnection(user, chan, oldChan);
-                    String answer = "User :" + user + " successfully quit channel :'" + oldChannelName + '\'' + " and connected to channel :'" + channelName + '\'';
-                    Tools.answerToRequest(response, 200, answer, thawLogger);
+                    if (establishConnection(humanUser, chan, oldChan)) {
+                        String answer = "HumanUser :" + humanUser + " successfully quit channel :'" + oldChannelName + '\'' + " and connected to channel :'" + channelName + '\'';
+                        Tools.answerToRequest(response, 200, answer, thawLogger);
+                    } else {
+                        String answer = "HumanUser :" + humanUser + " failed to quit or join channel";
+                        Tools.answerToRequest(response, 400, answer, thawLogger);
+                    }
+
                 }
             }
         }
     }
 
-    private static void establishConnection(User user, Channel chan, Channel oldChan) {
-        user.quitChannel(oldChan);
-        user.joinChannel(chan);
+    private static boolean establishConnection(HumanUser humanUser, Channel chan, Channel oldChan) {
+        return humanUser.quitChannel(oldChan) && humanUser.joinChannel(chan);
     }
 
 
@@ -286,16 +285,16 @@ class Handlers {
             return;
         }
         Channel chan = channelOptional.get();
-        User user = session.get("user");
+        HumanUser humanUser = session.get("humanUser");
 
-        if (!chan.checkIfUserIsConnected(user)) {
-            Tools.answerToRequest(response, 400, "User: '" + user.getName() + "' is not connected to chan", thawLogger);
+        if (!chan.checkIfUserIsConnected(humanUser)) {
+            Tools.answerToRequest(response, 400, "HumanUser: '" + humanUser.getName() + "' is not connected to chan", thawLogger);
             return;
         }
 
-        Message mes = MessageFactory.createMessage(user, date, message);
+        Message mes = MessageFactory.createMessage(humanUser, date, message);
 
-        user.sendMessage(chan, mes);
+        humanUser.sendMessage(chan, mes);
         // Todo : Analyser le message si un bot est connecté
 
         // TODO Stocker les information du message dans la base de donnée du channel
@@ -369,8 +368,7 @@ class Handlers {
 
     private static void analyzegetListUserForChannelRequest(HttpServerResponse response, JsonObject json, ThawLogger thawLogger, List<Channel> channels) {
         String channelName = json.getString("channelName");
-        String userName = json.getString("userName");
-        if (!securityCheckGetListUserForChannel(response, channelName, userName, thawLogger)) {
+        if (!securityCheckGetListUserForChannel(response, channelName, thawLogger)) {
             return;
         }
         Optional<Channel> channelOptional = Tools.findChannelInList(channels, channelName);
@@ -382,9 +380,9 @@ class Handlers {
         }
     }
 
-    private static boolean securityCheckGetListUserForChannel(HttpServerResponse response, String channelName, String userName, ThawLogger thawLogger) {
-        if (Tools.verifyEmptyOrNull(channelName, userName)) {
-            Tools.answerToRequest(response, 400, "No channelName or userName given", thawLogger);
+    private static boolean securityCheckGetListUserForChannel(HttpServerResponse response, String channelName, ThawLogger thawLogger) {
+        if (Tools.verifyEmptyOrNull(channelName)) {
+            Tools.answerToRequest(response, 400, "No channelName given", thawLogger);
             return false;
         }
         return true;
