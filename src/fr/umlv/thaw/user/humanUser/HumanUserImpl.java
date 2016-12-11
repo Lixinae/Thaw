@@ -62,12 +62,24 @@ public class HumanUserImpl implements HumanUser {
 
     @Override
     public boolean equals(Object o) {
-        return this == o || o instanceof HumanUserImpl && super.equals(o);
+        if (this == o) return true;
+        if (!(o instanceof HumanUserImpl)) return false;
+
+        HumanUserImpl humanUser = (HumanUserImpl) o;
+
+        if (!name.equals(humanUser.name)) {
+            System.out.println("poirreau");
+            return false;
+        }
+        return Arrays.equals(passwordHash, humanUser.passwordHash);
     }
 
     @Override
     public int hashCode() {
-        return super.hashCode();
+        int result = name.hashCode();
+        result = 31 * result + channels.hashCode();
+        result = 31 * result + Arrays.hashCode(passwordHash);
+        return result;
     }
 
     @Override

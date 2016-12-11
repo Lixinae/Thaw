@@ -149,14 +149,13 @@ public class ChannelImpl implements Channel {
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
+        if (!(o instanceof ChannelImpl)) return false;
 
         ChannelImpl channel = (ChannelImpl) o;
 
         if (!channelName.equals(channel.channelName)) return false;
         if (!creator.equals(channel.creator)) return false;
         return messagesQueue.equals(channel.messagesQueue);
-
     }
 
     @Override

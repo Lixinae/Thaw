@@ -42,7 +42,7 @@ public class Tools {
      * @param cryptedMessage message encrypted by SHA256 protocol
      * @return a String representation of the encrypted message
      */
-    public static String Sha256ToString(byte[] cryptedMessage) {
+    public static String sha256ToString(byte[] cryptedMessage) {
         return String.format("%064x", new BigInteger(1, cryptedMessage));
     }
 

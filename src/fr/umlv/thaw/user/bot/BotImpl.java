@@ -29,37 +29,32 @@ public class BotImpl implements Bot {
     }
 
     @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (!(o instanceof BotImpl)) return false;
-        if (!super.equals(o)) return false;
-
-        BotImpl botImpl = (BotImpl) o;
-
-        return path != null ? path.equals(botImpl.path) : botImpl.path == null;
-
-    }
-
-    @Override
-    public int hashCode() {
-        int result = super.hashCode();
-        result = 31 * result + (path != null ? path.hashCode() : 0);
-        return result;
-    }
-
-    @Override
     public boolean sendMessage(Channel chan, Message message) {
         Objects.requireNonNull(chan);
         Objects.requireNonNull(message);
         return chan.addMessageToQueue(message);
     }
 
-    /**
-     * @return the user name
-     */
     @Override
     public String getName() {
         return name;
     }
 
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof BotImpl)) return false;
+
+        BotImpl bot = (BotImpl) o;
+
+        if (path != null ? !path.equals(bot.path) : bot.path != null) return false;
+        return name != null ? name.equals(bot.name) : bot.name == null;
+    }
+
+    @Override
+    public int hashCode() {
+        int result = path != null ? path.hashCode() : 0;
+        result = 31 * result + (name != null ? name.hashCode() : 0);
+        return result;
+    }
 }

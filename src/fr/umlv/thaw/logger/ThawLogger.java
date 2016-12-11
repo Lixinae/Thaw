@@ -15,7 +15,7 @@ public class ThawLogger {
     private final boolean enabled;
 
     public ThawLogger(boolean enabled) throws IOException {
-        String fileName = setNameWithCurrentDate();
+        String fileName = Objects.requireNonNull(setNameWithCurrentDate());
         FileHandler fileHandler = new FileHandler(fileName, true);
         Logger l = Logger.getLogger("");
         fileHandler.setFormatter(new SimpleFormatter());

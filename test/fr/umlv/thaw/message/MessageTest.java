@@ -1,7 +1,7 @@
 package fr.umlv.thaw.message;
 
-import fr.umlv.thaw.user.User;
-import fr.umlv.thaw.user.UserFactory;
+import fr.umlv.thaw.user.humanUser.HumanUser;
+import fr.umlv.thaw.user.humanUser.HumanUserFactory;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -26,40 +26,40 @@ public class MessageTest {
 
     @Test(expected = NullPointerException.class)
     public void constructorContentNullDatePositive() throws Exception {
-        new Message(UserFactory.createHumanUser("truc", hashToSha256("password")), 10, null);
+        new Message(HumanUserFactory.createHumanUser("truc", hashToSha256("password")), 10, null);
     }
 
     @Test(expected = IllegalArgumentException.class)
     public void constructorDateNegative() throws Exception {
-        new Message(UserFactory.createHumanUser("truc", hashToSha256("password")), -10, "truc");
+        new Message(HumanUserFactory.createHumanUser("truc", hashToSha256("password")), -10, "truc");
     }
 
     @Test
     public void constructorAllCorrect() throws Exception {
-        new Message(UserFactory.createHumanUser("truc", hashToSha256("password")), 100, "truc");
+        new Message(HumanUserFactory.createHumanUser("truc", hashToSha256("password")), 100, "truc");
     }
 
     /////// GET SENDER ///////
     @Test
     public void getSender() throws Exception {
-        User user = UserFactory.createHumanUser("Blark", hashToSha256("password"));
-        Message test = new Message(user, 10, "monMessage");
-        Assert.assertEquals(test.getSender(), user);
+        HumanUser humanUser = HumanUserFactory.createHumanUser("Blark", hashToSha256("password"));
+        Message test = new Message(humanUser, 10, "monMessage");
+        Assert.assertEquals(test.getSender(), humanUser);
     }
 
     /////// GET DATE ///////
     @Test
     public void getDate() throws Exception {
-        User user = UserFactory.createHumanUser("Blark", hashToSha256("password"));
-        Message test = new Message(user, 10, "monMessage");
+        HumanUser humanUser = HumanUserFactory.createHumanUser("Blark", hashToSha256("password"));
+        Message test = new Message(humanUser, 10, "monMessage");
         Assert.assertEquals(test.getDate(), 10);
     }
 
     /////// GET CONTENT ///////
     @Test
     public void getContent() throws Exception {
-        User user = UserFactory.createHumanUser("Blark", hashToSha256("password"));
-        Message test = new Message(user, 10, "monMessage");
+        HumanUser humanUser = HumanUserFactory.createHumanUser("Blark", hashToSha256("password"));
+        Message test = new Message(humanUser, 10, "monMessage");
         Assert.assertEquals(test.getContent(), "monMessage");
     }
 
