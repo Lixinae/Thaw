@@ -1,26 +1,4 @@
-//////// FONCTION OUTILS ALLEGEMENT CODE////////////
 
-/*Fonction formattant une chaine de message en rajoutant
-les informations de date et les balises HTML necessaires au
-bon formattage.
-
-Format actuel :
-<p>hh:mm:ss [username] : <br> monMessage <br>
-
-le split permet de recuperer les sauts de lignes et
-y inserer les balises html adequat pour le formattage
-*/
-function chatMessageFormatting(username,msg,dateAsLong){
-    var date = new Date(dateAsLong);
-    var hours = date.getHours();
-    var minutes = date.getMinutes();
-    var seconds = date.getSeconds();
-    if(msg.length > 512){
-       msg=msg.slice(0,512)
-    }
-    return "<p>"+ hours+":"+minutes+ ":"+ seconds+" ["+username+"] : "
-                                   +"<br>"+msg.split("\n").join("<br>")+"</p>"+"<br>";
-}
 
 
 
@@ -74,7 +52,7 @@ function textAreaDefaultValueDisappearOnClick(){
 // TODO
 function createChannel(){
 
-	$.post("/api/createChannel",
+	$.post("/api/private/createChannel",
 	    JSON.stringify({channelName:newChannelName,creatorName:username}))
 	    .done(function(response){
             alert("success create channel");
@@ -90,7 +68,7 @@ function createChannel(){
 // TODO
 function deleteChannel(){
 
-	$.post("/api/deleteChannel",
+	$.post("/api/private/deleteChannel",
 	    JSON.stringify({channelName:target,userName:username}))
 	    .done(function(response){
             alert("success delete channel");
@@ -121,7 +99,7 @@ function selectChannel(){
             return
         }
 		$("#currentChannel").html(currentChannel);
-        $.post("/api/connectToChannel",
+        $.post("/api/private/connectToChannel",
             JSON.stringify({channelName : currentChannel,userName : username,oldChannelName : oldChannel}))
             .done(function (response){
                 getListUsersForChan(currentChannel);
@@ -139,7 +117,7 @@ function selectChannel(){
 // Envoie le message au serveur qui l'ajoutera à la base de donné du channel
 function sendMessage(){
     var  messageV = $('textArea#TextZone');
-    $.post("/api/sendMessage",
+    $.post("/api/private/sendMessage",
 	    JSON.stringify({channel : currentChannel, message : messageV.val(),username : username}))
 	    .done(function(response){
             alert("success send message");
@@ -159,7 +137,7 @@ function getListMessageForChannel(){
 	var listChannel = $(".listChannels");
 	listChannel.children().remove();
 
-	$.post("/api/getListMessageForChannel",
+	$.post("/api/private/getListMessageForChannel",
 		JSON.stringify({channelName:currentChannel,numberOfMessage:1000}))
 	    .done(function(response){
 	        // Formater correctement les messages
@@ -202,7 +180,7 @@ function getListChannels(){
 	listChannel.children().remove();
 
     //listChannel.load("index.html .listChannels");
-	$.get("/api/getListChannel")
+	$.get("/api/private/getListChannel")
 	        .done(function(response){
 				// Provoque un effet "On/Off" au chargement
 				var string = "<h2>Channels</h2>"+"<ul id=\"channels\" onclick=\"selectChannel()\">"
@@ -230,7 +208,7 @@ function getListUsersForChan(currentChannel){
 	usersListOnChan.children().remove();
 
 
-	$.post("/api/getListUserForChannel",
+	$.post("/api/private/getListUserForChannel",
 	    JSON.stringify({channelName : currentChannel}))
 	    .done(function(response){
             alert(response);
@@ -250,7 +228,7 @@ function getListUsersForChan(currentChannel){
 }
 
 function disconnectFromServer(){
-		$.post("/api/disconnectFromServer",
+		$.post("/api/private/disconnectFromServer",
 	    JSON.stringify({userName : userName}))
 	    .done(function(response){
 
@@ -262,6 +240,30 @@ function disconnectFromServer(){
 
         });
 	
+}
+
+//////// FONCTION OUTILS ALLEGEMENT CODE////////////
+
+/*Fonction formattant une chaine de message en rajoutant
+les informations de date et les balises HTML necessaires au
+bon formattage.
+
+Format actuel :
+<p>hh:mm:ss [username] : <br> monMessage <br>
+
+le split permet de recuperer les sauts de lignes et
+y inserer les balises html adequat pour le formattage
+*/
+function chatMessageFormatting(username,msg,dateAsLong){
+    var date = new Date(dateAsLong);
+    var hours = date.getHours();
+    var minutes = date.getMinutes();
+    var seconds = date.getSeconds();
+    if(msg.length > 512){
+       msg=msg.slice(0,512)
+    }
+    return "<p>"+ hours+":"+minutes+ ":"+ seconds+" ["+username+"] : "
+                                   +"<br>"+msg.split("\n").join("<br>")+"</p>"+"<br>";
 }
 
 // Compatibilite pour IE si besoin
