@@ -56,6 +56,7 @@ public class Server extends AbstractVerticle {
 
     /**
      * @param enableLogger Enable the logger
+     * @param ssl          Enable ssl
      * @throws IOException If the logger can't find or create the file
      */
     public Server(boolean enableLogger, boolean ssl) throws IOException {
