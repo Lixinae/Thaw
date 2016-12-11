@@ -30,6 +30,20 @@ public interface Database {
      */
     void setPrepStringValue(int idx, String value, boolean addToBatch) throws SQLException;
 
+
+    /**
+     * Set the argument from the prepared request at the index idx at the value "value"
+     *
+     * @param idx        the index in which the String will be insert into the request
+     * @param value      the value of the argument
+     * @param addToBatch if true then add the prepared request into the batch,
+     *                   if false, the request is not finished yet and other arguments will follows
+     * @throws SQLException if a database access error occurs or
+     *                      this method is called on a closed PreparedStatement
+     */
+    void setPrepLongValue(int idx, Long value, boolean addToBatch) throws SQLException;
+
+
     /**
      * Set the argument from the prepared request at the index idx at the date "date"
      *
@@ -97,6 +111,19 @@ public interface Database {
      * @throws SQLException             if a database access errors occurs
      */
     void createLogin(String login, String password) throws NoSuchAlgorithmException, SQLException;
+
+
+    /**
+     * This method allows us to stock a message into a table that could be created
+     * if he doesn't exist yet
+     *
+     * @param channelName the table in which we must insert the message
+     * @param date        the date when the message has been sent
+     * @param msg         the message to stock
+     * @param author      the author of the message
+     * @throws SQLException if a database access errors occurs
+     */
+    void addMessageToChannelTable(String channelName, long date, String msg, String author) throws SQLException;
 
     /**
      * Close the connections that may been opened by the database

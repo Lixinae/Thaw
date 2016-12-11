@@ -3,14 +3,23 @@ package fr.umlv.thaw.database;
 
 import fr.umlv.thaw.server.Tools;
 
+import java.nio.file.FileSystems;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.security.NoSuchAlgorithmException;
 import java.sql.*;
+import java.text.SimpleDateFormat;
 import java.time.LocalDate;
 import java.util.LinkedList;
 import java.util.Objects;
 
+/**
+ * This class represent an implementation of a Database
+ * with the SQLITE driver
+ */
 public class DatabaseImpl implements Database {
 
+    private final Path pathToDB;
     private final String dbName;
     private final LinkedList<String> channelsName = new LinkedList<>();
     private final Class sqlite = Class.forName("org.sqlite.JDBC");//to load sqlite.jar
@@ -19,9 +28,19 @@ public class DatabaseImpl implements Database {
     private final Statement state;
     private PreparedStatement prep;
 
-    public DatabaseImpl(String dbName) throws ClassNotFoundException, SQLException {
+
+    /**
+     * Construct a representation of our database
+     *
+     * @param pathToDB the path in which the database will be loaded / created
+     * @param dbName   the file name of the database without the .db extension
+     * @throws ClassNotFoundException if we cannot find the SQLITE library
+     * @throws SQLException           if an error occurs during the creation of the database
+     */
+    public DatabaseImpl(Path pathToDB, String dbName) throws ClassNotFoundException, SQLException {
+        this.pathToDB = Objects.requireNonNull(pathToDB);
         this.dbName = Objects.requireNonNull(dbName);
-        forGetConnection = "jdbc:sqlite:" + dbName + ".db";
+        forGetConnection = "jdbc:sqlite:" + pathToDB + FileSystems.getDefault().getSeparator() + dbName + ".db";
         co = createConnection();
         state = createStatement();
     }
@@ -32,7 +51,8 @@ public class DatabaseImpl implements Database {
     //TODO Ne pas oublier de virer le main une fois que l'on aura fait toutes
     // les methodes necessaire
     public static void main(String[] args) throws Exception {
-        DatabaseImpl myDB = new DatabaseImpl("MonTest");//Creation base du fichier toto.db
+        String sep = FileSystems.getDefault().getSeparator();
+        DatabaseImpl myDB = new DatabaseImpl(Paths.get("../db"), "mafia");//Creation base du fichier toto.db
         myDB.exeUpda("drop table if exists people;");
         myDB.exeUpda("create table people (name, occupation, date);");
         myDB.createPrepState(
@@ -83,13 +103,43 @@ public class DatabaseImpl implements Database {
         }
 
         //test de createLogin
-        myDB.createLogin("George", "12345@A");
-        myDB.createLogin("TotoLeBus", "TotoLeBus");
+        try {
+            myDB.createLogin("George", "12345@A");
+            myDB.createLogin("TotoLeBus", "TotoLeBus");
+        } catch (SQLException sql) {
+            //ne rien faire car pas envie de planter sur une erreur
+        }
         rs = myDB.executeQuery("select * from users");
         while (rs.next()) {
             System.out.println("login : " + rs.getString("LOGIN"));
             System.out.println("pswd  : " + rs.getString("PSWD"));
         }
+
+
+        //test addMessageToChannelTable
+        myDB.addMessageToChannelTable("Chan1", System.currentTimeMillis(), "je suis suuiiisssse", "un barbu");
+        myDB.addMessageToChannelTable("Chan1", System.currentTimeMillis(), "je suis Marron", "un troll");
+        rs = myDB.executeQuery("select * from Chan1");
+        SimpleDateFormat form = new SimpleDateFormat("dd MMM yyyy HH: mm");
+        while (rs.next()) {
+            System.out.println("channel : Chan1");
+            System.out.println("DATE : " + form.format(new Date(rs.getLong("DATE"))));
+            System.out.println("MESSAGE  : " + rs.getString("MESSAGE"));
+            System.out.println("AUTHOR  : " + rs.getString("AUTHOR"));
+        }
+
+        myDB.addMessageToChannelTable("SuperChannel", System.currentTimeMillis(), "je suis ...", "foreveralone");
+        myDB.addMessageToChannelTable("SupperChannel", System.currentTimeMillis(), "for ever alone :@", "foreveralone");
+        rs = myDB.executeQuery("select * from SupperChannel");
+
+        while (rs.next()) {
+            System.out.println("channel : SuperChannel");
+            System.out.println("DATE : " + form.format(new Date(rs.getLong("DATE"))));
+            System.out.println("MESSAGE  : " + rs.getString("MESSAGE"));
+            System.out.println("AUTHOR  : " + rs.getString("AUTHOR"));
+        }
+
+
         //Ne pas oublier ensuite de fermer notre bdd et le ResultSet precedemment ouvert.
         //toujours fermer la bdd en dernier sous peine d'erreur
         rs.close();
@@ -108,11 +158,13 @@ public class DatabaseImpl implements Database {
     /*
     * Public's method
     * */
+    @Override
     public void createPrepState(String query) throws SQLException {
         Objects.requireNonNull(query);
         prep = co.prepareStatement(query);
     }
 
+    @Override
     public void setPrepStringValue(int idx, String value, boolean addToBatch) throws SQLException {
         Objects.requireNonNull(value);
         if (idx <= 0) {
@@ -124,6 +176,20 @@ public class DatabaseImpl implements Database {
         }
     }
 
+    @Override
+    public void setPrepLongValue(int idx, Long value, boolean addToBatch) throws SQLException {
+        Objects.requireNonNull(value);
+        if (idx <= 0) {
+            throw new IllegalArgumentException("idx must be > 0");
+        }
+        prep.setLong(idx, value);
+        if (addToBatch) {
+            prep.addBatch();
+        }
+    }
+
+
+    @Override
     public void setPrepDateValue(int idx, Date date, boolean addToBatch) throws SQLException {
         if (idx <= 0) {
             throw new IllegalArgumentException("idx must be > 0");
@@ -134,14 +200,23 @@ public class DatabaseImpl implements Database {
         }
     }
 
+    @Override
     public ResultSet executeQuery(String query) throws SQLException {
         Objects.requireNonNull(query);
         return state.executeQuery(query);
     }
 
+    @Override
     public void exeUpda(String query) throws SQLException {
         Objects.requireNonNull(query);
         state.executeUpdate(query);
+    }
+
+    @Override
+    public void executeRegisteredTask() throws SQLException {
+        setAutoCommit(false);
+        exeBatch();
+        setAutoCommit(true);
     }
 
     @Override
@@ -149,18 +224,26 @@ public class DatabaseImpl implements Database {
         Objects.requireNonNull(login);
         Objects.requireNonNull(password);
         String cryptPass = Tools.Sha256ToString(Tools.hashToSha256(password));
-        exeUpda(createUsersTableRequest().toString());
-        createPrepState(prepareInsertLogPswdIntoTable());
+        exeUpda(createUsersTableRequest());
+        createPrepState(prepareInsertTwoValuesIntoTable());
         insertLogPswIntoTable(login, cryptPass);
         executeRegisteredTask();
     }
 
-    public void executeRegisteredTask() throws SQLException {
-        setAutoCommit(false);
-        exeBatch();
-        setAutoCommit(true);
+    @Override
+    public void addMessageToChannelTable(String channelName, long date, String msg, String author) throws SQLException {
+        Objects.requireNonNull(channelName);
+        recquirePositive(date);
+        Objects.requireNonNull(msg);
+        Objects.requireNonNull(author);
+        exeUpda(createChannelTableRequest(channelName));
+        createPrepState(prepareInsertThreeValuesIntoTable(channelName));
+        insertDateMessageAuthor(date, msg, author);
+        executeRegisteredTask();
     }
 
+
+    @Override
     public void close() throws SQLException {
         co.close();
     }
@@ -176,22 +259,42 @@ public class DatabaseImpl implements Database {
         co.setAutoCommit(b);
     }
 
-    private StringBuilder createUsersTableRequest() {
-        StringBuilder createRequest = new StringBuilder();
-        createRequest.append("create table if not exists users(")
-                .append("LOGIN TEXT NOT NULL, ")
-                .append("PSWD TEXT NOT NULL, ")
-                .append("CONSTRAINT uniq UNIQUE(LOGIN)")
-                .append(");");
-        return createRequest;
+    private String createUsersTableRequest() {
+        return "create table if not exists users(" +
+                "LOGIN TEXT NOT NULL, " +
+                "PSWD TEXT NOT NULL, " +
+                "CONSTRAINT uniq UNIQUE(LOGIN)" +
+                ");";
     }
 
-    private String prepareInsertLogPswdIntoTable() {
+    //TODO La mettre en public pour permettre l'ajout d'une table a l'exterieur sans pour autant mettre de message ?
+    private String createChannelTableRequest(String channelname) {
+        return String.format("create table if not exists %s(DATE INTEGER NOT NULL, MESSAGE TEXT NOT NULL, AUTHOR TEXT NOT NULL);", channelname);
+    }
+
+    private String prepareInsertTwoValuesIntoTable() {
         return "insert into users values (?, ?)";
+    }
+
+    private String prepareInsertThreeValuesIntoTable(String channelName) {
+        return "insert into " + Objects.requireNonNull(channelName) + " values (?, ?, ?)";
     }
 
     private void insertLogPswIntoTable(String login, String cryptPass) throws SQLException {
         setPrepStringValue(1, login, false);
         setPrepStringValue(2, cryptPass, true);
+    }
+
+    private void insertDateMessageAuthor(long date, String message, String author) throws SQLException {
+        setPrepLongValue(1, date, false);
+        setPrepStringValue(2, message, false);
+        setPrepStringValue(3, author, true);
+    }
+
+
+    private void recquirePositive(long l) {
+        if (l < 0) {
+            throw new IllegalArgumentException("Long must be > 0");
+        }
     }
 }
