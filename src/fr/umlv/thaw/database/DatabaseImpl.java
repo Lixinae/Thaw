@@ -140,6 +140,12 @@ public class DatabaseImpl implements Database {
         }
 
 
+        rs = myDB.executeQuery("SELECT name FROM sqlite_master WHERE type='table';");//requete pour recuperer nom des tables cree
+        while (rs.next()) {
+            String req = rs.getString(1);
+            System.out.println("Table name : " + req);
+        }
+
         //Ne pas oublier ensuite de fermer notre bdd et le ResultSet precedemment ouvert.
         //toujours fermer la bdd en dernier sous peine d'erreur
         rs.close();
@@ -236,7 +242,7 @@ public class DatabaseImpl implements Database {
         recquirePositive(date);
         Objects.requireNonNull(msg);
         Objects.requireNonNull(author);
-        exeUpda(createChannelTableRequest(channelName));
+        createChannelTable(channelName);
         createPrepState(prepareInsertThreeValuesIntoTable(channelName));
         insertDateMessageAuthor(date, msg, author);
         executeRegisteredTask();
@@ -267,9 +273,14 @@ public class DatabaseImpl implements Database {
                 ");";
     }
 
-    //TODO La mettre en public pour permettre l'ajout d'une table a l'exterieur sans pour autant mettre de message ?
+    //TODO Gestion des droits
     private String createChannelTableRequest(String channelname) {
         return String.format("create table if not exists %s(DATE INTEGER NOT NULL, MESSAGE TEXT NOT NULL, AUTHOR TEXT NOT NULL);", channelname);
+    }
+
+
+    private void createChannelTable(String channelName) throws SQLException {
+        exeUpda(createChannelTableRequest(channelName));
     }
 
     private String prepareInsertTwoValuesIntoTable() {
