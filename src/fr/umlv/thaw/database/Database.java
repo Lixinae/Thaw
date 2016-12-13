@@ -151,7 +151,27 @@ public interface Database {
 
 
     /**
+     * This function retrieve the list of messages with every information
+     * (with the format DATE(as a long)0X00AUTHOR0X00MESSAGE\n)
+     * //TODO se mettre d'accord sur le separateur a mettre
+     *
+     * @param channelName channel in which we want to retrieve the messages
+     * @return a String that represents the messages separate with '\n'.
+     * @throws SQLException if an error occurs during database access
+     */
+    String messagesList(String channelName) throws SQLException;
+
+    /**
+     * This method return a List of the channels name on the database
+     *
+     * @return a List that contained every Channels name of the database
+     * @throws SQLException if an error occurs during database access
+     */
+    List<String> channelList() throws SQLException;
+
+    /**
      * Close the connections that may been opened by the database
+     * Must be called once after that we finished with the Database
      *
      * @throws SQLException if a database access error occurs
      */

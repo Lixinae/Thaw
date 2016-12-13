@@ -29,7 +29,8 @@ public class DatabaseImpl implements Database {
 
 
     /**
-     * Construct a representation of our database
+     * Construct a representation of our database.
+     * The connection is already managed don't forget to close the Database
      *
      * @param pathToDB the path in which the database will be loaded / created
      * @param dbName   the file name of the database without the .db extension
@@ -51,7 +52,8 @@ public class DatabaseImpl implements Database {
     // les methodes necessaire
     public static void main(String[] args) throws Exception {
         String sep = FileSystems.getDefault().getSeparator();
-        DatabaseImpl myDB = new DatabaseImpl(Paths.get("../db"), "mafia");//Creation base du fichier toto.db
+        DatabaseImpl myDB = new DatabaseImpl(Paths.get("../db"), "mafia");//Creation base du fichier mafia.db
+        ResultSet rs;
 //        myDB.exeUpda("drop table if exists people;");
 //        myDB.exeUpda("create table people (name, occupation, date);");
 //        myDB.createPrepState(
@@ -95,7 +97,7 @@ public class DatabaseImpl implements Database {
 //        //Si jamais tu souhaites effectuer une requete ne modifiant pas la base tel qu'un select,
 //        //alors on stocke cela dans un objet nommee ResultSet que l'on obtient apres
 //        //appel a la methode executeQuery
-//        ResultSet rs = myDB.executeQuery("select * from people;");
+//        rs = myDB.executeQuery("select * from people;");
 //        //L'objet ResulSet est un Iterator est donc doit donc le parcourir ainsi
 //        while (rs.next()) {
 //            System.out.println("name = " + rs.getString("name"));
@@ -110,12 +112,19 @@ public class DatabaseImpl implements Database {
         } catch (SQLException sql) {
             //ne rien faire car pas envie de planter sur une erreur
         }
-        System.out.println("--------------------------------------");
-        ResultSet rs = myDB.executeQuery("select * from users");
-        while (rs.next()) {
-            System.out.println("login : " + rs.getString("LOGIN"));
-            System.out.println("pswd  : " + rs.getString("PSWD"));
-        }
+
+//        System.out.println("--------------------------------------");
+//        rs = myDB.executeQuery("select * from users");
+//        while (rs.next()) {
+//            System.out.println("login : " + rs.getString("LOGIN"));
+//            System.out.println("pswd  : " + rs.getString("PSWD")); les mot de passe sont bien crypte
+//        }
+
+        System.out.println("TEST DE LISTE NOM : ");
+
+        List<String> users = myDB.usersList();
+        System.out.println("Et l'affichage : ");
+        System.out.println(users);
 
         //test addMessageToChannelTable
         System.out.println("--------------------------------------");
@@ -134,14 +143,24 @@ public class DatabaseImpl implements Database {
         System.out.println("--------------------------------------");
         myDB.addMessageToChannelTable("SuperChannel", d1, "je suis ...", "foreveralone");
         myDB.addMessageToChannelTable("SuperChannel", System.currentTimeMillis(), "for ever alone :@", "foreveralone");
-        rs = myDB.executeQuery("select * from SuperChannel");
-        while (rs.next()) {
-            System.out.println("channel : SuperChannel");
-            System.out.println("DATE : " + form.format(new Date(rs.getLong("DATE"))));
-            System.out.println("MESSAGE  : " + rs.getString("MESSAGE"));
-            System.out.println("AUTHOR  : " + rs.getString("AUTHOR"));
-            System.out.println("........");
+
+        System.out.println("NOUVEAU TEST!!!");
+        System.out.println(myDB.messagesList("SuperChannel"));
+        System.out.println("--------------------");
+        System.out.println("Même test mais avec formattage !!!");
+        String[] lines = myDB.messagesList("SuperChannel").split("\n");
+        for (String line : lines) {
+            StringBuilder sb = new StringBuilder();
+            String[] tmp = line.split("0X00");
+            sb.append(form.format(new Date(Long.parseLong(tmp[0]))));
+            sb.append(" ");
+            sb.append(tmp[1]);
+            sb.append(" : ");
+            sb.append(tmp[2]);
+            System.out.println(sb);
         }
+        System.out.println("Test channelList");
+        System.out.println(myDB.channelList());
 
         //OK
 //        System.out.println("--------------------------------------");
@@ -164,11 +183,7 @@ public class DatabaseImpl implements Database {
         //toujours fermer la bdd en dernier sous peine d'erreur
 
 
-        System.out.println("TEST DE LISTE NOM : ");
 
-        List<String> users = myDB.usersList();
-        System.out.println("Et l'affichage : ");
-        System.out.println(users);
 
 
 
@@ -295,6 +310,39 @@ public class DatabaseImpl implements Database {
             return Collections.emptyList();
         }
         return userList;
+    }
+
+    @Override
+    public String messagesList(String channelName) throws SQLException {
+        ResultSet rs = executeQuery("select * from " + channelName);
+        StringBuilder messagesList = new StringBuilder();
+        while (rs.next()) {
+            messagesList.append(rs.getLong("DATE"));
+            messagesList.append("0X00");
+            messagesList.append(rs.getString("AUTHOR"));
+            messagesList.append("0X00");
+            messagesList.append(rs.getString("MESSAGE"));
+            messagesList.append("\n");
+        }
+        rs.close();
+        return messagesList.toString();
+    }
+
+    @Override
+    public List<String> channelList() throws SQLException {
+        ResultSet rs = executeQuery("SELECT name FROM sqlite_master WHERE type='table';");
+        List<String> channels = new ArrayList<>();
+        while (rs.next()) {
+            String name = rs.getString(1);
+            if (!name.equals("users")) {
+                channels.add(name);
+            }
+        }
+        rs.close();
+        if (channels.isEmpty()) {
+            return Collections.emptyList();
+        }
+        return channels;
     }
 
 
