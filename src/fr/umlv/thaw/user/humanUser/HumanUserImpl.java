@@ -2,8 +2,8 @@ package fr.umlv.thaw.user.humanUser;
 
 import fr.umlv.thaw.channel.Channel;
 import fr.umlv.thaw.message.Message;
+import fr.umlv.thaw.server.Tools;
 
-import java.util.Arrays;
 import java.util.Objects;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
@@ -14,9 +14,9 @@ public class HumanUserImpl implements HumanUser {
 
     private final String name;
     private final ConcurrentLinkedQueue<Channel> channels;
-    private final byte[] passwordHash;
+    private final String passwordHash;
 
-    HumanUserImpl(String nickname, byte[] passwordHash) {
+    HumanUserImpl(String nickname, String passwordHash) {
         this.name = Objects.requireNonNull(nickname);
         this.passwordHash = Objects.requireNonNull(passwordHash);
         channels = new ConcurrentLinkedQueue<>();
@@ -56,9 +56,13 @@ public class HumanUserImpl implements HumanUser {
         return chan.addMessageToQueue(message);
     }
 
-    public boolean compareHash(final byte[] passworHash) {
-        return Arrays.equals(this.passwordHash, passworHash);
+    public boolean compareHash(String password) {
+        return passwordHash.equals(Tools.toSHA256(password));
     }
+
+//    static boolean checkPassword(String shaDigest, String password) {
+//        return shaDigest.equals(toSHA256(password));
+//    }
 
     @Override
     public boolean equals(Object o) {
@@ -67,18 +71,16 @@ public class HumanUserImpl implements HumanUser {
 
         HumanUserImpl humanUser = (HumanUserImpl) o;
 
-        if (!name.equals(humanUser.name)) {
-            System.out.println("poirreau");
-            return false;
-        }
-        return Arrays.equals(passwordHash, humanUser.passwordHash);
+        if (!name.equals(humanUser.name)) return false;
+        if (!channels.equals(humanUser.channels)) return false;
+        return passwordHash.equals(humanUser.passwordHash);
     }
 
     @Override
     public int hashCode() {
         int result = name.hashCode();
         result = 31 * result + channels.hashCode();
-        result = 31 * result + Arrays.hashCode(passwordHash);
+        result = 31 * result + passwordHash.hashCode();
         return result;
     }
 

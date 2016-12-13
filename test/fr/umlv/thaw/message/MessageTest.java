@@ -5,7 +5,7 @@ import fr.umlv.thaw.user.humanUser.HumanUserFactory;
 import org.junit.Assert;
 import org.junit.Test;
 
-import static fr.umlv.thaw.server.Tools.hashToSha256;
+import static fr.umlv.thaw.server.Tools.toSHA256;
 
 /**
  * Project :Thaw
@@ -26,23 +26,23 @@ public class MessageTest {
 
     @Test(expected = NullPointerException.class)
     public void constructorContentNullDatePositive() throws Exception {
-        new Message(HumanUserFactory.createHumanUser("truc", hashToSha256("password")), 10, null);
+        new Message(HumanUserFactory.createHumanUser("truc", toSHA256("password")), 10, null);
     }
 
     @Test(expected = IllegalArgumentException.class)
     public void constructorDateNegative() throws Exception {
-        new Message(HumanUserFactory.createHumanUser("truc", hashToSha256("password")), -10, "truc");
+        new Message(HumanUserFactory.createHumanUser("truc", toSHA256("password")), -10, "truc");
     }
 
     @Test
     public void constructorAllCorrect() throws Exception {
-        new Message(HumanUserFactory.createHumanUser("truc", hashToSha256("password")), 100, "truc");
+        new Message(HumanUserFactory.createHumanUser("truc", toSHA256("password")), 100, "truc");
     }
 
     /////// GET SENDER ///////
     @Test
     public void getSender() throws Exception {
-        HumanUser humanUser = HumanUserFactory.createHumanUser("Blark", hashToSha256("password"));
+        HumanUser humanUser = HumanUserFactory.createHumanUser("Blark", toSHA256("password"));
         Message test = new Message(humanUser, 10, "monMessage");
         Assert.assertEquals(test.getSender(), humanUser);
     }
@@ -50,7 +50,7 @@ public class MessageTest {
     /////// GET DATE ///////
     @Test
     public void getDate() throws Exception {
-        HumanUser humanUser = HumanUserFactory.createHumanUser("Blark", hashToSha256("password"));
+        HumanUser humanUser = HumanUserFactory.createHumanUser("Blark", toSHA256("password"));
         Message test = new Message(humanUser, 10, "monMessage");
         Assert.assertEquals(test.getDate(), 10);
     }
@@ -58,7 +58,7 @@ public class MessageTest {
     /////// GET CONTENT ///////
     @Test
     public void getContent() throws Exception {
-        HumanUser humanUser = HumanUserFactory.createHumanUser("Blark", hashToSha256("password"));
+        HumanUser humanUser = HumanUserFactory.createHumanUser("Blark", toSHA256("password"));
         Message test = new Message(humanUser, 10, "monMessage");
         Assert.assertEquals(test.getContent(), "monMessage");
     }

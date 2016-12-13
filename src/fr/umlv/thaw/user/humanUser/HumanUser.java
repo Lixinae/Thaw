@@ -45,6 +45,6 @@ public interface HumanUser extends User {
      * @param passworHash the password hash
      * @return true if the hash given in argument is the same as the users one
      */
-    boolean compareHash(final byte[] passworHash);
+    boolean compareHash(String passworHash);
 
 }

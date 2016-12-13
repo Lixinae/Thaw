@@ -11,7 +11,7 @@ import org.junit.Test;
 
 import java.nio.file.Paths;
 
-import static fr.umlv.thaw.server.Tools.hashToSha256;
+import static fr.umlv.thaw.server.Tools.toSHA256;
 
 /**
  * Project :Thaw
@@ -21,16 +21,16 @@ public class ChannelImplTest {
     ///// ADD MESSAGE ////
     @Test
     public void addSingleMessageToQueue() throws Exception {
-        Channel ch = new ChannelImpl(HumanUserFactory.createHumanUser("Pierre", hashToSha256("password")), "Marie");
-        HumanUser gege = HumanUserFactory.createHumanUser("Ggee", hashToSha256("password"));
+        Channel ch = new ChannelImpl(HumanUserFactory.createHumanUser("Pierre", toSHA256("password")), "Marie");
+        HumanUser gege = HumanUserFactory.createHumanUser("Ggee", toSHA256("password"));
         Message message = MessageFactory.createMessage(gege, 10, "Hey du gland!");
         Assert.assertTrue(ch.addMessageToQueue(message));
     }
 
     @Test
     public void addMultipleMessagesToQueue() throws Exception {
-        Channel ch = new ChannelImpl(HumanUserFactory.createHumanUser("Poney", hashToSha256("password")), "Je sus ici");
-        HumanUser dede = HumanUserFactory.createHumanUser("dede", hashToSha256("password"));
+        Channel ch = new ChannelImpl(HumanUserFactory.createHumanUser("Poney", toSHA256("password")), "Je sus ici");
+        HumanUser dede = HumanUserFactory.createHumanUser("dede", toSHA256("password"));
         Message message = MessageFactory.createMessage(dede, 10, "Hey du gland!");
         Message message1 = MessageFactory.createMessage(dede, 30, "Hey du glandos!");
         Message message2 = MessageFactory.createMessage(dede, 50, "Hey bachi!");
@@ -48,8 +48,8 @@ public class ChannelImplTest {
     ///// DEL MESSAGES /////
     @Test
     public void delMessageFromQueue() throws Exception {
-        Channel ch = new ChannelImpl(HumanUserFactory.createHumanUser("Pierre", hashToSha256("password")), "Marie");
-        HumanUser gege = HumanUserFactory.createHumanUser("Ggee", hashToSha256("password"));
+        Channel ch = new ChannelImpl(HumanUserFactory.createHumanUser("Pierre", toSHA256("password")), "Marie");
+        HumanUser gege = HumanUserFactory.createHumanUser("Ggee", toSHA256("password"));
         Message message = MessageFactory.createMessage(gege, 10, "Hey du gland!");
         ch.addMessageToQueue(message);
         Assert.assertEquals(1, ch.getListMessage().size());
@@ -60,8 +60,8 @@ public class ChannelImplTest {
 
     @Test
     public void delMultipleMessageFromQueue() throws Exception {
-        Channel ch = new ChannelImpl(HumanUserFactory.createHumanUser("Pierre", hashToSha256("password")), "Marie");
-        HumanUser gege = HumanUserFactory.createHumanUser("Ggee", hashToSha256("password"));
+        Channel ch = new ChannelImpl(HumanUserFactory.createHumanUser("Pierre", toSHA256("password")), "Marie");
+        HumanUser gege = HumanUserFactory.createHumanUser("Ggee", toSHA256("password"));
         Message message = MessageFactory.createMessage(gege, 10, "Hey du gland!");
         Message message1 = MessageFactory.createMessage(gege, 30, "Hey du glandos!");
         Message message2 = MessageFactory.createMessage(gege, 50, "Hey bachi!");
@@ -95,17 +95,17 @@ public class ChannelImplTest {
     ////ADD USER/////
     @Test
     public void addSingleUserToChan() throws Exception {
-        Channel ch = new ChannelImpl(HumanUserFactory.createHumanUser("Pierre", hashToSha256("password")), "Marie");
-        HumanUser meme = HumanUserFactory.createHumanUser("Meme", hashToSha256("password"));
+        Channel ch = new ChannelImpl(HumanUserFactory.createHumanUser("Pierre", toSHA256("password")), "Marie");
+        HumanUser meme = HumanUserFactory.createHumanUser("Meme", toSHA256("password"));
         Assert.assertTrue(ch.addUserToChan(meme));
     }
 
     @Test
     public void addMultipleUserToChan() throws Exception {
-        Channel ch = new ChannelImpl(HumanUserFactory.createHumanUser("Pierre", hashToSha256("password")), "Marie");
-        HumanUser meme = HumanUserFactory.createHumanUser("Meme", hashToSha256("password"));
+        Channel ch = new ChannelImpl(HumanUserFactory.createHumanUser("Pierre", toSHA256("password")), "Marie");
+        HumanUser meme = HumanUserFactory.createHumanUser("Meme", toSHA256("password"));
         Bot botImpl = BotFactory.createBot("gugu", Paths.get("test"));
-        HumanUser lze = HumanUserFactory.createHumanUser("lze", hashToSha256("password"));
+        HumanUser lze = HumanUserFactory.createHumanUser("lze", toSHA256("password"));
         Assert.assertTrue(ch.addUserToChan(meme));
         Assert.assertTrue(ch.addUserToChan(botImpl));
         Assert.assertTrue(ch.addUserToChan(lze));
@@ -113,8 +113,8 @@ public class ChannelImplTest {
 
     @Test
     public void addMultipleSameUserToChan() throws Exception {
-        Channel ch = new ChannelImpl(HumanUserFactory.createHumanUser("Pierre", hashToSha256("password")), "Marie");
-        HumanUser meme = HumanUserFactory.createHumanUser("Meme", hashToSha256("password"));
+        Channel ch = new ChannelImpl(HumanUserFactory.createHumanUser("Pierre", toSHA256("password")), "Marie");
+        HumanUser meme = HumanUserFactory.createHumanUser("Meme", toSHA256("password"));
         Assert.assertTrue(ch.addUserToChan(meme));
         Assert.assertFalse(ch.addUserToChan(meme));
     }
@@ -122,16 +122,16 @@ public class ChannelImplTest {
     /////Remove HumanUser/////
     @Test
     public void removeSingleUserFromChan() throws Exception {
-        Channel ch = new ChannelImpl(HumanUserFactory.createHumanUser("Pierre", hashToSha256("password")), "Marie");
-        HumanUser meme = HumanUserFactory.createHumanUser("Meme", hashToSha256("password"));
+        Channel ch = new ChannelImpl(HumanUserFactory.createHumanUser("Pierre", toSHA256("password")), "Marie");
+        HumanUser meme = HumanUserFactory.createHumanUser("Meme", toSHA256("password"));
         ch.addUserToChan(meme);
         Assert.assertTrue(ch.removeUserFromChan(meme));
     }
 
     @Test
     public void removeSingleUserMultipleTimeFromChan() throws Exception {
-        Channel ch = new ChannelImpl(HumanUserFactory.createHumanUser("Pierre", hashToSha256("password")), "Marie");
-        HumanUser meme = HumanUserFactory.createHumanUser("Meme", hashToSha256("password"));
+        Channel ch = new ChannelImpl(HumanUserFactory.createHumanUser("Pierre", toSHA256("password")), "Marie");
+        HumanUser meme = HumanUserFactory.createHumanUser("Meme", toSHA256("password"));
         ch.addUserToChan(meme);
         Assert.assertTrue(ch.removeUserFromChan(meme));
         Assert.assertFalse(ch.removeUserFromChan(meme));
@@ -139,10 +139,10 @@ public class ChannelImplTest {
 
     @Test
     public void removeMultipleUserSingleTimeFromChan() throws Exception {
-        Channel ch = new ChannelImpl(HumanUserFactory.createHumanUser("Pierre", hashToSha256("password")), "Marie");
-        HumanUser riri = HumanUserFactory.createHumanUser("Meme", hashToSha256("password"));
-        HumanUser fifi = HumanUserFactory.createHumanUser("Gege", hashToSha256("password"));
-        HumanUser loulou = HumanUserFactory.createHumanUser("Rere", hashToSha256("password"));
+        Channel ch = new ChannelImpl(HumanUserFactory.createHumanUser("Pierre", toSHA256("password")), "Marie");
+        HumanUser riri = HumanUserFactory.createHumanUser("Meme", toSHA256("password"));
+        HumanUser fifi = HumanUserFactory.createHumanUser("Gege", toSHA256("password"));
+        HumanUser loulou = HumanUserFactory.createHumanUser("Rere", toSHA256("password"));
         ch.addUserToChan(riri);
         ch.addUserToChan(fifi);
         ch.addUserToChan(loulou);
@@ -153,10 +153,10 @@ public class ChannelImplTest {
 
     @Test
     public void removeMultipleUserMultipleTimeFromChan() throws Exception {
-        Channel ch = new ChannelImpl(HumanUserFactory.createHumanUser("Pierre", hashToSha256("password")), "Marie");
-        HumanUser riri = HumanUserFactory.createHumanUser("Meme", hashToSha256("password"));
-        HumanUser fifi = HumanUserFactory.createHumanUser("Gege", hashToSha256("password"));
-        HumanUser loulou = HumanUserFactory.createHumanUser("Rere", hashToSha256("password"));
+        Channel ch = new ChannelImpl(HumanUserFactory.createHumanUser("Pierre", toSHA256("password")), "Marie");
+        HumanUser riri = HumanUserFactory.createHumanUser("Meme", toSHA256("password"));
+        HumanUser fifi = HumanUserFactory.createHumanUser("Gege", toSHA256("password"));
+        HumanUser loulou = HumanUserFactory.createHumanUser("Rere", toSHA256("password"));
         ch.addUserToChan(riri);
         ch.addUserToChan(fifi);
         ch.addUserToChan(loulou);
@@ -171,15 +171,15 @@ public class ChannelImplTest {
     /////GetChannelName /////
     @Test
     public void getChannelName() throws Exception {
-        Channel ch = new ChannelImpl(HumanUserFactory.createHumanUser("Pierre", hashToSha256("password")), "Marie");
+        Channel ch = new ChannelImpl(HumanUserFactory.createHumanUser("Pierre", toSHA256("password")), "Marie");
         Assert.assertEquals("Marie", ch.getChannelName());
     }
 
     /////GetListUser /////
     @Test
     public void getListUser() throws Exception {
-        Channel ch = new ChannelImpl(HumanUserFactory.createHumanUser("Pierre", hashToSha256("password")), "Marie");
-        HumanUser schlibidi = HumanUserFactory.createHumanUser("schlibidi", hashToSha256("password"));
+        Channel ch = new ChannelImpl(HumanUserFactory.createHumanUser("Pierre", toSHA256("password")), "Marie");
+        HumanUser schlibidi = HumanUserFactory.createHumanUser("schlibidi", toSHA256("password"));
         ch.addUserToChan(schlibidi);
         Assert.assertEquals(1, ch.getListUser().size());
         Assert.assertTrue(ch.getListUser().contains(schlibidi));
@@ -188,47 +188,47 @@ public class ChannelImplTest {
     /////GetListUser /////
     @Test
     public void checkIfUserIsConnected() throws Exception {
-        Channel ch = new ChannelImpl(HumanUserFactory.createHumanUser("Pierre", hashToSha256("password")), "Marie");
-        HumanUser schlibidi = HumanUserFactory.createHumanUser("schlibidi", hashToSha256("password"));
+        Channel ch = new ChannelImpl(HumanUserFactory.createHumanUser("Pierre", toSHA256("password")), "Marie");
+        HumanUser schlibidi = HumanUserFactory.createHumanUser("schlibidi", toSHA256("password"));
         ch.addUserToChan(schlibidi);
         Assert.assertTrue(ch.checkIfUserIsConnected(schlibidi));
     }
 
     @Test
     public void checkIfUserIsNotConnected() throws Exception {
-        Channel ch = new ChannelImpl(HumanUserFactory.createHumanUser("Pierre", hashToSha256("password")), "Marie");
-        HumanUser schlibidi = HumanUserFactory.createHumanUser("schlibidi", hashToSha256("password"));
+        Channel ch = new ChannelImpl(HumanUserFactory.createHumanUser("Pierre", toSHA256("password")), "Marie");
+        HumanUser schlibidi = HumanUserFactory.createHumanUser("schlibidi", toSHA256("password"));
         Assert.assertFalse(ch.checkIfUserIsConnected(schlibidi));
     }
 
     ///// equals /////
     @Test
     public void equalsSame() throws Exception {
-        Channel ch = new ChannelImpl(HumanUserFactory.createHumanUser("Jackie", hashToSha256("password")), "Et Michelle");
+        Channel ch = new ChannelImpl(HumanUserFactory.createHumanUser("Jackie", toSHA256("password")), "Et Michelle");
         Assert.assertEquals(ch, ch);
     }
 
 
     @Test
     public void equalsTotalDifferent() throws Exception {
-        Channel ch = new ChannelImpl(HumanUserFactory.createHumanUser("Jackie", hashToSha256("password")), "Et Michelle");
-        Channel ch2 = new ChannelImpl(HumanUserFactory.createHumanUser("PenPineapple", hashToSha256("password")), "ApplePen");
+        Channel ch = new ChannelImpl(HumanUserFactory.createHumanUser("Jackie", toSHA256("password")), "Et Michelle");
+        Channel ch2 = new ChannelImpl(HumanUserFactory.createHumanUser("PenPineapple", toSHA256("password")), "ApplePen");
         Assert.assertNotEquals(ch, ch2);
     }
 
 
     @Test
     public void equalsSSameCreatorDifferentName() throws Exception {
-        Channel ch = new ChannelImpl(HumanUserFactory.createHumanUser("Jackie", hashToSha256("password")), "Et Michelle");
-        Channel ch2 = new ChannelImpl(HumanUserFactory.createHumanUser("Jackie", hashToSha256("password")), "ApplePen");
+        Channel ch = new ChannelImpl(HumanUserFactory.createHumanUser("Jackie", toSHA256("password")), "Et Michelle");
+        Channel ch2 = new ChannelImpl(HumanUserFactory.createHumanUser("Jackie", toSHA256("password")), "ApplePen");
         Assert.assertNotEquals(ch, ch2);
     }
 
 
     @Test
     public void equalsSSameNameDifferentCreator() throws Exception {
-        Channel ch = new ChannelImpl(HumanUserFactory.createHumanUser("Jackie", hashToSha256("password")), "Et Michelle");
-        Channel ch2 = new ChannelImpl(HumanUserFactory.createHumanUser("Didier", hashToSha256("password")), "Et Michelle");
+        Channel ch = new ChannelImpl(HumanUserFactory.createHumanUser("Jackie", toSHA256("password")), "Et Michelle");
+        Channel ch2 = new ChannelImpl(HumanUserFactory.createHumanUser("Didier", toSHA256("password")), "Et Michelle");
         Assert.assertNotEquals(ch, ch2);
     }
 

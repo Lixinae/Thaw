@@ -5,7 +5,7 @@ import fr.umlv.thaw.channel.ChannelFactory;
 import org.junit.Assert;
 import org.junit.Test;
 
-import static fr.umlv.thaw.server.Tools.hashToSha256;
+import static fr.umlv.thaw.server.Tools.toSHA256;
 
 
 public class HumanUserImplTest {
@@ -18,28 +18,28 @@ public class HumanUserImplTest {
 
     @Test
     public void constructorCorrect() throws Exception {
-        new HumanUserImpl("truc", hashToSha256("nop"));
+        new HumanUserImpl("truc", toSHA256("nop"));
     }
 
     ////////// EQUALS ///////////////
     @Test
     public void equalEqualsSameName() throws Exception {
-        HumanUser humanHumanUser = new HumanUserImpl("nameTest", hashToSha256("password"));
-        HumanUser humanHumanUser1 = new HumanUserImpl("nameTest", hashToSha256("password"));
+        HumanUser humanHumanUser = new HumanUserImpl("nameTest", toSHA256("password"));
+        HumanUser humanHumanUser1 = new HumanUserImpl("nameTest", toSHA256("password"));
         Assert.assertEquals(humanHumanUser1, humanHumanUser);
     }
 
     @Test
     public void notEqualEqualsDifferentName() throws Exception {
-        HumanUser humanHumanUser = new HumanUserImpl("nameTest", hashToSha256("password"));
-        HumanUser humanHumanUser1 = new HumanUserImpl("nameTestdshufdji", hashToSha256("password"));
+        HumanUser humanHumanUser = new HumanUserImpl("nameTest", toSHA256("password"));
+        HumanUser humanHumanUser1 = new HumanUserImpl("nameTestdshufdji", toSHA256("password"));
         Assert.assertNotEquals(humanHumanUser1, humanHumanUser);
     }
 
     ////////// ADD CHANNEL ///////////////
     @Test
     public void addSingleChannel() throws Exception {
-        HumanUserImpl doris = new HumanUserImpl("Doris", hashToSha256("password"));
+        HumanUserImpl doris = new HumanUserImpl("Doris", toSHA256("password"));
         Channel nemo = ChannelFactory.createChannel(doris, "Nemo");
         doris.addChannel(nemo);
         Assert.assertTrue(doris.getChannel().contains(nemo));
@@ -47,7 +47,7 @@ public class HumanUserImplTest {
 
     @Test
     public void addMultipleChannel() throws Exception {
-        HumanUserImpl pinot = new HumanUserImpl("Pinot", hashToSha256("password"));
+        HumanUserImpl pinot = new HumanUserImpl("Pinot", toSHA256("password"));
         Channel nemo = ChannelFactory.createChannel(pinot, "Nemo");
         Channel moris = ChannelFactory.createChannel(pinot, "Moris");
         Channel didier = ChannelFactory.createChannel(pinot, "Didier");
@@ -63,7 +63,7 @@ public class HumanUserImplTest {
     ////////// DELETE CHANNEL ///////////////
     @Test
     public void delSingleChannel() throws Exception {
-        HumanUserImpl patrice = new HumanUserImpl("Patrice", hashToSha256("password"));
+        HumanUserImpl patrice = new HumanUserImpl("Patrice", toSHA256("password"));
         Channel clement = ChannelFactory.createChannel(patrice, "Clement");
         patrice.addChannel(clement);
         Assert.assertTrue(patrice.getChannel().size() == 1);
@@ -73,7 +73,7 @@ public class HumanUserImplTest {
 
     @Test
     public void delMultipleChannel() throws Exception {
-        HumanUserImpl lola = new HumanUserImpl("Lola", hashToSha256("password"));
+        HumanUserImpl lola = new HumanUserImpl("Lola", toSHA256("password"));
         Channel monica = ChannelFactory.createChannel(lola, "Monica");
         Channel juliette = ChannelFactory.createChannel(lola, "Juliette");
         Channel julie = ChannelFactory.createChannel(lola, "Julie");
@@ -91,7 +91,7 @@ public class HumanUserImplTest {
 
     @Test
     public void delSameChannel() throws Exception {
-        HumanUserImpl patrick = new HumanUserImpl("Patrick", hashToSha256("password"));
+        HumanUserImpl patrick = new HumanUserImpl("Patrick", toSHA256("password"));
         Channel clementine = ChannelFactory.createChannel(patrick, "Clementine");
         patrick.addChannel(clementine);
         Assert.assertTrue(patrick.deleteChannel(clementine));

@@ -12,7 +12,6 @@ import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.RoutingContext;
 import io.vertx.ext.web.Session;
 
-import java.security.NoSuchAlgorithmException;
 import java.util.List;
 import java.util.Optional;
 import java.util.logging.Level;
@@ -49,16 +48,9 @@ class Handlers {
     private static void analyzeConnecToServerRequest(Session session, HttpServerResponse response, JsonObject json, ThawLogger thawLogger, List<HumanUser> authorizedHumanUsers) {
         String userName = json.getString("userName");
         String password = json.getString("password");
-        byte[] passwordHash;
-        try {
-            passwordHash = Tools.hashToSha256(password);
-        } catch (NoSuchAlgorithmException e) {
-            e.printStackTrace();
-            return;
-        }
-        byte[] finalPasswordHash = passwordHash;
+        String passwordHash = Tools.toSHA256(password);
         for (HumanUser u : authorizedHumanUsers) {
-            if (u.getName().contentEquals(userName) && u.compareHash(finalPasswordHash)) {
+            if (u.getName().equals(userName) && u.compareHash(passwordHash)) {
                 session.put("user", u);
                 break;
             }
@@ -125,7 +117,7 @@ class Handlers {
     /////////////////// Add Channel Handler ///////////////////
     /*########################################################*/
 
-    static void addChannelHandle(RoutingContext routingContext, ThawLogger thawLogger, List<Channel> channels, List<HumanUser> humanUsers) {
+    static void addChannelHandle(RoutingContext routingContext, ThawLogger thawLogger, List<Channel> channels) {
         thawLogger.log(Level.INFO, "In addChannel request");
         HttpServerResponse response = routingContext.response();
         Session session = routingContext.session();
@@ -133,11 +125,11 @@ class Handlers {
         if (json == null) {
             Tools.answerToRequest(response, 400, "Wrong JSON input", thawLogger);
         } else {
-            analyzeAddChannelRequest(session, response, json, thawLogger, channels, humanUsers);
+            analyzeAddChannelRequest(session, response, json, thawLogger, channels);
         }
     }
 
-    private static void analyzeAddChannelRequest(Session session, HttpServerResponse response, JsonObject json, ThawLogger thawLogger, List<Channel> channels, List<HumanUser> humanUsers) {
+    private static void analyzeAddChannelRequest(Session session, HttpServerResponse response, JsonObject json, ThawLogger thawLogger, List<Channel> channels) {
         String newChannelName = json.getString("newChannelName");
         String creatorName = json.getString("creatorName");
         thawLogger.log(Level.INFO, newChannelName + " " + creatorName + " ");

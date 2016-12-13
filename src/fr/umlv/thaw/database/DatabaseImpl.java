@@ -268,7 +268,8 @@ public class DatabaseImpl implements Database {
     public void createLogin(String login, String password) throws NoSuchAlgorithmException, SQLException {
         Objects.requireNonNull(login);
         Objects.requireNonNull(password);
-        String cryptPass = Tools.sha256ToString(Tools.hashToSha256(password));
+        String cryptPass = Tools.toSHA256(password);
+//        String cryptPass = Tools.sha256ToString(Tools.hashToSha256(password));
         exeUpda(createUsersTableRequest());
         createPrepState(prepareInsertTwoValuesIntoTable());
         insertLogPswIntoTable(login, cryptPass);
