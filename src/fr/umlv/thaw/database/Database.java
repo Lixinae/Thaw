@@ -5,6 +5,7 @@ import java.security.NoSuchAlgorithmException;
 import java.sql.Date;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.List;
 
 public interface Database {
 
@@ -124,6 +125,30 @@ public interface Database {
      * @throws SQLException if a database access errors occurs
      */
     void addMessageToChannelTable(String channelName, long date, String msg, String author) throws SQLException;
+
+    /**
+     * This method change a message from an author at the moment "date"
+     * to a new message.
+     *
+     * @param channelName the name of the table
+     * @param date        the date of the old message
+     * @param author      the author of the message
+     * @param Oldmsg      the old message to change
+     * @param newMsg      the new message that will replace Oldmsg
+     * @throws SQLException if a database access errors occurs
+     */
+    void updateMessageFromChannel(String channelName, long date, String author, String Oldmsg, String newMsg) throws SQLException;
+
+
+    /**
+     * That function return a list of users that are
+     * in the database.
+     *
+     * @return a list that contained the users name
+     * @throws SQLException if a database access errors occurs
+     */
+    List<String> usersList() throws SQLException;
+
 
     /**
      * Close the connections that may been opened by the database

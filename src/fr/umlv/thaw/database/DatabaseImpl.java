@@ -8,10 +8,9 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.security.NoSuchAlgorithmException;
 import java.sql.*;
+import java.sql.Date;
 import java.text.SimpleDateFormat;
-import java.time.LocalDate;
-import java.util.LinkedList;
-import java.util.Objects;
+import java.util.*;
 
 /**
  * This class represent an implementation of a Database
@@ -53,10 +52,12 @@ public class DatabaseImpl implements Database {
     public static void main(String[] args) throws Exception {
         String sep = FileSystems.getDefault().getSeparator();
         DatabaseImpl myDB = new DatabaseImpl(Paths.get("../db"), "mafia");//Creation base du fichier toto.db
-        myDB.exeUpda("drop table if exists people;");
-        myDB.exeUpda("create table people (name, occupation, date);");
-        myDB.createPrepState(
-                "insert into people values (?, ?, ?);");/*On dit a la bdd de preparer une requete
+//        myDB.exeUpda("drop table if exists people;");
+//        myDB.exeUpda("create table people (name, occupation, date);");
+//        myDB.createPrepState(
+//                "insert into people values (?, ?, ?);");
+//
+            /*On dit a la bdd de preparer une requete
                 insert avec trois valeurs que l'on specifiera en dessous avec un setPrep
                 Grossomodo : le prep sert a stocker une requête dans laquelle tu as pas encore specifier
                 la valeur des param
@@ -77,30 +78,30 @@ public class DatabaseImpl implements Database {
         /*Bien sur, dans la pratique, on tachera de regrouper nos requetes en une methode
         * cf : createLogin
         * */
-        myDB.setPrepStringValue(1, "Gandhi", false);
-        myDB.setPrepStringValue(2, "politics", false);
-        myDB.setPrepDateValue(3, Date.valueOf(LocalDate.now()), true);
-        myDB.setPrepStringValue(1, "Turing", false);
-        myDB.setPrepStringValue(2, "computers", false);
-        myDB.setPrepDateValue(3, Date.valueOf(LocalDate.now()), true);
-        myDB.setPrepStringValue(1, "Wittgenstein", false);
-        myDB.setPrepStringValue(2, "smartypants", false);
-        myDB.setPrepDateValue(3, Date.valueOf(LocalDate.now()), true);
-
-
-        //Prend les taches en attentes et les executes
-        myDB.executeRegisteredTask();
-
-        //Si jamais tu souhaites effectuer une requete ne modifiant pas la base tel qu'un select,
-        //alors on stocke cela dans un objet nommee ResultSet que l'on obtient apres
-        //appel a la methode executeQuery
-        ResultSet rs = myDB.executeQuery("select * from people;");
-        //L'objet ResulSet est un Iterator est donc doit donc le parcourir ainsi
-        while (rs.next()) {
-            System.out.println("name = " + rs.getString("name"));
-            System.out.println("job = " + rs.getString("occupation"));
-            System.out.println("date = " + rs.getString("date"));
-        }
+//        myDB.setPrepStringValue(1, "Gandhi", false);
+//        myDB.setPrepStringValue(2, "politics", false);
+//        myDB.setPrepDateValue(3, Date.valueOf(LocalDate.now()), true);
+//        myDB.setPrepStringValue(1, "Turing", false);
+//        myDB.setPrepStringValue(2, "computers", false);
+//        myDB.setPrepDateValue(3, Date.valueOf(LocalDate.now()), true);
+//        myDB.setPrepStringValue(1, "Wittgenstein", false);
+//        myDB.setPrepStringValue(2, "smartypants", false);
+//        myDB.setPrepDateValue(3, Date.valueOf(LocalDate.now()), true);
+//
+//
+//        //Prend les taches en attentes et les executes
+//        myDB.executeRegisteredTask();
+//
+//        //Si jamais tu souhaites effectuer une requete ne modifiant pas la base tel qu'un select,
+//        //alors on stocke cela dans un objet nommee ResultSet que l'on obtient apres
+//        //appel a la methode executeQuery
+//        ResultSet rs = myDB.executeQuery("select * from people;");
+//        //L'objet ResulSet est un Iterator est donc doit donc le parcourir ainsi
+//        while (rs.next()) {
+//            System.out.println("name = " + rs.getString("name"));
+//            System.out.println("job = " + rs.getString("occupation"));
+//            System.out.println("date = " + rs.getString("date"));
+//        }
 
         //test de createLogin
         try {
@@ -109,14 +110,15 @@ public class DatabaseImpl implements Database {
         } catch (SQLException sql) {
             //ne rien faire car pas envie de planter sur une erreur
         }
-        rs = myDB.executeQuery("select * from users");
+        System.out.println("--------------------------------------");
+        ResultSet rs = myDB.executeQuery("select * from users");
         while (rs.next()) {
             System.out.println("login : " + rs.getString("LOGIN"));
             System.out.println("pswd  : " + rs.getString("PSWD"));
         }
 
-
         //test addMessageToChannelTable
+        System.out.println("--------------------------------------");
         myDB.addMessageToChannelTable("Chan1", System.currentTimeMillis(), "je suis suuiiisssse", "un barbu");
         myDB.addMessageToChannelTable("Chan1", System.currentTimeMillis(), "je suis Marron", "un troll");
         rs = myDB.executeQuery("select * from Chan1");
@@ -126,12 +128,31 @@ public class DatabaseImpl implements Database {
             System.out.println("DATE : " + form.format(new Date(rs.getLong("DATE"))));
             System.out.println("MESSAGE  : " + rs.getString("MESSAGE"));
             System.out.println("AUTHOR  : " + rs.getString("AUTHOR"));
+            System.out.println("........");
+        }
+        long d1 = System.currentTimeMillis();
+        System.out.println("--------------------------------------");
+        myDB.addMessageToChannelTable("SuperChannel", d1, "je suis ...", "foreveralone");
+        myDB.addMessageToChannelTable("SuperChannel", System.currentTimeMillis(), "for ever alone :@", "foreveralone");
+        rs = myDB.executeQuery("select * from SuperChannel");
+        while (rs.next()) {
+            System.out.println("channel : SuperChannel");
+            System.out.println("DATE : " + form.format(new Date(rs.getLong("DATE"))));
+            System.out.println("MESSAGE  : " + rs.getString("MESSAGE"));
+            System.out.println("AUTHOR  : " + rs.getString("AUTHOR"));
+            System.out.println("........");
         }
 
-        myDB.addMessageToChannelTable("SuperChannel", System.currentTimeMillis(), "je suis ...", "foreveralone");
-        myDB.addMessageToChannelTable("SupperChannel", System.currentTimeMillis(), "for ever alone :@", "foreveralone");
-        rs = myDB.executeQuery("select * from SupperChannel");
-
+        //OK
+//        System.out.println("--------------------------------------");
+//        rs = myDB.executeQuery("SELECT name FROM sqlite_master WHERE type='table';");//requete pour recuperer nom des tables cree
+//        while (rs.next()) {
+//            String req = rs.getString(1);
+//            System.out.println("Table name : " + req);
+//        }
+        System.out.println("--------------------------------------");
+        myDB.updateMessageFromChannel("SuperChannel", d1, "foreveralone", "je suis ...", "yésoui");
+        rs = myDB.executeQuery("select * from SuperChannel");
         while (rs.next()) {
             System.out.println("channel : SuperChannel");
             System.out.println("DATE : " + form.format(new Date(rs.getLong("DATE"))));
@@ -139,15 +160,18 @@ public class DatabaseImpl implements Database {
             System.out.println("AUTHOR  : " + rs.getString("AUTHOR"));
         }
 
-
-        rs = myDB.executeQuery("SELECT name FROM sqlite_master WHERE type='table';");//requete pour recuperer nom des tables cree
-        while (rs.next()) {
-            String req = rs.getString(1);
-            System.out.println("Table name : " + req);
-        }
-
         //Ne pas oublier ensuite de fermer notre bdd et le ResultSet precedemment ouvert.
         //toujours fermer la bdd en dernier sous peine d'erreur
+
+
+        System.out.println("TEST DE LISTE NOM : ");
+
+        List<String> users = myDB.usersList();
+        System.out.println("Et l'affichage : ");
+        System.out.println(users);
+
+
+
         rs.close();
         myDB.close();
     }
@@ -248,6 +272,31 @@ public class DatabaseImpl implements Database {
         executeRegisteredTask();
     }
 
+    @Override
+    public void updateMessageFromChannel(String channelName, long date, String author, String Oldmsg, String newMsg) throws SQLException {
+        Objects.requireNonNull(channelName);
+        recquirePositive(date);
+        Objects.requireNonNull(author);
+        Objects.requireNonNull(Oldmsg);
+        Objects.requireNonNull(newMsg);
+        exeUpda(updateChannelMessageReq(channelName, date, author, Oldmsg, newMsg));
+        executeRegisteredTask();
+    }
+
+    @Override
+    public List<String> usersList() throws SQLException {
+        ResultSet rs = executeQuery("select LOGIN from users");
+        List<String> userList = new ArrayList<>();
+        while (rs.next()) {
+            userList.add(rs.getString(1));
+        }
+        rs.close();
+        if (userList.isEmpty()) {
+            return Collections.emptyList();
+        }
+        return userList;
+    }
+
 
     @Override
     public void close() throws SQLException {
@@ -279,9 +328,23 @@ public class DatabaseImpl implements Database {
     }
 
 
+    private String updateChannelMessageReq(String channelName, long date, String author, String Oldmsg, String newMsg) {
+        return "UPDATE " + channelName +
+                " SET MESSAGE=\'" + newMsg + "\'"
+                + " WHERE "
+                + "DATE=" + date
+                + " AND "
+                + " MESSAGE LIKE \'" + Oldmsg + "\'"
+                + " AND "
+                + " AUTHOR LIKE \'" + author + "\'"
+                + ";";
+
+    }
+
     private void createChannelTable(String channelName) throws SQLException {
         exeUpda(createChannelTableRequest(channelName));
     }
+
 
     private String prepareInsertTwoValuesIntoTable() {
         return "insert into users values (?, ?)";
