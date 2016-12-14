@@ -2,7 +2,6 @@ package fr.umlv.thaw.database;
 
 
 import java.security.NoSuchAlgorithmException;
-import java.sql.Date;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.List;
@@ -44,18 +43,6 @@ public interface Database {
      */
     void setPrepLongValue(int idx, Long value, boolean addToBatch) throws SQLException;
 
-
-    /**
-     * Set the argument from the prepared request at the index idx at the date "date"
-     *
-     * @param idx        the index in which the String will be insert into the request
-     * @param date       the date
-     * @param addToBatch if true then add the prepared request into the batch,
-     *                   if false, the request is not finished yet and other arguments will follows
-     * @throws SQLException if a database access error occurs or
-     *                      this method is called on a closed PreparedStatement
-     */
-    void setPrepDateValue(int idx, Date date, boolean addToBatch) throws SQLException;
 
     /**
      * This method allow you to send a simple request with no value given in parameter
@@ -115,6 +102,43 @@ public interface Database {
 
 
     /**
+     * Create a table that will stock the data from the channel
+     *
+     * @param channelName the name of the channel
+     * @param owner       the owner of the table
+     * @throws SQLException if a database access error occurs
+     */
+    void createChannelTable(String channelName, String owner) throws SQLException;
+
+    /**
+     * This method allow the autohority to give access to the
+     * channel at toAuthorized. It works only if authority as enought
+     * right on the channel.
+     *
+     * @param channel      the channel in which we want to add a user
+     * @param toAuthorized the user name that can get access to channel
+     * @param authority    the user that grant the access
+     * @throws SQLException if a database access errors occurs
+     */
+    void addUserToChan(String channel, String toAuthorized, String authority) throws SQLException;
+
+
+    /**
+     * This method allow the autohority to remove access to the
+     * channel at toAurized. It works only if authority as enought
+     * right on the channel.
+     * <p>
+     * If the authority of the table have the right and wants to kick himself
+     * then the channels will be drop to keep the database in a correct state
+     *
+     * @param channel   the channel in which we want to add a user
+     * @param toKick    the user name that will loose access to channel
+     * @param authority the user that grant the access
+     * @throws SQLException if a database access occurs
+     */
+    void removeUserAccessToChan(String channel, String toKick, String authority) throws SQLException;
+
+    /**
      * This method allows us to stock a message into a table that could be created
      * if he doesn't exist yet
      *
@@ -125,6 +149,7 @@ public interface Database {
      * @throws SQLException if a database access errors occurs
      */
     void addMessageToChannelTable(String channelName, long date, String msg, String author) throws SQLException;
+
 
     /**
      * This method change a message from an author at the moment "date"
@@ -151,9 +176,18 @@ public interface Database {
 
 
     /**
+     * This method retrieve the user from the channel.
+     *
+     * @param channel the channel name
+     * @return an Empty list if no users have been found
+     * otherwise this method return a List of user name
+     * @throws SQLException if a database access errors occurs
+     */
+    List<String> retrieveUsersFromChan(String channel) throws SQLException;
+
+    /**
      * This function retrieve the list of messages with every information
      * (with the format DATE(as a long)0X00AUTHOR0X00MESSAGE\n)
-     * //TODO se mettre d'accord sur le separateur a mettre
      *
      * @param channelName channel in which we want to retrieve the messages
      * @return a String that represents the messages separate with '\n'.
@@ -165,9 +199,8 @@ public interface Database {
      * This method return a List of the channels name on the database
      *
      * @return a List that contained every Channels name of the database
-     * @throws SQLException if an error occurs during database access
      */
-    List<String> channelList() throws SQLException;
+    List<String> channelList();
 
     /**
      * Close the connections that may been opened by the database
