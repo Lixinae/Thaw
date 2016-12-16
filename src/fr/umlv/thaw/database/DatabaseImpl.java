@@ -8,7 +8,10 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.security.NoSuchAlgorithmException;
 import java.sql.*;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.Objects;
 
 /**
  * This class represent an implementation of a Database
@@ -16,10 +19,7 @@ import java.util.*;
  */
 public class DatabaseImpl implements Database {
 
-    private final Path pathToDB;
-    private final String dbName;
-    private final LinkedList<String> channelsName = new LinkedList<>();
-    private final Class sqlite = Class.forName("org.sqlite.JDBC");//to load sqlite.jar
+    // private final Class sqlite = Class.forName("org.sqlite.JDBC");//to load sqlite.jar
     private final String forGetConnection;
     private final Connection co;
     private final Statement state;
@@ -36,8 +36,9 @@ public class DatabaseImpl implements Database {
      * @throws SQLException           if an error occurs during the creation of the database
      */
     public DatabaseImpl(Path pathToDB, String dbName) throws ClassNotFoundException, SQLException {
-        this.pathToDB = Objects.requireNonNull(pathToDB);
-        this.dbName = Objects.requireNonNull(dbName);
+        Objects.requireNonNull(pathToDB);
+        Objects.requireNonNull(dbName);
+        Class.forName("org.sqlite.JDBC");
         forGetConnection = "jdbc:sqlite:" + pathToDB + FileSystems.getDefault().getSeparator() + dbName + ".db";
         co = createConnection();
         state = createStatement();
@@ -51,76 +52,28 @@ public class DatabaseImpl implements Database {
     public static void main(String[] args) throws Exception {
         String sep = FileSystems.getDefault().getSeparator();
         DatabaseImpl myDB;
+        long dte = System.currentTimeMillis();
         try {
             myDB = new DatabaseImpl(Paths.get("../db"), "mafia");//Creation base du fichier mafia.db
         } catch (SQLException sql) {
             System.err.println("can't open the db ");
             return;
         }
-//        myDB.exeUpda("drop table if exists people;");
-//        myDB.exeUpda("create table people (name, occupation, date);");
-//        myDB.createPrepState(
-//                "insert into people values (?, ?, ?);");
-//
-            /*On dit a la bdd de preparer une requete
-                insert avec trois valeurs que l'on specifiera en dessous avec un setPrep
-                Grossomodo : le prep sert a stocker une requête dans laquelle tu as pas encore specifier
-                la valeur des param
-                */
 
-        /*Dans cet exemple, on a 3 parametre :
-        * un nom, une occupation et une date on a specifier nulle part le type, on le fixera
-        * lors de la premiere asignation donc.
-        *
-        * Faire appel a une des methodes setPrep permet donc :
-        * => de preciser ou je met la valeur dans la requete que j'ai prepare
-        * => quelle est la valeur
-        * => quel est le type de la valeur (date ou string dans ce cas qui seront converti en un type correct
-        * pour la bdd)
-        * => est-ce que je peux enregistre ma requete (si oui alors j'ecris la requete dans un objet en memoire qui se
-        * souviendra des diferentes requetes efectuees)
-        * */
-        /*Bien sur, dans la pratique, on tachera de regrouper nos requetes en une methode
-        * cf : createLogin
-        * */
-//        myDB.setPrepStringValue(1, "Gandhi", false);
-//        myDB.setPrepStringValue(2, "politics", false);
-//        myDB.setPrepDateValue(3, Date.valueOf(LocalDate.now()), true);
-//        myDB.setPrepStringValue(1, "Turing", false);
-//        myDB.setPrepStringValue(2, "computers", false);
-//        myDB.setPrepDateValue(3, Date.valueOf(LocalDate.now()), true);
-//        myDB.setPrepStringValue(1, "Wittgenstein", false);
-//        myDB.setPrepStringValue(2, "smartypants", false);
-//        myDB.setPrepDateValue(3, Date.valueOf(LocalDate.now()), true);
-//
-//
-//        //Prend les taches en attentes et les executes
-//        myDB.executeRegisteredTask();
-//
-//        //Si jamais tu souhaites effectuer une requete ne modifiant pas la base tel qu'un select,
-//        //alors on stocke cela dans un objet nommee ResultSet que l'on obtient apres
-//        //appel a la methode executeQuery
-//        rs = myDB.executeQuery("select * from people;");
-//        //L'objet ResulSet est un Iterator est donc doit donc le parcourir ainsi
-//        while (rs.next()) {
-//            System.out.println("name = " + rs.getString("name"));
-//            System.out.println("job = " + rs.getString("occupation"));
-//            System.out.println("date = " + rs.getString("date"));
-//        }
 
         String chan1 = "Chan1";
         //test de createLogin
         try {
             myDB.createLogin("George", "12345@A");
             myDB.createLogin("TotoLeBus", "TotoLeBus");
+            myDB.createChannelsTable();
+            myDB.createChanViewerTable();
         } catch (SQLException sql) {
             //ne rien faire car pas envie de planter sur une erreur
         }
-        try {
-            myDB.createChannelTable(chan1, "George");
-        } catch (SQLException sql) {
-            System.out.println("Pb a la creation");
-        }
+        //La table chan1 étant supprimer à la fin, on peut la re créer sans risquer une erreur
+        myDB.createChannelTable(chan1, "George");
+
         System.out.println("Nombre de channel : " + myDB.channelList().size());
         myDB.addMessageToChannelTable(chan1, System.currentTimeMillis(), "Bonjour mon message", "George");
         for (String chan : myDB.channelList()) {
@@ -134,21 +87,45 @@ public class DatabaseImpl implements Database {
 
 
         myDB.addUserToChan("Chan1", "TotoLeBus", "George");
-        myDB.addMessageToChannelTable("Chan1", System.currentTimeMillis(), "Avec les droits ça fonctionne mieux", "TotoLeBus");
+        myDB.addMessageToChannelTable("Chan1", dte, "Avec les droits ça fonctionne mieux", "TotoLeBus");
 
 
         System.out.println("Message dans Chan1 deuxième : ");
         System.out.println(myDB.messagesList("Chan1"));
+
+
+        myDB.updateMessageFromChannel(chan1, dte, "TotoLeBus", "Avec les droits ça fonctionne mieux", "Ah je me suis planté et je vais me perdre :/");
+
+        System.out.println("Apres chgmt de message de TotoLeBus : ");
+        System.out.println(myDB.messagesList("Chan1"));
+
         myDB.removeUserAccessToChan(chan1, "TotoLeBus", "George");
 
-        //myDB.removeUserAccessToChan(chan1, "George", "George");
+        System.out.println("Avant remove George");
+
+
+        myDB.removeUserAccessToChan(chan1, "George", "George");
+
+        System.out.println("George has been removed");
         List<String> chans = myDB.channelList();
         System.out.println("Nombre de channel present après suppresion de l'auteur : " + chans.size());
+
+        System.out.println("Liste d'utilisateur : ");
+        myDB.usersList().forEach(System.out::println);
+
+
+        ResultSet rs = myDB.executeQuery("SELECT name FROM sqlite_master WHERE type='table';");
+        System.out.println("Liste des tables présentent : ");
+        while (rs.next()) {
+            System.out.println("name : " + rs.getString(1));
+        }
+
+
+
         //Ne pas oublier ensuite de fermer notre bdd et le ResultSet precedemment ouvert.
         //toujours fermer la bdd en dernier sous peine d'erreur
 
-
-        //rs.close();
+        rs.close();
         myDB.close();
     }
 
@@ -164,55 +141,7 @@ public class DatabaseImpl implements Database {
     /*
     * Public's method
     * */
-    @Override
-    public void createPrepState(String query) throws SQLException {
-        Objects.requireNonNull(query);
-        prep = co.prepareStatement(query);
-    }
 
-    @Override
-    public void setPrepStringValue(int idx, String value, boolean addToBatch) throws SQLException {
-        Objects.requireNonNull(value);
-        if (idx <= 0) {
-            throw new IllegalArgumentException("idx must be > 0");
-        }
-        prep.setString(idx, value);
-        if (addToBatch) {
-            prep.addBatch();
-        }
-    }
-
-    @Override
-    public void setPrepLongValue(int idx, Long value, boolean addToBatch) throws SQLException {
-        Objects.requireNonNull(value);
-        if (idx <= 0) {
-            throw new IllegalArgumentException("idx must be > 0");
-        }
-        prep.setLong(idx, value);
-        if (addToBatch) {
-            prep.addBatch();
-        }
-    }
-
-
-    @Override
-    public ResultSet executeQuery(String query) throws SQLException {
-        Objects.requireNonNull(query);
-        return state.executeQuery(query);
-    }
-
-    @Override
-    public void exeUpda(String query) throws SQLException {
-        Objects.requireNonNull(query);
-        state.executeUpdate(query);
-    }
-
-    @Override
-    public void executeRegisteredTask() throws SQLException {
-        setAutoCommit(false);
-        exeBatch();
-        setAutoCommit(true);
-    }
 
     @Override
     public void createLogin(String login, String password) throws NoSuchAlgorithmException, SQLException {
@@ -231,14 +160,25 @@ public class DatabaseImpl implements Database {
     public void createChannelTable(String channelName, String owner) throws SQLException {
         Objects.requireNonNull(channelName);
         Objects.requireNonNull(owner);
+        System.out.println("Creation de la table : " + channelName);
         try {
             exeUpda(createChannelTableRequest(channelName));
         } catch (SQLException sql) {
-            //The channel already exist, we don't need to go further
-            throw new AssertionError("table " + channelName + " already exist");
+            System.err.println("Table " + channelName + " already exist");
+            return;
         }
         updateChannelsTable(channelName, owner);
         updateChanViewerTable(channelName, owner);
+    }
+
+    @Override
+    public void createChannelsTable() throws SQLException {
+        exeUpda(createChannelsTableRequest());
+    }
+
+    @Override
+    public void createChanViewerTable() throws SQLException {
+        exeUpda(createChanViewerTableRequest());
     }
 
     @Override
@@ -246,7 +186,7 @@ public class DatabaseImpl implements Database {
         Objects.requireNonNull(channel);
         Objects.requireNonNull(toAuthorized);
         Objects.requireNonNull(authority);
-        if (userCanControlAccessToChan(channel, authority)) {
+        if (userCanControlAccessToChan(channel, authority) && !canUserViewChannel(channel, toAuthorized)) {
             updateChanViewerTable(channel, toAuthorized);
         }
     }
@@ -261,10 +201,13 @@ public class DatabaseImpl implements Database {
         } else if (userCanControlAccessToChan(channel, authority) && toKick.equals(authority)) {
             List<String> toEject = retrieveUsersFromChan(channel);
             for (String user : toEject) {
-                executeQuery(removeUserFromChanViewerRequest(channel, toKick));
+                createPrepState(removeUserFromChanViewerRequest(channel, user));
+                prepExecuteUpdate();
             }
-            executeQuery(removeChannelFromChannelsRequest(channel, toKick));
-            executeQuery(removeChannel(channel));
+            createPrepState(removeChannelFromChannelsRequest(channel, toKick));
+            prepExecuteUpdate();
+            createPrepState(removeChannel(channel));
+            prepExecuteUpdate();
         }
     }
 
@@ -294,7 +237,6 @@ public class DatabaseImpl implements Database {
         }
     }
 
-
     @Override
     public List<String> usersList() throws SQLException {
         ResultSet rs = executeQuery("select LOGIN from users");
@@ -308,6 +250,7 @@ public class DatabaseImpl implements Database {
         }
         return userList;
     }
+
 
     @Override
     public List<String> retrieveUsersFromChan(String channel) throws SQLException {
@@ -375,11 +318,63 @@ public class DatabaseImpl implements Database {
         prep.executeBatch();
     }
 
+    private void executeRegisteredTask() throws SQLException {
+        setAutoCommit(false);
+        exeBatch();
+        setAutoCommit(true);
+    }
+
+    //The difference between this method and exeUpda is that
+    //this method can perfom delete operation on Database
+    private void prepExecuteUpdate() throws SQLException {
+        prep.executeUpdate();
+    }
+
 
     private void setAutoCommit(boolean b) throws SQLException {
         co.setAutoCommit(b);
     }
 
+
+    private void createPrepState(String query) throws SQLException {
+        Objects.requireNonNull(query);
+        prep = co.prepareStatement(query);
+    }
+
+
+    private void setPrepStringValue(int idx, String value, boolean addToBatch) throws SQLException {
+        Objects.requireNonNull(value);
+        if (idx <= 0) {
+            throw new IllegalArgumentException("idx must be > 0");
+        }
+        prep.setString(idx, value);
+        if (addToBatch) {
+            prep.addBatch();
+        }
+    }
+
+    private void setPrepLongValue(int idx, Long value, boolean addToBatch) throws SQLException {
+        Objects.requireNonNull(value);
+        if (idx <= 0) {
+            throw new IllegalArgumentException("idx must be > 0");
+        }
+        prep.setLong(idx, value);
+        if (addToBatch) {
+            prep.addBatch();
+        }
+    }
+
+
+    private ResultSet executeQuery(String query) throws SQLException {
+        Objects.requireNonNull(query);
+        return state.executeQuery(query);
+    }
+
+
+    private void exeUpda(String query) throws SQLException {
+        Objects.requireNonNull(query);
+        state.executeUpdate(query);
+    }
 
     /* CREATION AND UPDATE REQUEST WITH SQL SYNTAX */
 
@@ -387,25 +382,26 @@ public class DatabaseImpl implements Database {
         return "DROP TABLE IF EXISTS " + channel + " ;";
     }
 
+
     private String removeChannelFromChannelsRequest(String channel, String toKick) {
         return "DELETE FROM CHANNELS WHERE "
-                + "CHANNAME LIKE \'" + channel + "\' "
-                + " AND OWNER LIKE \'" + toKick + "\';";
+                + "CHANNAME LIKE '" + channel + "' "
+                + " AND OWNER LIKE '" + toKick + "';";
     }
 
 
     private String removeUserFromChanViewerRequest(String channel, String toKick) {
+        System.out.println("Dans RemoveUser, channel = " + channel + " tokick = " + toKick);
         return "DELETE FROM CHANVIEWER WHERE "
-                + "CHANNAME LIKE \'" + channel + "\' "
-                + " AND MEMBER LIKE \'" + toKick + "\';";
+                + "CHANNAME LIKE '" + channel + "' "
+                + " AND MEMBER LIKE '" + toKick + "';";
     }
 
 
     private String retriveUserFromChannelsRequest(String channelName) {
         return "SELECT MEMBER FROM CHANVIEWER WHERE "
-                + "CHANNAME LIKE \'" + channelName + "\';";
+                + "CHANNAME LIKE '" + channelName + "';";
     }
-
 
     private String createUsersTableRequest() {
         return "create table if not exists users(" +
@@ -430,6 +426,7 @@ public class DatabaseImpl implements Database {
                 ");";
     }
 
+
     private String createChannelTableRequest(String channelname) {
         return String.format("create table if not exists %s(DATE INTEGER NOT NULL, MESSAGE TEXT NOT NULL, AUTHOR TEXT NOT NULL);", channelname);
     }
@@ -437,17 +434,16 @@ public class DatabaseImpl implements Database {
 
     private String updateChannelMessageReq(String channelName, long date, String author, String Oldmsg, String newMsg) {
         return "UPDATE " + channelName +
-                " SET MESSAGE=\'" + newMsg + "\'"
+                " SET MESSAGE='" + newMsg + "'"
                 + " WHERE "
                 + "DATE=" + date
                 + " AND "
-                + " MESSAGE LIKE \'" + Oldmsg + "\'"
+                + " MESSAGE LIKE '" + Oldmsg + "'"
                 + " AND "
-                + " AUTHOR LIKE \'" + author + "\'"
+                + " AUTHOR LIKE '" + author + "'"
                 + ";";
 
     }
-
 
     private String prepareInsertTwoValuesIntoTable(String tableName) {
         return "insert into " + Objects.requireNonNull(tableName) + " values (?, ?)";
@@ -457,23 +453,20 @@ public class DatabaseImpl implements Database {
         return "insert into " + Objects.requireNonNull(tableName) + " values (?, ?, ?)";
     }
 
-    /*CREATE AND UPDATE TABLES*/
 
+    /*CREATE AND UPDATE TABLES*/
 
     private void removeUserFromChanViewer(String channel, String toKick) throws SQLException {
         exeUpda(removeUserFromChanViewerRequest(channel, toKick));
     }
 
     private void updateChannelsTable(String channelName, String owner) throws SQLException {
-        exeUpda(createChannelsTableRequest());
         createPrepState(prepareInsertTwoValuesIntoTable("channels"));
         insertTwoValIntoTable(channelName, owner);
         executeRegisteredTask();
     }
 
-
     private void updateChanViewerTable(String channelName, String member) throws SQLException {
-        exeUpda(createChanViewerTableRequest());
         createPrepState(prepareInsertTwoValuesIntoTable("chanviewer"));
         insertTwoValIntoTable(channelName, member);
         executeRegisteredTask();
@@ -502,8 +495,8 @@ public class DatabaseImpl implements Database {
     }
 
     private boolean canUserViewChannel(String channelName, String userName) throws SQLException {
-        ResultSet rs = executeQuery("SELECT * FROM chanviewer WHERE MEMBER LIKE \'" + userName + "\'" +
-                " AND CHANNAME LIKE \'" + channelName + "\';");
+        ResultSet rs = executeQuery("SELECT * FROM chanviewer WHERE MEMBER LIKE '" + userName + "'" +
+                " AND CHANNAME LIKE '" + channelName + "';");
         if (rs.next()) {
             rs.close();
             return true;
@@ -513,8 +506,8 @@ public class DatabaseImpl implements Database {
     }
 
     private boolean userCanControlAccessToChan(String channelName, String user) throws SQLException {
-        ResultSet rs = executeQuery("SELECT * FROM channels WHERE CHANNAME LIKE \'" + channelName + "\'" +
-                " AND OWNER LIKE \'" + user + "\';");
+        ResultSet rs = executeQuery("SELECT * FROM channels WHERE CHANNAME LIKE '" + channelName + "'" +
+                " AND OWNER LIKE '" + user + "';");
         if (rs.next()) {
             rs.close();
             return true;
@@ -522,5 +515,6 @@ public class DatabaseImpl implements Database {
         rs.close();
         return false;
     }
+
 
 }
