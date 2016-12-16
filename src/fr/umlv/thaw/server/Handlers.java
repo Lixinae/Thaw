@@ -168,14 +168,38 @@ class Handlers {
         if (json == null) {
             Tools.answerToRequest(response, 400, "Wrong Json format", thawLogger);
         } else {
-            analyzeDeleteChannelRequest(response, session, json, thawLogger);
+            analyzeDeleteChannelRequest(response, session, json, thawLogger, channels);
         }
     }
 
-    private static void analyzeDeleteChannelRequest(HttpServerResponse response, Session session, JsonObject json, ThawLogger thawLogger) {
-        // TODO : Deconnecter tout les utilisateur du channel avant sa destruction et les
-        // remettre sur le channel "default"
-//        HumanUser user = session.get("user");
+    private static void analyzeDeleteChannelRequest(HttpServerResponse response, Session session, JsonObject json, ThawLogger thawLogger, List<Channel> channels) {
+
+        String channelName = json.getString("channelName");
+        if (Tools.verifyEmptyOrNull(channelName)) {
+            Tools.answerToRequest(response, 400, "Wrong JSON input", thawLogger);
+            return;
+        }
+        Optional<Channel> optchannel = Tools.findChannelInList(channels, channelName);
+        if (!optchannel.isPresent()) {
+            Tools.answerToRequest(response, 400, "Channel '" + channelName + "' does not exist", thawLogger);
+            return;
+        }
+        Channel channel = optchannel.get();
+        HumanUser user = session.get("user");
+        if (!channel.isUserCreator(user)) {
+            Tools.answerToRequest(response, 400, "You do not have the right to delete this channel", thawLogger);
+            return;
+        }
+        optchannel = Tools.findChannelInList(channels, "default");
+        if (!optchannel.isPresent()) {
+            Tools.answerToRequest(response, 400, "Channel '" + channelName + "' does not exist", thawLogger);
+            return;
+        }
+        Channel defaut = optchannel.get();
+        channel.moveUsersToAnotherChannel(defaut);
+        channels.remove(channel);
+        Tools.answerToRequest(response, 200, "Channel '" + channelName + "' successfully deleted", thawLogger);
+
     }
 
 

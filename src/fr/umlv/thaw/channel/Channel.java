@@ -2,6 +2,7 @@ package fr.umlv.thaw.channel;
 
 import fr.umlv.thaw.message.Message;
 import fr.umlv.thaw.user.User;
+import fr.umlv.thaw.user.humanUser.HumanUser;
 
 import java.util.List;
 import java.util.Optional;
@@ -75,6 +76,10 @@ public interface Channel {
      * @return The user if he exists, optional.empty otherwise
      */
     Optional<User> findUser(User user);
+
+    boolean isUserCreator(HumanUser user);
+
+    void moveUsersToAnotherChannel(Channel newChannel);
 
 //    /**
 //     * Add a bot in the channel. That method could be called only by someone who

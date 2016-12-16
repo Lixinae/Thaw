@@ -115,6 +115,22 @@ public class ChannelImpl implements Channel {
         return Optional.empty();
     }
 
+    @Override
+    public boolean isUserCreator(HumanUser user) {
+        return creator.equals(user);
+    }
+
+    // Todo possible erreur sur le remove -> concurrent modif -> utilisation d'un moyen detourner
+    @Override
+    public void moveUsersToAnotherChannel(Channel newChannel) {
+        List<User> tmpToRemove = new ArrayList<>();
+        messagesQueue.forEach((k, v) -> {
+            newChannel.addUserToChan(k);
+            tmpToRemove.add(k);
+        });
+        tmpToRemove.forEach(messagesQueue::remove);
+    }
+
 //    @Override
 //    public boolean addBot(Bot bot) {
 //        Objects.requireNonNull(bot);
