@@ -159,6 +159,7 @@ class Handlers {
     /////////////////// Delete Channel Handler ///////////////////
     /*############################################################*/
 
+    // Todo A tester
     static void deleteChannelHandle(RoutingContext routingContext, ThawLogger thawLogger, List<Channel> channels) {
         thawLogger.log(Level.INFO, "In deleteChannel request");
         HttpServerResponse response = routingContext.response();
@@ -197,6 +198,7 @@ class Handlers {
         }
         Channel defaut = optchannel.get();
         channel.moveUsersToAnotherChannel(defaut);
+        user.deleteChannel(channel);
         channels.remove(channel);
         Tools.answerToRequest(response, 200, "Channel '" + channelName + "' successfully deleted", thawLogger);
 

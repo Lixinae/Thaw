@@ -28,13 +28,11 @@ public class HumanUserImpl implements HumanUser {
     }
 
     public boolean addChannel(Channel chan) {
-        //TODO Checker si vraiment correct
         Objects.requireNonNull(chan);
         return channels.add(chan);
     }
 
     public boolean deleteChannel(Channel chan) {
-        //TODO checker a quel moment virer les utilisateurs qui etaient encore dans la channel
         Objects.requireNonNull(chan);
         return channels.remove(chan);
     }
@@ -59,10 +57,6 @@ public class HumanUserImpl implements HumanUser {
     public boolean compareHash(String password) {
         return passwordHash.equals(Tools.toSHA256(password));
     }
-
-//    static boolean checkPassword(String shaDigest, String password) {
-//        return shaDigest.equals(toSHA256(password));
-//    }
 
     @Override
     public boolean equals(Object o) {
