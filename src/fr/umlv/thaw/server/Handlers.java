@@ -48,12 +48,11 @@ class Handlers {
     private static void analyzeConnecToServerRequest(Session session, HttpServerResponse response, JsonObject json, ThawLogger thawLogger, List<HumanUser> authorizedHumanUsers) {
         String userName = json.getString("userName");
         String password = json.getString("password");
-        String passwordHash = Tools.toSHA256(password);
-        if (Tools.verifyEmptyOrNull(userName, password, passwordHash)) {
+        if (Tools.verifyEmptyOrNull(userName, password)) {
             Tools.answerToRequest(response, 400, "Wrong JSON input", thawLogger);
         }
         for (HumanUser u : authorizedHumanUsers) {
-            if (u.getName().equals(userName) && u.compareHash(passwordHash)) {
+            if (u.getName().equals(userName) && u.compareHash(password)) {
                 session.put("user", u);
                 break;
             }
