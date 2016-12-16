@@ -49,6 +49,9 @@ class Handlers {
         String userName = json.getString("userName");
         String password = json.getString("password");
         String passwordHash = Tools.toSHA256(password);
+        if (Tools.verifyEmptyOrNull(userName, password, passwordHash)) {
+            Tools.answerToRequest(response, 400, "Wrong JSON input", thawLogger);
+        }
         for (HumanUser u : authorizedHumanUsers) {
             if (u.getName().equals(userName) && u.compareHash(passwordHash)) {
                 session.put("user", u);
@@ -56,11 +59,9 @@ class Handlers {
             }
         }
         if (session.get("user") == null) {
-            response.setStatusCode(400)
-                    .end("HumanUser: '" + userName + "' authentication failed");
+            Tools.answerToRequest(response, 400, "HumanUser: '" + userName + "' authentication failed", thawLogger);
         } else {
-            response.setStatusCode(204)
-                    .end("HumanUser: '" + userName + "' authentication success");
+            Tools.answerToRequest(response, 204, "HumanUser: '" + userName + "' authentication success", thawLogger);
         }
 //        Tools.answerToRequest(response, 204, "HumanUser: '" + userName + "' authenticated", thawLogger);
     }
