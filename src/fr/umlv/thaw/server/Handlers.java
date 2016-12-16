@@ -150,7 +150,7 @@ class Handlers {
     private static void createAndAddChannel(String newChannelName, HumanUser creator, List<Channel> channels) {
         Channel newChannel = ChannelFactory.createChannel(creator, newChannelName);
         channels.add(newChannel);
-        creator.addChannel(newChannel);
+//        creator.addChannel(newChannel);
     }
 
 
@@ -198,7 +198,7 @@ class Handlers {
         }
         Channel defaut = optchannel.get();
         channel.moveUsersToAnotherChannel(defaut);
-        user.deleteChannel(channel);
+//        user.deleteChannel(channel);
         channels.remove(channel);
         Tools.answerToRequest(response, 200, "Channel '" + channelName + "' successfully deleted", thawLogger);
 
@@ -303,7 +303,7 @@ class Handlers {
             return;
         }
         Channel chan = channelOptional.get();
-        HumanUser humanUser = session.get("humanUser");
+        HumanUser humanUser = session.get("user");
 
         if (!chan.checkIfUserIsConnected(humanUser)) {
             Tools.answerToRequest(response, 400, "HumanUser: '" + humanUser.getName() + "' is not connected to chan", thawLogger);

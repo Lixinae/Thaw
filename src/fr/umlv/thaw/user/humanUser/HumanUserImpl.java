@@ -5,7 +5,6 @@ import fr.umlv.thaw.message.Message;
 import fr.umlv.thaw.server.Tools;
 
 import java.util.Objects;
-import java.util.concurrent.ConcurrentLinkedQueue;
 
 /**
  * This class represent a Human user
@@ -13,13 +12,13 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 public class HumanUserImpl implements HumanUser {
 
     private final String name;
-    private final ConcurrentLinkedQueue<Channel> channels;
+    //    private final ConcurrentLinkedQueue<Channel> channels;
     private final String passwordHash;
 
     HumanUserImpl(String nickname, String passwordHash) {
         this.name = Objects.requireNonNull(nickname);
         this.passwordHash = Objects.requireNonNull(passwordHash);
-        channels = new ConcurrentLinkedQueue<>();
+//        channels = new ConcurrentLinkedQueue<>();
     }
 
     @Override
@@ -27,15 +26,15 @@ public class HumanUserImpl implements HumanUser {
         return name;
     }
 
-    public boolean addChannel(Channel chan) {
-        Objects.requireNonNull(chan);
-        return channels.add(chan);
-    }
-
-    public boolean deleteChannel(Channel chan) {
-        Objects.requireNonNull(chan);
-        return channels.remove(chan);
-    }
+//    public boolean addChannel(Channel chan) {
+//        Objects.requireNonNull(chan);
+//        return channels.add(chan);
+//    }
+//
+//    public boolean deleteChannel(Channel chan) {
+//        Objects.requireNonNull(chan);
+//        return channels.remove(chan);
+//    }
 
     public boolean joinChannel(Channel chan) {
         Objects.requireNonNull(chan);
@@ -66,14 +65,12 @@ public class HumanUserImpl implements HumanUser {
         HumanUserImpl humanUser = (HumanUserImpl) o;
 
         if (!name.equals(humanUser.name)) return false;
-        if (!channels.equals(humanUser.channels)) return false;
         return passwordHash.equals(humanUser.passwordHash);
     }
 
     @Override
     public int hashCode() {
         int result = name.hashCode();
-        result = 31 * result + channels.hashCode();
         result = 31 * result + passwordHash.hashCode();
         return result;
     }
@@ -87,7 +84,7 @@ public class HumanUserImpl implements HumanUser {
         // Channels qui affiche le createur , qui affiche ses channels qui affiche le createur qui affiche les channels etc...
     }
 
-    ConcurrentLinkedQueue<Channel> getChannel() {
-        return channels;
-    }
+//    ConcurrentLinkedQueue<Channel> getChannel() {
+//        return channels;
+//    }
 }
