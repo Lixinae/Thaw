@@ -8,7 +8,10 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.security.NoSuchAlgorithmException;
 import java.sql.*;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.Objects;
 
 /**
  * This class represent an implementation of a Database
@@ -16,10 +19,7 @@ import java.util.*;
  */
 public class DatabaseImpl implements Database {
 
-    private final Path pathToDB;
-    private final String dbName;
-    private final LinkedList<String> channelsName = new LinkedList<>();
-    private final Class sqlite = Class.forName("org.sqlite.JDBC");//to load sqlite.jar
+    // private final Class sqlite = Class.forName("org.sqlite.JDBC");//to load sqlite.jar
     private final String forGetConnection;
     private final Connection co;
     private final Statement state;
@@ -36,8 +36,9 @@ public class DatabaseImpl implements Database {
      * @throws SQLException           if an error occurs during the creation of the database
      */
     public DatabaseImpl(Path pathToDB, String dbName) throws ClassNotFoundException, SQLException {
-        this.pathToDB = Objects.requireNonNull(pathToDB);
-        this.dbName = Objects.requireNonNull(dbName);
+        Objects.requireNonNull(pathToDB);
+        Objects.requireNonNull(dbName);
+        Class.forName("org.sqlite.JDBC");
         forGetConnection = "jdbc:sqlite:" + pathToDB + FileSystems.getDefault().getSeparator() + dbName + ".db";
         co = createConnection();
         state = createStatement();
@@ -65,10 +66,8 @@ public class DatabaseImpl implements Database {
         try {
             myDB.createLogin("George", "12345@A");
             myDB.createLogin("TotoLeBus", "TotoLeBus");
-            System.out.println("INITIALISATION");
             myDB.createChannelsTable();
             myDB.createChanViewerTable();
-            System.out.println("INITIALISATION OVER");
         } catch (SQLException sql) {
             //ne rien faire car pas envie de planter sur une erreur
         }
@@ -122,6 +121,7 @@ public class DatabaseImpl implements Database {
         }
 
 
+
         //Ne pas oublier ensuite de fermer notre bdd et le ResultSet precedemment ouvert.
         //toujours fermer la bdd en dernier sous peine d'erreur
 
@@ -141,55 +141,7 @@ public class DatabaseImpl implements Database {
     /*
     * Public's method
     * */
-    @Override
-    public void createPrepState(String query) throws SQLException {
-        Objects.requireNonNull(query);
-        prep = co.prepareStatement(query);
-    }
 
-    @Override
-    public void setPrepStringValue(int idx, String value, boolean addToBatch) throws SQLException {
-        Objects.requireNonNull(value);
-        if (idx <= 0) {
-            throw new IllegalArgumentException("idx must be > 0");
-        }
-        prep.setString(idx, value);
-        if (addToBatch) {
-            prep.addBatch();
-        }
-    }
-
-    @Override
-    public void setPrepLongValue(int idx, Long value, boolean addToBatch) throws SQLException {
-        Objects.requireNonNull(value);
-        if (idx <= 0) {
-            throw new IllegalArgumentException("idx must be > 0");
-        }
-        prep.setLong(idx, value);
-        if (addToBatch) {
-            prep.addBatch();
-        }
-    }
-
-
-    @Override
-    public ResultSet executeQuery(String query) throws SQLException {
-        Objects.requireNonNull(query);
-        return state.executeQuery(query);
-    }
-
-    @Override
-    public void exeUpda(String query) throws SQLException {
-        Objects.requireNonNull(query);
-        state.executeUpdate(query);
-    }
-
-    @Override
-    public void executeRegisteredTask() throws SQLException {
-        setAutoCommit(false);
-        exeBatch();
-        setAutoCommit(true);
-    }
 
     @Override
     public void createLogin(String login, String password) throws NoSuchAlgorithmException, SQLException {
@@ -217,6 +169,16 @@ public class DatabaseImpl implements Database {
         }
         updateChannelsTable(channelName, owner);
         updateChanViewerTable(channelName, owner);
+    }
+
+    @Override
+    public void createChannelsTable() throws SQLException {
+        exeUpda(createChannelsTableRequest());
+    }
+
+    @Override
+    public void createChanViewerTable() throws SQLException {
+        exeUpda(createChanViewerTableRequest());
     }
 
     @Override
@@ -275,7 +237,6 @@ public class DatabaseImpl implements Database {
         }
     }
 
-
     @Override
     public List<String> usersList() throws SQLException {
         ResultSet rs = executeQuery("select LOGIN from users");
@@ -289,6 +250,7 @@ public class DatabaseImpl implements Database {
         }
         return userList;
     }
+
 
     @Override
     public List<String> retrieveUsersFromChan(String channel) throws SQLException {
@@ -356,6 +318,12 @@ public class DatabaseImpl implements Database {
         prep.executeBatch();
     }
 
+    private void executeRegisteredTask() throws SQLException {
+        setAutoCommit(false);
+        exeBatch();
+        setAutoCommit(true);
+    }
+
     //The difference between this method and exeUpda is that
     //this method can perfom delete operation on Database
     private void prepExecuteUpdate() throws SQLException {
@@ -368,11 +336,52 @@ public class DatabaseImpl implements Database {
     }
 
 
+    private void createPrepState(String query) throws SQLException {
+        Objects.requireNonNull(query);
+        prep = co.prepareStatement(query);
+    }
+
+
+    private void setPrepStringValue(int idx, String value, boolean addToBatch) throws SQLException {
+        Objects.requireNonNull(value);
+        if (idx <= 0) {
+            throw new IllegalArgumentException("idx must be > 0");
+        }
+        prep.setString(idx, value);
+        if (addToBatch) {
+            prep.addBatch();
+        }
+    }
+
+    private void setPrepLongValue(int idx, Long value, boolean addToBatch) throws SQLException {
+        Objects.requireNonNull(value);
+        if (idx <= 0) {
+            throw new IllegalArgumentException("idx must be > 0");
+        }
+        prep.setLong(idx, value);
+        if (addToBatch) {
+            prep.addBatch();
+        }
+    }
+
+
+    private ResultSet executeQuery(String query) throws SQLException {
+        Objects.requireNonNull(query);
+        return state.executeQuery(query);
+    }
+
+
+    private void exeUpda(String query) throws SQLException {
+        Objects.requireNonNull(query);
+        state.executeUpdate(query);
+    }
+
     /* CREATION AND UPDATE REQUEST WITH SQL SYNTAX */
 
     private String removeChannel(String channel) {
         return "DROP TABLE IF EXISTS " + channel + " ;";
     }
+
 
     private String removeChannelFromChannelsRequest(String channel, String toKick) {
         return "DELETE FROM CHANNELS WHERE "
@@ -393,7 +402,6 @@ public class DatabaseImpl implements Database {
         return "SELECT MEMBER FROM CHANVIEWER WHERE "
                 + "CHANNAME LIKE '" + channelName + "';";
     }
-
 
     private String createUsersTableRequest() {
         return "create table if not exists users(" +
@@ -418,6 +426,7 @@ public class DatabaseImpl implements Database {
                 ");";
     }
 
+
     private String createChannelTableRequest(String channelname) {
         return String.format("create table if not exists %s(DATE INTEGER NOT NULL, MESSAGE TEXT NOT NULL, AUTHOR TEXT NOT NULL);", channelname);
     }
@@ -436,7 +445,6 @@ public class DatabaseImpl implements Database {
 
     }
 
-
     private String prepareInsertTwoValuesIntoTable(String tableName) {
         return "insert into " + Objects.requireNonNull(tableName) + " values (?, ?)";
     }
@@ -445,8 +453,8 @@ public class DatabaseImpl implements Database {
         return "insert into " + Objects.requireNonNull(tableName) + " values (?, ?, ?)";
     }
 
-    /*CREATE AND UPDATE TABLES*/
 
+    /*CREATE AND UPDATE TABLES*/
 
     private void removeUserFromChanViewer(String channel, String toKick) throws SQLException {
         exeUpda(removeUserFromChanViewerRequest(channel, toKick));
@@ -456,14 +464,6 @@ public class DatabaseImpl implements Database {
         createPrepState(prepareInsertTwoValuesIntoTable("channels"));
         insertTwoValIntoTable(channelName, owner);
         executeRegisteredTask();
-    }
-
-    private void createChannelsTable() throws SQLException {
-        exeUpda(createChannelsTableRequest());
-    }
-
-    private void createChanViewerTable() throws SQLException {
-        exeUpda(createChanViewerTableRequest());
     }
 
     private void updateChanViewerTable(String channelName, String member) throws SQLException {
