@@ -87,11 +87,11 @@ class Handlers {
         if (json == null) {
             answerToRequest(response, 400, "Wrong JSON input", thawLogger);
         } else {
-            analyzeDisconnectFromServerRequest(routingContext, response, json, thawLogger, channels);
+            analyzeDisconnectFromServerRequest(routingContext, response, json, thawLogger, channels, connectedUsers);
         }
     }
 
-    private static void analyzeDisconnectFromServerRequest(RoutingContext routingContext, HttpServerResponse response, JsonObject json, ThawLogger thawLogger, List<Channel> channels) {
+    private static void analyzeDisconnectFromServerRequest(RoutingContext routingContext, HttpServerResponse response, JsonObject json, ThawLogger thawLogger, List<Channel> channels, List<User> connectedUsers) {
 
         String currentChannel = json.getString("currentChannelName");
         Session session = routingContext.session();
@@ -111,6 +111,7 @@ class Handlers {
         }
         Channel chan = optChannel.get();
         HumanUser user = session.get("user");
+        connectedUsers.remove(user);
         chan.removeUserFromChan(user);
         // Detruit la session courante
         routingContext.session().destroy();
