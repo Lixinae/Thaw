@@ -54,7 +54,7 @@ public class DatabaseImpl implements Database {
         DatabaseImpl myDB;
         long dte = System.currentTimeMillis();
         try {
-            myDB = new DatabaseImpl(Paths.get("../db"), "mafia");//Creation base du fichier mafia.db
+            myDB = new DatabaseImpl(Paths.get(".." + sep + "db"), "mafia");//Creation base du fichier mafia.db
         } catch (SQLException sql) {
             System.err.println("can't open the db ");
             return;
@@ -64,10 +64,13 @@ public class DatabaseImpl implements Database {
         String chan1 = "Chan1";
         //test de createLogin
         try {
-            myDB.createLogin("George", "12345@A");
-            myDB.createLogin("TotoLeBus", "TotoLeBus");
             myDB.createChannelsTable();
             myDB.createChanViewerTable();
+        } catch (SQLException sql) {
+        }
+        try {
+            myDB.createLogin("George", "12345@A");
+            myDB.createLogin("TotoLeBus", "TotoLeBus");
         } catch (SQLException sql) {
             //ne rien faire car pas envie de planter sur une erreur
         }
@@ -99,14 +102,13 @@ public class DatabaseImpl implements Database {
         System.out.println("Apres chgmt de message de TotoLeBus : ");
         System.out.println(myDB.messagesList("Chan1"));
 
-        myDB.removeUserAccessToChan(chan1, "TotoLeBus", "George");
 
-        System.out.println("Avant remove George");
+        System.out.println("Avant remove George de Chan1");
 
 
         myDB.removeUserAccessToChan(chan1, "George", "George");
 
-        System.out.println("George has been removed");
+        System.out.println("George has been removed from Chan1");
         List<String> chans = myDB.channelList();
         System.out.println("Nombre de channel present après suppresion de l'auteur : " + chans.size());
 
@@ -119,7 +121,6 @@ public class DatabaseImpl implements Database {
         while (rs.next()) {
             System.out.println("name : " + rs.getString(1));
         }
-
 
 
         //Ne pas oublier ensuite de fermer notre bdd et le ResultSet precedemment ouvert.
@@ -391,7 +392,6 @@ public class DatabaseImpl implements Database {
 
 
     private String removeUserFromChanViewerRequest(String channel, String toKick) {
-        System.out.println("Dans RemoveUser, channel = " + channel + " tokick = " + toKick);
         return "DELETE FROM CHANVIEWER WHERE "
                 + "CHANNAME LIKE '" + channel + "' "
                 + " AND MEMBER LIKE '" + toKick + "';";
@@ -494,6 +494,8 @@ public class DatabaseImpl implements Database {
         }
     }
 
+    //It's kind of dangerous to use a SQL query that could be change but, because it's on internal
+    //use only and in a select only, this shouldn't be too risky for SQLInjection attacks
     private boolean canUserViewChannel(String channelName, String userName) throws SQLException {
         ResultSet rs = executeQuery("SELECT * FROM chanviewer WHERE MEMBER LIKE '" + userName + "'" +
                 " AND CHANNAME LIKE '" + channelName + "';");
@@ -505,6 +507,8 @@ public class DatabaseImpl implements Database {
         return false;
     }
 
+    //It's kind of dangerous to use a SQL query that could be change but, because it's on internal
+    //use only and in a select only, this shouldn't be too risky for SQLInjection attacks
     private boolean userCanControlAccessToChan(String channelName, String user) throws SQLException {
         ResultSet rs = executeQuery("SELECT * FROM channels WHERE CHANNAME LIKE '" + channelName + "'" +
                 " AND OWNER LIKE '" + user + "';");
