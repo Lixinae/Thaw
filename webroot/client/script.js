@@ -119,13 +119,22 @@ function sendMessage(){
 
 // TODO : Test it
 function getListMessageForChannel(){
-	var listChannel = $(".listChannels");
-	listChannel.children().remove();
+	var listMessage = $(".tchat");
+	listMessage.children().remove();
 
 	$.post("/api/private/getListMessageForChannel",
 		JSON.stringify({channelName:currentChannel,numberOfMessage:1000}))
 	    .done(function(response){
-	        console.log(response)
+	            //console.log(response[0]);
+	            var string = "";
+	            $.each(response,function(key){
+	                var date = response[key].date;
+	            	var msg = response[key].content;
+	            	var name = response[key].sender.name;
+                    string = string + chatMessageFormatting(name,msg,date);
+	            });
+	            listMessage.append(string);
+
 	        // Formater correctement les messages
 
 	        // Utiliser JSON.parse
@@ -244,14 +253,25 @@ y inserer les balises html adequat pour le formattage
 */
 function chatMessageFormatting(username,msg,dateAsLong){
     var date = new Date(dateAsLong);
-    var hours = date.getHours();
-    var minutes = date.getMinutes();
-    var seconds = date.getSeconds();
+    var hours = addZero(date.getHours());
+    var minutes = addZero(date.getMinutes());
+    var day = addZero(date.getDay());
+    var month = addZero(date.getMonth());
+    var year = date.getFullYear();
     if(msg.length > 512){
-       msg=msg.slice(0,512)
+       msg=msg.slice(0,512);
     }
-    return "<p>"+ hours+":"+minutes+ ":"+ seconds+" ["+username+"] : "
+    /*return "<p>"+ date.parse("DD/MM/YYYY HH:mm ")+" ["+username+"] : "
+                                              +"<br>"+msg.split("\n").join("<br>")+"</p>"+"<br>";*/
+   return "<p>"+ hours+":"+minutes +" "+day+"/"+month+"/"+year+" "+username+" : "
                                    +"<br>"+msg.split("\n").join("<br>")+"</p>"+"<br>";
+}
+
+function addZero(i){
+    if(i < 10){
+        i = "0"+i;
+    }
+    return i;
 }
 
 // Compatibilite pour IE si besoin
