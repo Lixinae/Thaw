@@ -83,9 +83,9 @@ public class Server extends AbstractVerticle {
         Channel channel = ChannelFactory.createChannel(superUser, "Item 1");
         Channel channel2 = ChannelFactory.createChannel(superUser, "Item 2");
 
-        Message mes = MessageFactory.createMessage(superUser, 10, "1er lessage");
-        Message mes1 = MessageFactory.createMessage(superUser, 20, "2e message");
-        Message mes2 = MessageFactory.createMessage(superUser, 30, "3e message");
+        Message mes = MessageFactory.createMessage(superUser, System.currentTimeMillis(), "1er lessage");
+        Message mes1 = MessageFactory.createMessage(superUser, System.currentTimeMillis(), "2e message");
+        Message mes2 = MessageFactory.createMessage(superUser, System.currentTimeMillis(), "3e message");
         defaul.addMessageToQueue(mes);
         defaul.addMessageToQueue(mes1);
         defaul.addMessageToQueue(mes2);
