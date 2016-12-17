@@ -130,6 +130,13 @@ def getListUserForChannel(machineUrl, channelName):
     payload = {'channelName': channelName}
     return doPostRequestJson(url, payload)
 
+
+def disconnectFromServer(machineUrl, channelName):
+    querie = "/api/private/disconnectFromServer"
+    url = machineUrl + querie
+    payload = {'currentChannelName': channelName}
+    return doPostRequestJson(url, payload)
+
 ##def testSimplePost():
 ##    payload = { 'username' : 'mouhahahaha' , 'another':'value' }
 ##    url = "http://192.168.1.34:8080/api/testJson"
@@ -191,6 +198,10 @@ if __name__ == '__main__':
     sendMessage(machineUrl, 'superUser', 'Another', "Message 4")
     print("########")
     getListMessageForChannel(machineUrl, 'Another', numberMessage=10)
+    print("########")
+    getChannelsList(machineUrl)
+    print("########")
+    disconnectFromServer(machineUrl, 'Another')
     print("########")
     getChannelsList(machineUrl)
     print("########")
