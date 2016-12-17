@@ -4,6 +4,8 @@ package fr.umlv.thaw.server;
 import fr.umlv.thaw.channel.Channel;
 import fr.umlv.thaw.channel.ChannelFactory;
 import fr.umlv.thaw.logger.ThawLogger;
+import fr.umlv.thaw.message.Message;
+import fr.umlv.thaw.message.MessageFactory;
 import fr.umlv.thaw.user.humanUser.HumanUser;
 import fr.umlv.thaw.user.humanUser.HumanUserFactory;
 import fr.umlv.thaw.user.humanUser.HumanUserImpl;
@@ -80,6 +82,13 @@ public class Server extends AbstractVerticle {
         Channel defaul = ChannelFactory.createChannel(superUser, "default");
         Channel channel = ChannelFactory.createChannel(superUser, "Item 1");
         Channel channel2 = ChannelFactory.createChannel(superUser, "Item 2");
+
+        Message mes = MessageFactory.createMessage(superUser, 10, "1er lessage");
+        Message mes1 = MessageFactory.createMessage(superUser, 20, "2e message");
+        Message mes2 = MessageFactory.createMessage(superUser, 30, "3e message");
+        defaul.addMessageToQueue(mes);
+        defaul.addMessageToQueue(mes1);
+        defaul.addMessageToQueue(mes2);
 
         superUser.joinChannel(defaul);
         test2.joinChannel(defaul);
