@@ -1,12 +1,6 @@
 
-
-
-
-
-
-
 var currentChannel = "default";
-var username = "empty"; // todo recuperer le nom du user donné dans le login.html
+var username = JSON.parse(sessionStorage.userName); //retrieve the login from the login page
 
 // var  messageV = $("#TextZone"); -> Textzone est un id
 // var  messageV = $(".TextZone"); -> TextZone est une classe
@@ -131,29 +125,32 @@ function getListMessageForChannel(){
 	$.post("/api/private/getListMessageForChannel",
 		JSON.stringify({channelName:currentChannel,numberOfMessage:1000}))
 	    .done(function(response){
+	        console.log(response)
 	        // Formater correctement les messages
 
 	        // Utiliser JSON.parse
 	        // Format reçu : l'ordre des éléments change systématiquement
 	        // L'exemple est la à titre indicatif
-	        /* [{
-                     'sender': {
-                                'userHuman': True,
-                                'name': 'superUser',
-                                'userBot': False
-                               },
-                     'content': 'Message 2',
-                     'date': 1480814172039
-	            },
-	            {
-	                 'sender': {
-                	            'userHuman': True,
-                	            'name': 'superUser',
-                	            'userBot': False
-                	            },
-                	 'content': 'Message 2',
-                	 'date': 1480814172039
-	            }]
+	        /* [ {
+                 "sender" : {
+                   "name" : "superUser"
+                 },
+                 "date" : 1481968254959,
+                 "content" : "Message 2"
+               }, {
+                 "sender" : {
+                   "name" : "superUser"
+                 },
+                 "date" : 1481968254988,
+                 "content" : "Message 3"
+               }, {
+                 "sender" : {
+                   "name" : "superUser"
+                 },
+                 "date" : 1481968254993,
+                 "content" : "Message 4"
+               } ]
+
 	             */
             //alert("success getListMessageForChannel");
         })
