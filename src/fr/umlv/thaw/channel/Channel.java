@@ -77,8 +77,16 @@ public interface Channel {
      */
     Optional<User> findUser(User user);
 
+    /**
+     * @param user the user you want to check if he is creator
+     * @return true if the given user is the creator of the channel
+     */
     boolean isUserCreator(HumanUser user);
 
+    /**
+     * Moves all users from the current to a new channel
+     * @param newChannel The new channel where to move the users on the current channel
+     */
     void moveUsersToAnotherChannel(Channel newChannel);
 
 //    /**

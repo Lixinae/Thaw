@@ -5,9 +5,7 @@ import fr.umlv.thaw.user.User;
 
 public interface HumanUser extends User {
 
-
     String getName();
-
 
     /**
      * This method allow a humanUser to join a channel that exist
@@ -24,22 +22,6 @@ public interface HumanUser extends User {
      * otherwise
      */
     boolean quitChannel(Channel chan);
-
-//    /**
-//     * This method create a new channel with the current HumanUserImpl as creator
-//     *
-//     * @param chan the Channel to create
-//     * @return true if the Channel has been created false otherwise
-//     */
-//    boolean addChannel(Channel chan);
-//
-//    /**
-//     * This method will try to delete a Channel that the current HumanUserImpl has created.
-//     *
-//     * @param chan the Channel to delete
-//     * @return true if the Channel has been deleted false otherwise
-//     */
-//    boolean deleteChannel(Channel chan);
 
     /**
      * @param passworHash the password hash

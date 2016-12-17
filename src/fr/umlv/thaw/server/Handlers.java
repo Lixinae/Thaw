@@ -8,6 +8,7 @@ import fr.umlv.thaw.message.MessageFactory;
 import fr.umlv.thaw.user.User;
 import fr.umlv.thaw.user.humanUser.HumanUser;
 import io.vertx.core.http.HttpServerResponse;
+import io.vertx.core.json.Json;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.RoutingContext;
 import io.vertx.ext.web.Session;
@@ -36,10 +37,10 @@ class Handlers {
         Session session = routingContext.session();
 
         if (json == null) {
-            Tools.answerToRequest(response, 400, "Wrong Json format", thawLogger);
+            answerToRequest(response, 400, "Wrong Json format", thawLogger);
         }
         if (session == null) {
-            Tools.answerToRequest(response, 400, "No session", thawLogger);
+            answerToRequest(response, 400, "No session", thawLogger);
         } else {
             analyzeConnecToServerRequest(session, response, json, thawLogger, authorizedHumanUsers);
         }
@@ -48,8 +49,8 @@ class Handlers {
     private static void analyzeConnecToServerRequest(Session session, HttpServerResponse response, JsonObject json, ThawLogger thawLogger, List<HumanUser> authorizedHumanUsers) {
         String userName = json.getString("userName");
         String password = json.getString("password");
-        if (Tools.verifyEmptyOrNull(userName, password)) {
-            Tools.answerToRequest(response, 400, "Wrong JSON input", thawLogger);
+        if (verifyEmptyOrNull(userName, password)) {
+            answerToRequest(response, 400, "Wrong JSON input", thawLogger);
         }
         for (HumanUser u : authorizedHumanUsers) {
             if (u.getName().equals(userName) && u.compareHash(password)) {
@@ -58,11 +59,11 @@ class Handlers {
             }
         }
         if (session.get("user") == null) {
-            Tools.answerToRequest(response, 400, "HumanUser: '" + userName + "' authentication failed", thawLogger);
+            answerToRequest(response, 400, "HumanUser: '" + userName + "' authentication failed", thawLogger);
         } else {
-            Tools.answerToRequest(response, 204, "HumanUser: '" + userName + "' authentication success", thawLogger);
+            answerToRequest(response, 204, "HumanUser: '" + userName + "' authentication success", thawLogger);
         }
-//        Tools.answerToRequest(response, 204, "HumanUser: '" + userName + "' authenticated", thawLogger);
+//        answerToRequest(response, 204, "HumanUser: '" + userName + "' authenticated", thawLogger);
     }
 
 
@@ -72,14 +73,38 @@ class Handlers {
     /*####################################################################*/
 
     // Todo
-    static void disconnectFromServerHandle(RoutingContext routingContext, ThawLogger thawLogger) {
-        routingContext.clearUser();
-        routingContext.response().putHeader("location", "/").setStatusCode(302).end();
+    static void disconnectFromServerHandle(RoutingContext routingContext, ThawLogger thawLogger, List<Channel> channels) {
+        thawLogger.log(Level.INFO, "In disconnect from server request");
+        HttpServerResponse response = routingContext.response();
+        JsonObject json = routingContext.getBodyAsJson();
+        if (json == null) {
+            answerToRequest(response, 400, "Wrong JSON input", thawLogger);
+        } else {
+            analyzeDisconnectFromServerRequest(routingContext, response, json, thawLogger, channels);
+        }
     }
 
-    private static void analyzeDisconnectFromServerRequest(HttpServerResponse response, JsonObject json, ThawLogger thawLogger) {
+    private static void analyzeDisconnectFromServerRequest(RoutingContext routingContext, HttpServerResponse response, JsonObject json, ThawLogger thawLogger, List<Channel> channels) {
 
+        String currentChannel = json.getString("currentChannelName");
+        Session session = routingContext.session();
 
+        if (verifyEmptyOrNull(currentChannel)) {
+            answerToRequest(response, 400, "There is no channel defined", thawLogger);
+            return;
+        }
+        Optional<Channel> optChannel = findChannelInList(channels, currentChannel);
+        if (!optChannel.isPresent()) {
+            answerToRequest(response, 400, "Channel '" + currentChannel + "' does not exist", thawLogger);
+            return;
+        }
+        Channel chan = optChannel.get();
+        HumanUser user = session.get("user");
+        chan.removeUserFromChan(user);
+        // Detruit la session courante
+        routingContext.session().destroy();
+        thawLogger.log(Level.INFO, "Disconnected from server");
+        response.putHeader("location", "/").setStatusCode(302).end();
     }
 
 
@@ -99,15 +124,16 @@ class Handlers {
     // Todo
     // Check if the user is connected to the server
     static void securityCheckHandle(RoutingContext routingContext, ThawLogger thawLogger, List<HumanUser> authorizedHumanUsers) {
+        thawLogger.log(Level.INFO, "In security check handler");
         Session session = routingContext.session();
         HttpServerResponse response = routingContext.response();
         HumanUser humanUser = session.get("user");
         if (humanUser == null || !authorizedHumanUsers.contains(humanUser)) {
-            Tools.answerToRequest(response, 403, "HumanUser does not have the access to private api ", thawLogger);
+            answerToRequest(response, 403, "HumanUser does not have the access to private api ", thawLogger);
         } else {
             // Poursuis sur celui sur lequel il pointais avant d'arriver la
             routingContext.next();
-//            Tools.answerToRequest(response, 200, "All good", thawLogger);
+//            answerToRequest(response, 200, "All good", thawLogger);
         }
     }
 
@@ -123,7 +149,7 @@ class Handlers {
         Session session = routingContext.session();
         JsonObject json = routingContext.getBodyAsJson();
         if (json == null) {
-            Tools.answerToRequest(response, 400, "Wrong JSON input", thawLogger);
+            answerToRequest(response, 400, "Wrong JSON input", thawLogger);
         } else {
             analyzeAddChannelRequest(session, response, json, thawLogger, channels);
         }
@@ -133,17 +159,17 @@ class Handlers {
         String newChannelName = json.getString("newChannelName");
         String creatorName = json.getString("creatorName");
         thawLogger.log(Level.INFO, newChannelName + " " + creatorName + " ");
-        if (Tools.verifyEmptyOrNull(newChannelName, creatorName)) {
-            Tools.answerToRequest(response, 400, "Wrong JSON input", thawLogger);
+        if (verifyEmptyOrNull(newChannelName, creatorName)) {
+            answerToRequest(response, 400, "Wrong JSON input", thawLogger);
             return;
         }
-        Optional<Channel> optChannel = Tools.findChannelInList(channels, newChannelName);
+        Optional<Channel> optChannel = findChannelInList(channels, newChannelName);
         if (optChannel.isPresent()) {
-            Tools.answerToRequest(response, 400, "Channel " + newChannelName + " already exists", thawLogger);
+            answerToRequest(response, 400, "Channel " + newChannelName + " already exists", thawLogger);
         } else {
             HumanUser creator = session.get("user");
             createAndAddChannel(newChannelName, creator, channels);
-            Tools.answerToRequest(response, 200, "Channel " + newChannelName + " successfully created", thawLogger);
+            answerToRequest(response, 200, "Channel " + newChannelName + " successfully created", thawLogger);
         }
     }
 
@@ -167,7 +193,7 @@ class Handlers {
         Session session = routingContext.session();
 
         if (json == null) {
-            Tools.answerToRequest(response, 400, "Wrong Json format", thawLogger);
+            answerToRequest(response, 400, "Wrong Json format", thawLogger);
         } else {
             analyzeDeleteChannelRequest(response, session, json, thawLogger, channels);
         }
@@ -176,31 +202,31 @@ class Handlers {
     private static void analyzeDeleteChannelRequest(HttpServerResponse response, Session session, JsonObject json, ThawLogger thawLogger, List<Channel> channels) {
 
         String channelName = json.getString("channelName");
-        if (Tools.verifyEmptyOrNull(channelName)) {
-            Tools.answerToRequest(response, 400, "Wrong JSON input", thawLogger);
+        if (verifyEmptyOrNull(channelName)) {
+            answerToRequest(response, 400, "Wrong JSON input", thawLogger);
             return;
         }
-        Optional<Channel> optchannel = Tools.findChannelInList(channels, channelName);
+        Optional<Channel> optchannel = findChannelInList(channels, channelName);
         if (!optchannel.isPresent()) {
-            Tools.answerToRequest(response, 400, "Channel '" + channelName + "' does not exist", thawLogger);
+            answerToRequest(response, 400, "Channel '" + channelName + "' does not exist", thawLogger);
             return;
         }
         Channel channel = optchannel.get();
         HumanUser user = session.get("user");
         if (!channel.isUserCreator(user)) {
-            Tools.answerToRequest(response, 400, "You do not have the right to delete this channel", thawLogger);
+            answerToRequest(response, 400, "You do not have the right to delete this channel", thawLogger);
             return;
         }
-        optchannel = Tools.findChannelInList(channels, "default");
+        optchannel = findChannelInList(channels, "default");
         if (!optchannel.isPresent()) {
-            Tools.answerToRequest(response, 400, "Channel '" + channelName + "' does not exist", thawLogger);
+            answerToRequest(response, 400, "Channel '" + channelName + "' does not exist", thawLogger);
             return;
         }
         Channel defaut = optchannel.get();
         channel.moveUsersToAnotherChannel(defaut);
 //        user.deleteChannel(channel);
         channels.remove(channel);
-        Tools.answerToRequest(response, 200, "Channel '" + channelName + "' successfully deleted", thawLogger);
+        answerToRequest(response, 200, "Channel '" + channelName + "' successfully deleted", thawLogger);
 
     }
 
@@ -216,7 +242,7 @@ class Handlers {
         JsonObject json = routingContext.getBodyAsJson();
         Session session = routingContext.session();
         if (json == null) {
-            Tools.answerToRequest(response, 400, "Wrong Json format", thawLogger);
+            answerToRequest(response, 400, "Wrong Json format", thawLogger);
         } else {
             analyzeConnecToChannelRequest(response, session, json, thawLogger, channels);
         }
@@ -227,35 +253,33 @@ class Handlers {
         String oldChannelName = json.getString("oldChannelName");
         String channelName = json.getString("channelName");
 
-        if (Tools.verifyEmptyOrNull(oldChannelName, channelName)) {
-            Tools.answerToRequest(response, 400, "Wrong JSON input", thawLogger);
+        if (verifyEmptyOrNull(oldChannelName, channelName)) {
+            answerToRequest(response, 400, "Wrong JSON input", thawLogger);
             return;
         }
-        Optional<Channel> optchannel = Tools.findChannelInList(channels, channelName);
+        Optional<Channel> optchannel = findChannelInList(channels, channelName);
         System.out.println("optChan : " + optchannel);
         if (!optchannel.isPresent()) {
-            Tools.answerToRequest(response, 400, "Channel :" + channelName + " does not exist", thawLogger);
+            answerToRequest(response, 400, "Channel :" + channelName + " does not exist", thawLogger);
         } else {
             Channel chan = optchannel.get();
             HumanUser humanUser = session.get("user");
-            Optional<User> tmpUserInChan = chan.findUser(humanUser);
             // Check if the user is already connected to the given channel
-            if (tmpUserInChan.isPresent()) {
-                Tools.answerToRequest(response, 400, "HumanUser :" + humanUser.getName() + " is already connected", thawLogger);
+            if (chan.checkIfUserIsConnected(humanUser)) {
+                answerToRequest(response, 400, "HumanUser :" + humanUser.getName() + " is already connected", thawLogger);
             } else {
-                Optional<Channel> optChannelOld = Tools.findChannelInList(channels, oldChannelName);
+                Optional<Channel> optChannelOld = findChannelInList(channels, oldChannelName);
                 if (!optChannelOld.isPresent()) {
-                    Tools.answerToRequest(response, 400, "OldChannel " + oldChannelName + " does not exist", thawLogger);
+                    answerToRequest(response, 400, "OldChannel " + oldChannelName + " does not exist", thawLogger);
                 } else {
                     Channel oldChan = optChannelOld.get();
                     if (establishConnection(humanUser, chan, oldChan)) {
                         String answer = "HumanUser :" + humanUser + " successfully quit channel :'" + oldChannelName + '\'' + " and connected to channel :'" + channelName + '\'';
-                        Tools.answerToRequest(response, 200, answer, thawLogger);
+                        answerToRequest(response, 200, answer, thawLogger);
                     } else {
                         String answer = "HumanUser :" + humanUser + " failed to quit or join channel";
-                        Tools.answerToRequest(response, 400, answer, thawLogger);
+                        answerToRequest(response, 400, answer, thawLogger);
                     }
-
                 }
             }
         }
@@ -279,7 +303,7 @@ class Handlers {
         HttpServerResponse response = routingContext.response();
         Session session = routingContext.session();
         if (json == null) {
-            Tools.answerToRequest(response, 400, "Wrong Json format", thawLogger);
+            answerToRequest(response, 400, "Wrong Json format", thawLogger);
         } else {
             analyzeSendMessageRequest(response, session, json, thawLogger, channels);
         }
@@ -293,20 +317,20 @@ class Handlers {
         String userName = json.getString("username");
         String channelName = json.getString("channelName");
 
-        if (Tools.verifyEmptyOrNull(message, userName, channelName)) {
-            Tools.answerToRequest(response, 400, "Wrong JSON input", thawLogger);
+        if (verifyEmptyOrNull(message, userName, channelName)) {
+            answerToRequest(response, 400, "Wrong JSON input", thawLogger);
             return;
         }
-        Optional<Channel> channelOptional = Tools.findChannelInList(channels, channelName);
+        Optional<Channel> channelOptional = findChannelInList(channels, channelName);
         if (!channelOptional.isPresent()) {
-            Tools.answerToRequest(response, 400, "Channel: '" + channelName + "' doesn't exist", thawLogger);
+            answerToRequest(response, 400, "Channel: '" + channelName + "' doesn't exist", thawLogger);
             return;
         }
         Channel chan = channelOptional.get();
         HumanUser humanUser = session.get("user");
 
         if (!chan.checkIfUserIsConnected(humanUser)) {
-            Tools.answerToRequest(response, 400, "HumanUser: '" + humanUser.getName() + "' is not connected to chan", thawLogger);
+            answerToRequest(response, 400, "HumanUser: '" + humanUser.getName() + "' is not connected to chan", thawLogger);
             return;
         }
 
@@ -317,7 +341,7 @@ class Handlers {
 
         // TODO Stocker les information du message dans la base de donnée du channel
 
-        Tools.answerToRequest(response, 200, "Message: " + mes + " sent correctly to channel '" + channelName + '\'', thawLogger);
+        answerToRequest(response, 200, "Message: " + mes + " sent correctly to channel '" + channelName + '\'', thawLogger);
     }
 
 
@@ -331,7 +355,7 @@ class Handlers {
         HttpServerResponse response = routingContext.response();
         JsonObject json = routingContext.getBodyAsJson();
         if (json == null) {
-            Tools.answerToRequest(response, 400, "Wrong Json format", thawLogger);
+            answerToRequest(response, 400, "Wrong Json format", thawLogger);
         } else {
             analyzeGetListMessageForChannelRequest(response, json, thawLogger, channels);
         }
@@ -343,24 +367,24 @@ class Handlers {
         if (!securityCheckGetListMessageForChannel(response, channelName, numberOfMessageWanted, thawLogger)) {
             return;
         }
-        Optional<Channel> optChan = Tools.findChannelInList(channels, channelName);
+        Optional<Channel> optChan = findChannelInList(channels, channelName);
         if (optChan.isPresent()) {
             Channel channel = optChan.get();
             List<Message> tmpMess = channel.getListMessage();
             List<Message> returnListMessage = tmpMess.subList(Math.max(tmpMess.size() - numberOfMessageWanted, 0), tmpMess.size());
-            Tools.answerToRequest(response, 200, returnListMessage, thawLogger);
+            answerToRequest(response, 200, returnListMessage, thawLogger);
         } else {
-            Tools.answerToRequest(response, 400, "Channel: " + channelName + " doesn't exist", thawLogger);
+            answerToRequest(response, 400, "Channel: " + channelName + " doesn't exist", thawLogger);
         }
     }
 
     private static boolean securityCheckGetListMessageForChannel(HttpServerResponse response, String channelName, Integer numberOfMessageWanted, ThawLogger thawLogger) {
-        if (Tools.verifyEmptyOrNull(channelName)) {
-            Tools.answerToRequest(response, 400, "No channelName given", thawLogger);
+        if (verifyEmptyOrNull(channelName)) {
+            answerToRequest(response, 400, "No channelName given", thawLogger);
             return false;
         }
         if (numberOfMessageWanted < 1) {
-            Tools.answerToRequest(response, 400, "Number Of Message must be > 0 !", thawLogger);
+            answerToRequest(response, 400, "Number Of Message must be > 0 !", thawLogger);
             return false;
         }
         return true;
@@ -389,18 +413,18 @@ class Handlers {
         if (!securityCheckGetListUserForChannel(response, channelName, thawLogger)) {
             return;
         }
-        Optional<Channel> channelOptional = Tools.findChannelInList(channels, channelName);
+        Optional<Channel> channelOptional = findChannelInList(channels, channelName);
         if (channelOptional.isPresent()) {
             List<String> tmp = channelOptional.get().getListUser().stream().map(User::getName).collect(Collectors.toList());
-            Tools.answerToRequest(response, 200, tmp, thawLogger);
+            answerToRequest(response, 200, tmp, thawLogger);
         } else {
-            Tools.answerToRequest(response, 400, "Channel:" + channelName + " doesn't exist", thawLogger);
+            answerToRequest(response, 400, "Channel:" + channelName + " doesn't exist", thawLogger);
         }
     }
 
     private static boolean securityCheckGetListUserForChannel(HttpServerResponse response, String channelName, ThawLogger thawLogger) {
-        if (Tools.verifyEmptyOrNull(channelName)) {
-            Tools.answerToRequest(response, 400, "No channelName given", thawLogger);
+        if (verifyEmptyOrNull(channelName)) {
+            answerToRequest(response, 400, "No channelName given", thawLogger);
             return false;
         }
         return true;
@@ -416,8 +440,42 @@ class Handlers {
         thawLogger.log(Level.INFO, "In getListChannels request");
         HttpServerResponse response = routingContext.response();
         List<String> tmp = channels.stream().map(Channel::getChannelName).collect(Collectors.toList());
-        Tools.answerToRequest(response, 200, tmp, thawLogger);
+        answerToRequest(response, 200, tmp, thawLogger);
     }
 
+    /*######################################################################*/
+    /////////////////// Usefull methods for all handlers ///////////////////
+    /*######################################################################*/
 
+
+    private static void answerToRequest(HttpServerResponse response, int code, Object answer, ThawLogger thawLogger) {
+        String tmp = Json.encodePrettily(answer);
+        if (code >= 200 && code < 300) {
+            thawLogger.log(Level.INFO, "code: " + code + "\nanswer: " + tmp);
+        } else {
+            thawLogger.log(Level.WARNING, "code: " + code + "\nanswer: " + tmp);
+        }
+
+        response.setStatusCode(code)
+                .putHeader("content-type", "application/json")
+                .end(tmp);
+    }
+
+    private static Optional<Channel> findChannelInList(List<Channel> channels, String channelName) {
+        if (verifyEmptyOrNull(channelName)) {
+            return Optional.empty();
+        }
+        return channels.stream()
+                .filter(c -> c.getChannelName().equals(channelName))
+                .findFirst();
+    }
+
+    private static boolean verifyEmptyOrNull(String... strings) {
+        for (String s : strings) {
+            if (s == null || s.isEmpty()) {
+                return true;
+            }
+        }
+        return false;
+    }
 }

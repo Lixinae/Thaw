@@ -12,29 +12,17 @@ import java.util.Objects;
 public class HumanUserImpl implements HumanUser {
 
     private final String name;
-    //    private final ConcurrentLinkedQueue<Channel> channels;
     private final String passwordHash;
 
     HumanUserImpl(String nickname, String passwordHash) {
         this.name = Objects.requireNonNull(nickname);
         this.passwordHash = Objects.requireNonNull(passwordHash);
-//        channels = new ConcurrentLinkedQueue<>();
     }
 
     @Override
     public String getName() {
         return name;
     }
-
-//    public boolean addChannel(Channel chan) {
-//        Objects.requireNonNull(chan);
-//        return channels.add(chan);
-//    }
-//
-//    public boolean deleteChannel(Channel chan) {
-//        Objects.requireNonNull(chan);
-//        return channels.remove(chan);
-//    }
 
     public boolean joinChannel(Channel chan) {
         Objects.requireNonNull(chan);
@@ -80,11 +68,5 @@ public class HumanUserImpl implements HumanUser {
         return "HumanUser{" +
                 "name='" + name + '\'' +
                 '}';
-        // Ne pas mettre la liste des channels à l'affichage -> Stack overflow à cause de boucle infini
-        // Channels qui affiche le createur , qui affiche ses channels qui affiche le createur qui affiche les channels etc...
     }
-
-//    ConcurrentLinkedQueue<Channel> getChannel() {
-//        return channels;
-//    }
 }
