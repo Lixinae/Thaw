@@ -117,15 +117,23 @@ function sendMessage(){
 
 }
 
-// TODO : Test it
 function getListMessageForChannel(){
-	var listChannel = $(".listChannels");
-	listChannel.children().remove();
+	var listMessage = $(".tchat");
+	listMessage.children().remove();
 
 	$.post("/api/private/getListMessageForChannel",
 		JSON.stringify({channelName:currentChannel,numberOfMessage:1000}))
 	    .done(function(response){
-	        console.log(response)
+	            //console.log(response[0]);
+	            var string = "";
+	            $.each(response,function(key){
+	                var date = response[key].date;
+	            	var msg = response[key].content;
+	            	var name = response[key].sender.name;
+                    string = string + chatMessageFormatting(name,msg,date);
+	            });
+	            listMessage.append(string);
+
 	        // Formater correctement les messages
 
 	        // Utiliser JSON.parse
@@ -152,7 +160,6 @@ function getListMessageForChannel(){
                } ]
 
 	             */
-            //alert("success getListMessageForChannel");
         })
         .fail(function(response){
             //alert("fail getListMessageForChannel");
@@ -162,12 +169,11 @@ function getListMessageForChannel(){
         });
 }
 
-// TODO : Test it
+
 function getListChannels(){
 	var listChannel = $(".listChannels");
 	listChannel.children().remove();
 
-    //listChannel.load("index.html .listChannels");
 	$.get("/api/private/getListChannel")
 	        .done(function(response){
 				// Provoque un effet "On/Off" au chargement
@@ -176,12 +182,11 @@ function getListChannels(){
                     string = string +"<li>"+ val+"</li>";
                 });
                 string = string +"</ul>";
-//                alert(string);
                 listChannel.append(string);
 
             })
             .fail(function(response){
-                //alert("fail getListChannels");
+
             })
             .always(function() {
 
@@ -199,7 +204,6 @@ function getListUsersForChan(currentChannel){
 	$.post("/api/private/getListUserForChannel",
 	    JSON.stringify({channelName : currentChannel}))
 	    .done(function(response){
-//            alert(response);
             var string ="<h2>Users</h2>"+"<ul id=\"usersOnChan\">";
             $.each(response,function(key,val){
                 string = string +"<li>"+ val+"</li>";
@@ -208,7 +212,7 @@ function getListUsersForChan(currentChannel){
             usersListOnChan.append(string);
         })
         .fail(function(response){
-            //alert("fail getListUsersForChan");
+
         })
         .always(function() {
 
@@ -222,7 +226,7 @@ function disconnectFromServer(){
 
         })
         .fail(function(response){
-            //alert("fail getListUsersForChan");
+
         })
         .always(function() {
 
@@ -237,21 +241,32 @@ les informations de date et les balises HTML necessaires au
 bon formattage.
 
 Format actuel :
-<p>hh:mm:ss [username] : <br> monMessage <br>
+<p>hh:mm DD/MM/YYYY : <br> monMessage <br>
 
 le split permet de recuperer les sauts de lignes et
 y inserer les balises html adequat pour le formattage
 */
 function chatMessageFormatting(username,msg,dateAsLong){
     var date = new Date(dateAsLong);
-    var hours = date.getHours();
-    var minutes = date.getMinutes();
-    var seconds = date.getSeconds();
+    var hours = addZero(date.getHours());
+    var minutes = addZero(date.getMinutes());
+    var day = addZero(date.getDay());
+    var month = addZero(date.getMonth());
+    var year = date.getFullYear();
     if(msg.length > 512){
-       msg=msg.slice(0,512)
+       msg=msg.slice(0,512);
     }
-    return "<p>"+ hours+":"+minutes+ ":"+ seconds+" ["+username+"] : "
+    /*return "<p>"+ date.parse("DD/MM/YYYY HH:mm ")+" ["+username+"] : "
+                                              +"<br>"+msg.split("\n").join("<br>")+"</p>"+"<br>";*/
+   return "<p>"+ hours+":"+minutes +" "+day+"/"+month+"/"+year+" "+username+" : "
                                    +"<br>"+msg.split("\n").join("<br>")+"</p>"+"<br>";
+}
+
+function addZero(i){
+    if(i < 10){
+        i = "0"+i;
+    }
+    return i;
 }
 
 // Compatibilite pour IE si besoin
