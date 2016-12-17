@@ -71,7 +71,8 @@ def askChannelName(machineUrl):
         channelName = input("Enter a channel name to read from : ")    
     return channelName
 
-#
+
+# Works
 def connectToServer(machineUrl, userName, password):
     querie = "/api/connectToServer"
     url = machineUrl + querie
@@ -131,6 +132,7 @@ def getListUserForChannel(machineUrl, channelName):
     return doPostRequestJson(url, payload)
 
 
+# Works
 def disconnectFromServer(machineUrl, channelName):
     querie = "/api/private/disconnectFromServer"
     url = machineUrl + querie
@@ -180,7 +182,8 @@ if __name__ == '__main__':
     ip = "localhost"
     machineUrl = "https://" + ip + ":8080"
 
-    
+    print("########")
+    connectToServer(machineUrl, 'superUser', "password")
     print("########")
     connectToServer(machineUrl, 'superUser', "password")
     print("########")
@@ -205,6 +208,7 @@ if __name__ == '__main__':
     print("########")
     getChannelsList(machineUrl)
     print("########")
+
     #machineUrl = askMachineUrl()
     #channelName = askChannelName()
     #numberMessage = askNumberMessage()
