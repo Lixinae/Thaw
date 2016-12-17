@@ -20,6 +20,11 @@ public class HumanUserImpl implements HumanUser {
     }
 
     @Override
+    public String getPasswordHash() {
+        return passwordHash;
+    }
+
+    @Override
     public String getName() {
         return name;
     }

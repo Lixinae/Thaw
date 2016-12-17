@@ -1,26 +1,23 @@
 package fr.umlv.thaw.database;
 
 
+import fr.umlv.thaw.user.humanUser.HumanUser;
+
 import java.security.NoSuchAlgorithmException;
 import java.sql.SQLException;
 import java.util.List;
 
 public interface Database {
 
-
-
-
     /**
      * This method insert a new user into the table if he doesn't exist yet.
      * The password will be ecrypt inside the function.
      *
-     * @param login    the login of the user
-     * @param password the password that's gonna be encrypt
+     * @param humanUser the user you want to add to the database
      * @throws NoSuchAlgorithmException if we cannot encrypt with our Algorithm
      * @throws SQLException             if a database access errors occurs
      */
-    void createLogin(String login, String password) throws NoSuchAlgorithmException, SQLException;
-
+    void createLogin(HumanUser humanUser) throws NoSuchAlgorithmException, SQLException;
 
     /**
      * Create a table that will stock the data from the channel
@@ -59,7 +56,6 @@ public interface Database {
      */
     void addUserToChan(String channel, String toAuthorized, String authority) throws SQLException;
 
-
     /**
      * This method allow the autohority to remove access to the
      * channel at toAurized. It works only if authority as enought
@@ -87,7 +83,6 @@ public interface Database {
      */
     void addMessageToChannelTable(String channelName, long date, String msg, String author) throws SQLException;
 
-
     /**
      * This method change a message from an author at the moment "date"
      * to a new message.
@@ -101,7 +96,6 @@ public interface Database {
      */
     void updateMessageFromChannel(String channelName, long date, String author, String Oldmsg, String newMsg) throws SQLException;
 
-
     /**
      * That function return a list of users that are
      * in the database.
@@ -110,7 +104,6 @@ public interface Database {
      * @throws SQLException if a database access errors occurs
      */
     List<String> usersList() throws SQLException;
-
 
     /**
      * This method retrieve the user from the channel.
@@ -146,4 +139,5 @@ public interface Database {
      * @throws SQLException if a database access error occurs
      */
     void close() throws SQLException;
+
 }

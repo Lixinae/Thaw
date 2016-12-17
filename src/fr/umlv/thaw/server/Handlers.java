@@ -2,17 +2,21 @@ package fr.umlv.thaw.server;
 
 import fr.umlv.thaw.channel.Channel;
 import fr.umlv.thaw.channel.ChannelFactory;
+import fr.umlv.thaw.database.Database;
 import fr.umlv.thaw.logger.ThawLogger;
 import fr.umlv.thaw.message.Message;
 import fr.umlv.thaw.message.MessageFactory;
 import fr.umlv.thaw.user.User;
 import fr.umlv.thaw.user.humanUser.HumanUser;
+import fr.umlv.thaw.user.humanUser.HumanUserFactory;
 import io.vertx.core.http.HttpServerResponse;
 import io.vertx.core.json.Json;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.RoutingContext;
 import io.vertx.ext.web.Session;
 
+import java.security.NoSuchAlgorithmException;
+import java.sql.SQLException;
 import java.util.List;
 import java.util.Optional;
 import java.util.logging.Level;
@@ -30,7 +34,7 @@ class Handlers {
     /*##############################################################*/
     /////////////////// Connect to server Handler ///////////////////
     /*##############################################################*/
-    static void connectToServerHandle(RoutingContext routingContext, ThawLogger thawLogger, final List<HumanUser> authorizedHumanUsers) {
+    static void connectToServerHandle(RoutingContext routingContext, ThawLogger thawLogger, final List<HumanUser> authorizedHumanUsers, List<User> connectedUsers) {
         thawLogger.log(Level.INFO, "In connectToServer request");
         HttpServerResponse response = routingContext.response();
         JsonObject json = routingContext.getBodyAsJson();
@@ -42,23 +46,26 @@ class Handlers {
         if (session == null) {
             answerToRequest(response, 400, "No session", thawLogger);
         } else {
-            analyzeConnecToServerRequest(session, response, json, thawLogger, authorizedHumanUsers);
+            analyzeConnecToServerRequest(session, response, json, thawLogger, authorizedHumanUsers, connectedUsers);
         }
     }
 
-    private static void analyzeConnecToServerRequest(Session session, HttpServerResponse response, JsonObject json, ThawLogger thawLogger, List<HumanUser> authorizedHumanUsers) {
+    private static void analyzeConnecToServerRequest(Session session, HttpServerResponse response, JsonObject json, ThawLogger thawLogger, List<HumanUser> authorizedHumanUsers, List<User> connectedUsers) {
         String userName = json.getString("userName");
         String password = json.getString("password");
         if (verifyEmptyOrNull(userName, password)) {
             answerToRequest(response, 400, "Wrong JSON input", thawLogger);
         }
+        boolean containsUser = false;
         for (HumanUser u : authorizedHumanUsers) {
-            if (u.getName().equals(userName) && u.compareHash(password)) {
+            containsUser = connectedUsers.contains(u);
+            if ((u.getName().equals(userName) && u.compareHash(password)) && !containsUser) {
+                connectedUsers.add(u);
                 session.put("user", u);
                 break;
             }
         }
-        if (session.get("user") == null) {
+        if (session.get("user") == null || containsUser) {
             answerToRequest(response, 400, "HumanUser: '" + userName + "' authentication failed", thawLogger);
         } else {
             answerToRequest(response, 204, "HumanUser: '" + userName + "' authentication success", thawLogger);
@@ -73,7 +80,7 @@ class Handlers {
     /*####################################################################*/
 
     // Todo
-    static void disconnectFromServerHandle(RoutingContext routingContext, ThawLogger thawLogger, List<Channel> channels) {
+    static void disconnectFromServerHandle(RoutingContext routingContext, ThawLogger thawLogger, List<Channel> channels, List<User> connectedUsers) {
         thawLogger.log(Level.INFO, "In disconnect from server request");
         HttpServerResponse response = routingContext.response();
         JsonObject json = routingContext.getBodyAsJson();
@@ -89,6 +96,10 @@ class Handlers {
         String currentChannel = json.getString("currentChannelName");
         Session session = routingContext.session();
 
+        if (session == null) {
+            answerToRequest(response, 400, "No session", thawLogger);
+            return;
+        }
         if (verifyEmptyOrNull(currentChannel)) {
             answerToRequest(response, 400, "There is no channel defined", thawLogger);
             return;
@@ -113,10 +124,38 @@ class Handlers {
     /////////////////// Create Account Handler ///////////////////
     /*############################################################*/
 
-    static void createAccountHandle(RoutingContext routingContext, ThawLogger thawLogger, List<HumanUser> authorizedHumanUsers) {
+    static void createAccountHandle(RoutingContext routingContext, ThawLogger thawLogger, List<HumanUser> authorizedHumanUsers, Database database) {
+        thawLogger.log(Level.INFO, "In create account request");
+        HttpServerResponse response = routingContext.response();
+        JsonObject json = routingContext.getBodyAsJson();
 
+        if (json == null) {
+            answerToRequest(response, 400, "Wrong JSON input", thawLogger);
+        } else {
+            analyzeCreateAccountRequest(response, json, thawLogger, authorizedHumanUsers, database);
+        }
     }
 
+    // todo
+    private static void analyzeCreateAccountRequest(HttpServerResponse response, JsonObject json, ThawLogger thawLogger, List<HumanUser> authorizedHumanUsers, Database database) {
+        String userName = json.getString("userName");
+        String password = json.getString("password");
+        if (verifyEmptyOrNull(userName, password)) {
+            answerToRequest(response, 400, "Wrong JSON input", thawLogger);
+            return;
+        }
+        HumanUser humanUser = HumanUserFactory.createHumanUser(userName, password);
+        if (authorizedHumanUsers.contains(humanUser)) {
+            answerToRequest(response, 402, "User '" + userName + "' already exists", thawLogger);
+            return;
+        }
+        authorizedHumanUsers.add(humanUser);
+        try {
+            database.createLogin(humanUser);
+        } catch (NoSuchAlgorithmException | SQLException e) {
+            e.printStackTrace();
+        }
+    }
 
     /*############################################################*/
     /////////////////// Security Check Handler ///////////////////
@@ -150,6 +189,9 @@ class Handlers {
         JsonObject json = routingContext.getBodyAsJson();
         if (json == null) {
             answerToRequest(response, 400, "Wrong JSON input", thawLogger);
+        }
+        if (session == null) {
+            answerToRequest(response, 400, "No session", thawLogger);
         } else {
             analyzeAddChannelRequest(session, response, json, thawLogger, channels);
         }
@@ -194,6 +236,9 @@ class Handlers {
 
         if (json == null) {
             answerToRequest(response, 400, "Wrong Json format", thawLogger);
+        }
+        if (session == null) {
+            answerToRequest(response, 400, "No session", thawLogger);
         } else {
             analyzeDeleteChannelRequest(response, session, json, thawLogger, channels);
         }
@@ -224,10 +269,8 @@ class Handlers {
         }
         Channel defaut = optchannel.get();
         channel.moveUsersToAnotherChannel(defaut);
-//        user.deleteChannel(channel);
         channels.remove(channel);
         answerToRequest(response, 200, "Channel '" + channelName + "' successfully deleted", thawLogger);
-
     }
 
 
@@ -243,6 +286,9 @@ class Handlers {
         Session session = routingContext.session();
         if (json == null) {
             answerToRequest(response, 400, "Wrong Json format", thawLogger);
+        }
+        if (session == null) {
+            answerToRequest(response, 400, "No session", thawLogger);
         } else {
             analyzeConnecToChannelRequest(response, session, json, thawLogger, channels);
         }
@@ -258,7 +304,6 @@ class Handlers {
             return;
         }
         Optional<Channel> optchannel = findChannelInList(channels, channelName);
-        System.out.println("optChan : " + optchannel);
         if (!optchannel.isPresent()) {
             answerToRequest(response, 400, "Channel :" + channelName + " does not exist", thawLogger);
         } else {
@@ -297,13 +342,16 @@ class Handlers {
 
     // Fonctionne
     // TODO : Traitement des messages en cas de bot et stockage dans la base de donnée
-    static void sendMessageHandle(RoutingContext routingContext, ThawLogger thawLogger, List<Channel> channels) {
+    static void sendMessageHandle(RoutingContext routingContext, ThawLogger thawLogger, List<Channel> channels, Database database) {
         thawLogger.log(Level.INFO, "In sendMessage request");
         JsonObject json = routingContext.getBodyAsJson();
         HttpServerResponse response = routingContext.response();
         Session session = routingContext.session();
         if (json == null) {
             answerToRequest(response, 400, "Wrong Json format", thawLogger);
+        }
+        if (session == null) {
+            answerToRequest(response, 400, "No session", thawLogger);
         } else {
             analyzeSendMessageRequest(response, session, json, thawLogger, channels);
         }

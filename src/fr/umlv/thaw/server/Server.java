@@ -3,9 +3,12 @@ package fr.umlv.thaw.server;
 
 import fr.umlv.thaw.channel.Channel;
 import fr.umlv.thaw.channel.ChannelFactory;
+import fr.umlv.thaw.database.Database;
+import fr.umlv.thaw.database.DatabaseFactory;
 import fr.umlv.thaw.logger.ThawLogger;
 import fr.umlv.thaw.message.Message;
 import fr.umlv.thaw.message.MessageFactory;
+import fr.umlv.thaw.user.User;
 import fr.umlv.thaw.user.humanUser.HumanUser;
 import fr.umlv.thaw.user.humanUser.HumanUserFactory;
 import fr.umlv.thaw.user.humanUser.HumanUserImpl;
@@ -25,12 +28,15 @@ import sun.security.x509.X500Name;
 
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.nio.file.Paths;
 import java.security.*;
 import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.Objects;
 import java.util.logging.Level;
 
 
@@ -45,15 +51,19 @@ public class Server extends AbstractVerticle {
     private final static int maxUploadSize = 50 * MB;
     private final List<Channel> channels;
     private final List<HumanUser> authorizedHumanUsers;
+    private final List<User> connectedUsers;
     private final ThawLogger thawLogger;
+    private final Database database;
 
     private final boolean ssl;
 
-    public Server() throws IOException {
+    public Server() throws IOException, SQLException, ClassNotFoundException {
         channels = new ArrayList<>();
         authorizedHumanUsers = new ArrayList<>();
         thawLogger = new ThawLogger(false);
-        this.ssl = false;
+        ssl = false;
+        connectedUsers = new ArrayList<>();
+        database = DatabaseFactory.createDatabase(Paths.get("../db"), "database");
     }
 
     /**
@@ -61,16 +71,21 @@ public class Server extends AbstractVerticle {
      * @param ssl          Enable ssl
      * @throws IOException If the logger can't find or create the file
      */
-    public Server(boolean enableLogger, boolean ssl) throws IOException {
+    public Server(boolean enableLogger, boolean ssl, Database database) throws IOException {
         channels = new ArrayList<>();
         authorizedHumanUsers = new ArrayList<>(); // Need to construct authorized list
         thawLogger = new ThawLogger(enableLogger);// Enable or not the logs of the server
         this.ssl = ssl;
+        connectedUsers = new ArrayList<>();
+        this.database = Objects.requireNonNull(database);
     }
 
 
     @Override
-    public void start(Future<Void> fut) throws Exception {
+    public void start(Future<Void> fut) {
+        // todo Load database stuff here
+
+
         // TEST ONLY //
         String hashPassword = Tools.toSHA256("password");
         String hashPassword2 = Tools.toSHA256("password2");
@@ -79,6 +94,8 @@ public class Server extends AbstractVerticle {
         HumanUserImpl test2 = HumanUserFactory.createHumanUser("test2", hashPassword2);
         authorizedHumanUsers.add(superUser);
         authorizedHumanUsers.add(test2);
+//        connectedUsers.add(superUser);
+        connectedUsers.add(test2);
         Channel defaul = ChannelFactory.createChannel(superUser, "default");
         Channel channel = ChannelFactory.createChannel(superUser, "Item 1");
         Channel channel2 = ChannelFactory.createChannel(superUser, "Item 2");
@@ -97,31 +114,6 @@ public class Server extends AbstractVerticle {
         channels.add(channel);
         channels.add(channel2);
 
-//        AuthProvider authProvider = AuthOptions
-//        JsonObject authInfo = new JsonObject().put("username", "tim").put("password", "mypassword");
-//
-//        authProvider.authenticate(authInfo, res -> {
-//            if (res.succeeded()) {
-//
-//                io.vertx.ext.auth.User user = res.result();
-//
-//                System.out.println("User " + user.principal() + " is now authenticated");
-//
-//            } else {
-//                res.cause().printStackTrace();
-//            }
-//        });
-//        channels.add(channel2);
-        // TEST //
-
-//        Router router = Router.router(vertx);
-//        listOfRequest(router);
-//        router.route().handler(BodyHandler.create().setBodyLimit(maxUploadSize));
-        // otherwise serve static pages
-//        router.route().handler(StaticHandler.create());
-//        vertx.createHttpServer().requestHandler(router::accept).listen(8080);
-//        System.out.println("listen on port 8080");
-//        fut.complete();
 /////////////////////////////////////////////////////////////////////////////////
         final int bindPort = 8080;
         Router router = Router.router(vertx);
@@ -189,9 +181,9 @@ public class Server extends AbstractVerticle {
     private void listOfRequest(Router router) {
 
         // No need of post or get for these
-        router.route("/api/connectToServer").handler(routingContext -> Handlers.connectToServerHandle(routingContext, thawLogger, authorizedHumanUsers));
-        router.route("/api/private/disconnectFromServer").handler(routingContext -> Handlers.disconnectFromServerHandle(routingContext, thawLogger, channels));
-        router.route("/api/createAccount").handler(routingContext -> Handlers.createAccountHandle(routingContext, thawLogger, authorizedHumanUsers));
+        router.route("/api/connectToServer").handler(routingContext -> Handlers.connectToServerHandle(routingContext, thawLogger, authorizedHumanUsers, connectedUsers));
+        router.route("/api/private/disconnectFromServer").handler(routingContext -> Handlers.disconnectFromServerHandle(routingContext, thawLogger, channels, connectedUsers));
+        router.route("/api/createAccount").handler(routingContext -> Handlers.createAccountHandle(routingContext, thawLogger, authorizedHumanUsers, database));
         router.route("/api/private/*").handler(routingContext -> Handlers.securityCheckHandle(routingContext, thawLogger, authorizedHumanUsers));
 
 
@@ -199,7 +191,7 @@ public class Server extends AbstractVerticle {
         router.post("/api/private/addChannel").handler(routingContext -> Handlers.addChannelHandle(routingContext, thawLogger, channels));
         router.post("/api/private/deleteChannel").handler(routingContext -> Handlers.deleteChannelHandle(routingContext, thawLogger, channels));
         router.post("/api/private/connectToChannel").handler(routingContext -> Handlers.connectToChannelHandle(routingContext, thawLogger, channels));
-        router.post("/api/private/sendMessage").handler(routingContext -> Handlers.sendMessageHandle(routingContext, thawLogger, channels));
+        router.post("/api/private/sendMessage").handler(routingContext -> Handlers.sendMessageHandle(routingContext, thawLogger, channels, database));
         router.post("/api/private/getListMessageForChannel").handler(routingContext -> Handlers.getListMessageForChannelHandle(routingContext, thawLogger, channels));
         router.post("/api/private/getListUserForChannel").handler(routingContext -> Handlers.getListUserForChannelHandle(routingContext, thawLogger, channels));
         router.get("/api/private/getListChannel").handler(routingContext -> Handlers.getListChannelHandle(routingContext, thawLogger, channels));

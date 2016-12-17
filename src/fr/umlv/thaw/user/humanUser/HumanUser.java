@@ -5,7 +5,16 @@ import fr.umlv.thaw.user.User;
 
 public interface HumanUser extends User {
 
+    /**
+     * @return the user name
+     */
     String getName();
+
+    /**
+     *
+     * @return the hashed password
+     */
+    String getPasswordHash();
 
     /**
      * This method allow a humanUser to join a channel that exist

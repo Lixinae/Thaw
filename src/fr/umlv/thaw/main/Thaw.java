@@ -1,9 +1,11 @@
 package fr.umlv.thaw.main;
 
+import fr.umlv.thaw.database.Database;
+import fr.umlv.thaw.database.DatabaseFactory;
 import fr.umlv.thaw.server.Server;
 import io.vertx.core.Vertx;
 
-import java.io.IOException;
+import java.nio.file.Paths;
 
 /**
  * Project :Thaw
@@ -13,7 +15,7 @@ public class Thaw {
     /*
         TODO
      */
-    public static void main(String[] args) throws IOException {
+    public static void main(String[] args) throws Exception {
 //        Map map = new HashMap();
 //
 //        User a = new Bot("a", "a");
@@ -43,7 +45,8 @@ public class Thaw {
         // obviously, this line should be commented in production
 
         System.setProperty("vertx.disableFileCaching", "true");
-        Server server = new Server(true, true);
+        Database database = DatabaseFactory.createDatabase(Paths.get("./db"), "database");
+        Server server = new Server(true, true, database);
         Vertx vertx = Vertx.vertx();
         vertx.deployVerticle(server);
 

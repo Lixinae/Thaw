@@ -1,7 +1,8 @@
 package fr.umlv.thaw.database;
 
 
-import fr.umlv.thaw.server.Tools;
+import fr.umlv.thaw.user.humanUser.HumanUser;
+import fr.umlv.thaw.user.humanUser.HumanUserFactory;
 
 import java.nio.file.FileSystems;
 import java.nio.file.Path;
@@ -69,8 +70,10 @@ public class DatabaseImpl implements Database {
         } catch (SQLException sql) {
         }
         try {
-            myDB.createLogin("George", "12345@A");
-            myDB.createLogin("TotoLeBus", "TotoLeBus");
+            HumanUser user1 = HumanUserFactory.createHumanUser("George", "12345@A");
+            HumanUser user2 = HumanUserFactory.createHumanUser("TotoLeBus", "TotoLeBus");
+            myDB.createLogin(user1);
+            myDB.createLogin(user2);
         } catch (SQLException sql) {
             //ne rien faire car pas envie de planter sur une erreur
         }
@@ -145,10 +148,10 @@ public class DatabaseImpl implements Database {
 
 
     @Override
-    public void createLogin(String login, String password) throws NoSuchAlgorithmException, SQLException {
-        Objects.requireNonNull(login);
-        Objects.requireNonNull(password);
-        String cryptPass = Tools.toSHA256(password);
+    public void createLogin(HumanUser humanUser) throws NoSuchAlgorithmException, SQLException {
+        Objects.requireNonNull(humanUser);
+        String login = humanUser.getName();
+        String cryptPass = humanUser.getPasswordHash();
         exeUpda(createUsersTableRequest());
         createPrepState(prepareInsertTwoValuesIntoTable("users"));
         insertTwoValIntoTable(login, cryptPass);
