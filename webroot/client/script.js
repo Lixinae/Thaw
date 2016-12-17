@@ -41,6 +41,8 @@ function textAreaDefaultValueDisappearOnClick(){
 }
 
 
+
+
 // Permet de creer un channel
 // Et envoie l'information au serveur
 // TODO

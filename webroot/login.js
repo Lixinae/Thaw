@@ -23,3 +23,18 @@ function connectToServer(userName,password){
 
         });
 }
+function createLogin(userName,password){
+    var userName = $('#userNameEntry').val();
+    var password = $('#userPasswordEntry').val();
+	$.post("/api/createAccount",
+	    JSON.stringify({userName:userName,password:password}))
+	    .done(function(response){
+            alert("Login created. Now try to connect");
+        })
+        .fail(function(response){
+            alert("Impossible to create login.");
+        })
+        .always(function() {
+
+        });
+}
