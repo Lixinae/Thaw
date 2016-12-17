@@ -117,7 +117,6 @@ function sendMessage(){
 
 }
 
-// TODO : Test it
 function getListMessageForChannel(){
 	var listMessage = $(".tchat");
 	listMessage.children().remove();
@@ -161,7 +160,6 @@ function getListMessageForChannel(){
                } ]
 
 	             */
-            //alert("success getListMessageForChannel");
         })
         .fail(function(response){
             //alert("fail getListMessageForChannel");
@@ -171,12 +169,11 @@ function getListMessageForChannel(){
         });
 }
 
-// TODO : Test it
+
 function getListChannels(){
 	var listChannel = $(".listChannels");
 	listChannel.children().remove();
 
-    //listChannel.load("index.html .listChannels");
 	$.get("/api/private/getListChannel")
 	        .done(function(response){
 				// Provoque un effet "On/Off" au chargement
@@ -185,12 +182,11 @@ function getListChannels(){
                     string = string +"<li>"+ val+"</li>";
                 });
                 string = string +"</ul>";
-//                alert(string);
                 listChannel.append(string);
 
             })
             .fail(function(response){
-                //alert("fail getListChannels");
+
             })
             .always(function() {
 
@@ -208,7 +204,6 @@ function getListUsersForChan(currentChannel){
 	$.post("/api/private/getListUserForChannel",
 	    JSON.stringify({channelName : currentChannel}))
 	    .done(function(response){
-//            alert(response);
             var string ="<h2>Users</h2>"+"<ul id=\"usersOnChan\">";
             $.each(response,function(key,val){
                 string = string +"<li>"+ val+"</li>";
@@ -217,7 +212,7 @@ function getListUsersForChan(currentChannel){
             usersListOnChan.append(string);
         })
         .fail(function(response){
-            //alert("fail getListUsersForChan");
+
         })
         .always(function() {
 
@@ -231,7 +226,7 @@ function disconnectFromServer(){
 
         })
         .fail(function(response){
-            //alert("fail getListUsersForChan");
+
         })
         .always(function() {
 
@@ -246,7 +241,7 @@ les informations de date et les balises HTML necessaires au
 bon formattage.
 
 Format actuel :
-<p>hh:mm:ss [username] : <br> monMessage <br>
+<p>hh:mm DD/MM/YYYY : <br> monMessage <br>
 
 le split permet de recuperer les sauts de lignes et
 y inserer les balises html adequat pour le formattage
