@@ -17,6 +17,7 @@ function initialize(){
 	textAreaDefaultValueDisappearOnClick();
 	getListChannels();
 	getListMessageForChannel();
+	getListUsersForChan();
 }
 
 function setReloadInterval(){
@@ -89,7 +90,8 @@ function selectChannel(){
             JSON.stringify({channelName : targetChannel,userName : username,oldChannelName : oldChannel}))
             .done(function (response){
                 $("#currentChannel").html(targetChannel);
-                getListUsersForChan(currentChannel);
+                getListUsersForChan();
+                getListMessageForChannel();
             })
             .fail(function(response){
 //                alert("fail connectToChannel");
@@ -122,7 +124,7 @@ function sendMessage(){
 function getListMessageForChannel(){
 	var listMessage = $(".tchat");
 	listMessage.children().remove();
-
+	listMessage.append("<h2>Tchat</h2>");
 	$.post("/api/private/getListMessageForChannel",
 		JSON.stringify({channelName:currentChannel,numberOfMessage:1000}))
 	    .done(function(response){
@@ -175,11 +177,11 @@ function getListMessageForChannel(){
 function getListChannels(){
 	var listChannel = $(".listChannels");
 	listChannel.children().remove();
-
+	listChannel.append("<h2>Channels</h2>");
 	$.get("/api/private/getListChannel")
 	        .done(function(response){
 				// Provoque un effet "On/Off" au chargement
-				var string = "<h2>Channels</h2>"+"<ul id=\"channels\" onclick=\"selectChannel()\">"
+				var string = "<ul id=\"channels\" onclick=\"selectChannel()\">"
                 $.each(response,function(key,val){
                     string = string +"<li>"+ val+"</li>";
                 });
@@ -198,15 +200,16 @@ function getListChannels(){
 
 
 // Fonctionne
-function getListUsersForChan(currentChannel){
+function getListUsersForChan(){
 	var usersListOnChan = $(".listUsers");
 	usersListOnChan.children().remove();
 
     var currentChannel = $("#currentChannel").html();
+	usersListOnChan.append("<h2>Users</h2>");
 	$.post("/api/private/getListUserForChannel",
 	    JSON.stringify({channelName : currentChannel}))
 	    .done(function(response){
-            var string ="<h2>Users</h2>"+"<ul id=\"usersOnChan\">";
+            var string ="<ul id=\"usersOnChan\">";
             $.each(response,function(key,val){
                 string = string +"<li>"+ val+"</li>";
             });

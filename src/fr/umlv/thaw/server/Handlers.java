@@ -34,7 +34,10 @@ class Handlers {
     /*##############################################################*/
     /////////////////// Connect to server Handler ///////////////////
     /*##############################################################*/
-    static void connectToServerHandle(RoutingContext routingContext, ThawLogger thawLogger, final List<HumanUser> authorizedHumanUsers, List<User> connectedUsers) {
+    static void connectToServerHandle(RoutingContext routingContext, ThawLogger thawLogger,
+                                      List<HumanUser> authorizedHumanUsers,
+                                      List<User> connectedUsers,
+                                      List<Channel> channels) {
         thawLogger.log(Level.INFO, "In connectToServer request");
         HttpServerResponse response = routingContext.response();
         JsonObject json = routingContext.getBodyAsJson();
@@ -46,17 +49,21 @@ class Handlers {
         if (session == null) {
             answerToRequest(response, 400, "No session", thawLogger);
         } else {
-            analyzeConnecToServerRequest(session, response, json, thawLogger, authorizedHumanUsers, connectedUsers);
+            analyzeConnecToServerRequest(session, response, json, thawLogger, authorizedHumanUsers, connectedUsers, channels);
         }
     }
 
-    private static void analyzeConnecToServerRequest(Session session, HttpServerResponse response, JsonObject json, ThawLogger thawLogger, List<HumanUser> authorizedHumanUsers, List<User> connectedUsers) {
+    private static void analyzeConnecToServerRequest(Session session, HttpServerResponse response, JsonObject json,
+                                                     ThawLogger thawLogger,
+                                                     List<HumanUser> authorizedHumanUsers,
+                                                     List<User> connectedUsers,
+                                                     List<Channel> channels) {
         String userName = json.getString("userName");
         String password = json.getString("password");
         if (verifyEmptyOrNull(userName, password)) {
             answerToRequest(response, 400, "Wrong JSON input", thawLogger);
         }
-        boolean containsUser = false;
+        boolean containsUser = true;
         for (HumanUser u : authorizedHumanUsers) {
             containsUser = connectedUsers.contains(u);
             if ((u.getName().equals(userName) && u.compareHash(password)) && !containsUser) {
@@ -68,7 +75,15 @@ class Handlers {
         if (session.get("user") == null || containsUser) {
             answerToRequest(response, 400, "HumanUser: '" + userName + "' authentication failed", thawLogger);
         } else {
-            answerToRequest(response, 204, "HumanUser: '" + userName + "' authentication success", thawLogger);
+            Optional<Channel> optChannel = findChannelInList(channels, "default");
+            if (!optChannel.isPresent()) {
+                answerToRequest(response, 400, "Channel 'default' does not exist", thawLogger);
+                return;
+            }
+            Channel chan = optChannel.get();
+            User u = session.get("user");
+            chan.addUserToChan(u);
+            answerToRequest(response, 204, "HumanUser: '" + userName + "' authentication success, connected to 'default' channel", thawLogger);
         }
 //        answerToRequest(response, 204, "HumanUser: '" + userName + "' authenticated", thawLogger);
     }
@@ -129,7 +144,6 @@ class Handlers {
         thawLogger.log(Level.INFO, "In create account request");
         HttpServerResponse response = routingContext.response();
         JsonObject json = routingContext.getBodyAsJson();
-
         if (json == null) {
             answerToRequest(response, 400, "Wrong JSON input", thawLogger);
         } else {
@@ -145,17 +159,22 @@ class Handlers {
             answerToRequest(response, 400, "Wrong JSON input", thawLogger);
             return;
         }
-        HumanUser humanUser = HumanUserFactory.createHumanUser(userName, password);
+        String hashedPass = Tools.toSHA256(password);
+        HumanUser humanUser = HumanUserFactory.createHumanUser(userName, hashedPass);
         if (authorizedHumanUsers.contains(humanUser)) {
             answerToRequest(response, 402, "User '" + userName + "' already exists", thawLogger);
             return;
         }
-        authorizedHumanUsers.add(humanUser);
         try {
             database.createLogin(humanUser);
-        } catch (NoSuchAlgorithmException | SQLException e) {
+        } catch (SQLException e) {
+            answerToRequest(response, 402, "User '" + userName + "' already exists", thawLogger);
+            return;
+        } catch (NoSuchAlgorithmException e) {
             e.printStackTrace();
         }
+        authorizedHumanUsers.add(humanUser);
+        answerToRequest(response, 200, "Account '" + userName + "' created", thawLogger);
     }
 
     /*############################################################*/
