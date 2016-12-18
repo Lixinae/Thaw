@@ -95,10 +95,10 @@ public class Server extends AbstractVerticle {
         authorizedHumanUsers.add(superUser);
         authorizedHumanUsers.add(test2);
 //        connectedUsers.add(superUser);
-        connectedUsers.add(test2);
+        //connectedUsers.add(test2);
         Channel defaul = ChannelFactory.createChannel(superUser, "default");
-        Channel channel = ChannelFactory.createChannel(superUser, "Item 1");
-        Channel channel2 = ChannelFactory.createChannel(superUser, "Item 2");
+        Channel channel = ChannelFactory.createChannel(superUser, "Channel 1");
+        Channel channel2 = ChannelFactory.createChannel(superUser, "Channel 2");
 
         Message mes = MessageFactory.createMessage(superUser, System.currentTimeMillis(), "1er lessage");
         Message mes1 = MessageFactory.createMessage(superUser, System.currentTimeMillis(), "2e message");
