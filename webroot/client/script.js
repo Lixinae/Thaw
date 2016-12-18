@@ -132,7 +132,6 @@ function getListMessageForChannel(){
 	$.post("/api/private/getListMessageForChannel",
 		JSON.stringify({channelName:currentChannel,numberOfMessage:1000}))
 	    .done(function(response){
-	            //console.log(response[0]);
 	            var string = "";
 	            $.each(response,function(key){
 	                var date = response[key].date;
@@ -211,7 +210,7 @@ function disconnectFromServer(){
 	    //l'utilisateur s'est deco
 	    window.clearInterval(getListChannelsTimer);
 	    window.clearInterval(getListMessageTimer);
-            window.location.href = "../index.html";
+        window.location.href = "../index.html";
         })
         .fail(function(response){
 
