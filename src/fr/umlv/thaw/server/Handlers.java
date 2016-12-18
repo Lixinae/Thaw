@@ -115,7 +115,7 @@ class Handlers {
         // Detruit la session courante
         routingContext.session().destroy();
         thawLogger.log(Level.INFO, "Disconnected from server");
-        response.putHeader("location", "/").setStatusCode(302).end();
+        response.putHeader("location", "/").setStatusCode(200).end();
     }
 
 
