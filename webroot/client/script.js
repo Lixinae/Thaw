@@ -1,7 +1,8 @@
 
 var currentChannel = "default";
 var username = JSON.parse(sessionStorage.userName); //retrieve the login from the login page
-
+var getListChannelsTimer;
+var getListMessageTimer;
 // var  messageV = $("#TextZone"); -> Textzone est un id
 // var  messageV = $(".TextZone"); -> TextZone est une classe
 
@@ -22,8 +23,8 @@ function initialize(){
 
 function setReloadInterval(){
     // Intervals will be much lower once live
-    setInterval(getListChannels,10000);// 10 000 for debug
-    setInterval(getListMessageForChannel,10000); // 10 000 for debug
+    getListChannelsTimer = setInterval(getListChannels,10000);// 10 000 for debug
+    getListMessageTimer = setInterval(getListMessageForChannel,10000); // 10 000 for debug
 }
 
 /* Permet d'avoir un texte par defaut dans la zone de d'ecriture de message et qui disparait lors du clique sur la zone */
@@ -61,6 +62,10 @@ function createChannel(){
 
         });
 }
+
+
+
+
 
 // TODO
 function deleteChannel(){
@@ -123,12 +128,12 @@ function sendMessage(){
 
 function getListMessageForChannel(){
 	var listMessage = $(".tchat");
+	var child = listMessage.children();
 	listMessage.children().remove();
 	listMessage.append("<h2>Tchat</h2>");
 	$.post("/api/private/getListMessageForChannel",
 		JSON.stringify({channelName:currentChannel,numberOfMessage:1000}))
 	    .done(function(response){
-	            //console.log(response[0]);
 	            var string = "";
 	            $.each(response,function(key){
 	                var date = response[key].date;
@@ -137,35 +142,9 @@ function getListMessageForChannel(){
                     string = string + chatMessageFormatting(name,msg,date);
 	            });
 	            listMessage.append(string);
-
-	        // Formater correctement les messages
-
-	        // Utiliser JSON.parse
-	        // Format reçu : l'ordre des éléments change systématiquement
-	        // L'exemple est la à titre indicatif
-	        /* [ {
-                 "sender" : {
-                   "name" : "superUser"
-                 },
-                 "date" : 1481968254959,
-                 "content" : "Message 2"
-               }, {
-                 "sender" : {
-                   "name" : "superUser"
-                 },
-                 "date" : 1481968254988,
-                 "content" : "Message 3"
-               }, {
-                 "sender" : {
-                   "name" : "superUser"
-                 },
-                 "date" : 1481968254993,
-                 "content" : "Message 4"
-               } ]
-
-	             */
         })
         .fail(function(response){
+        listMessage.append(child);
             //alert("fail getListMessageForChannel");
         })
         .always(function() {
@@ -224,11 +203,17 @@ function getListUsersForChan(){
         });
 }
 
+//TODO : voir comment repermettre le login apres deco
 function disconnectFromServer(){
+        var currentChannel = $("#currentChannel").html();
 		$.post("/api/private/disconnectFromServer",
-	    JSON.stringify({userName : userName}))
+	    JSON.stringify({userName : username, currentChannelName:currentChannel}))
 	    .done(function(response){
-
+	    //Nettoyage des timer pour eviter d'effecteur des requetes alors que
+	    //l'utilisateur s'est deco
+	    window.clearInterval(getListChannelsTimer);
+	    window.clearInterval(getListMessageTimer);
+        window.location.href = "../index.html";
         })
         .fail(function(response){
 
