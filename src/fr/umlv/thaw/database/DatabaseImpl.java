@@ -40,7 +40,7 @@ public class DatabaseImpl implements Database {
      * @throws ClassNotFoundException if we cannot find the SQLITE library
      * @throws SQLException           if an error occurs during the creation of the database
      */
-    public DatabaseImpl(Path pathToDB, String dbName) throws ClassNotFoundException, SQLException {
+    DatabaseImpl(Path pathToDB, String dbName) throws ClassNotFoundException, SQLException {
         Objects.requireNonNull(pathToDB);
         Objects.requireNonNull(dbName);
         Class.forName("org.sqlite.JDBC");
@@ -74,9 +74,9 @@ public class DatabaseImpl implements Database {
         } catch (SQLException sql) {
             //nothing
         }
+        HumanUser user1 = HumanUserFactory.createHumanUser("George", Tools.toSHA256("12345@A"));
+        HumanUser user2 = HumanUserFactory.createHumanUser("TotoLeBus", Tools.toSHA256("TotoLeBus"));
         try {
-            HumanUser user1 = HumanUserFactory.createHumanUser("George", Tools.toSHA256("12345@A"));
-            HumanUser user2 = HumanUserFactory.createHumanUser("TotoLeBus", Tools.toSHA256("TotoLeBus"));
             myDB.createLogin(user1);
             myDB.createLogin(user2);
         } catch (SQLException sql) {
@@ -91,21 +91,26 @@ public class DatabaseImpl implements Database {
         for (Channel chan : test) {
             System.out.println("Channel : " + chan);
         }
-        myDB.addMessageToChannelTable(chan1, System.currentTimeMillis(), "Bonjour mon message", "George");
+        Message m1 = MessageFactory.createMessage(user1, System.currentTimeMillis(), "Bonjour mon message");
+
+        myDB.addMessageToChannelTable(chan1, m1);
         System.out.println("Messages dans Chan1 : ");
         System.out.println(myDB.messagesList(chan1));
 
-        myDB.addMessageToChannelTable(chan1, System.currentTimeMillis(), "J'i bien h@ck la secu >: )", "TotoLeBus");
+        Message m2 = MessageFactory.createMessage(user2, System.currentTimeMillis(), "J'i bien h@ck la secu >: )");
+        myDB.addMessageToChannelTable(chan1, m2);
 
 
         myDB.addUserToChan(chan1, "TotoLeBus", "George");
-        myDB.addMessageToChannelTable(chan1, dte, "Avec les droits ça fonctionne mieux", "TotoLeBus");
+        Message m3 = MessageFactory.createMessage(user2, dte, "Avec les droits ça fonctionne mieux");
+        myDB.addMessageToChannelTable(chan1, m3);
 
 
         System.out.println("Message dans Chan1 deuxième : ");
         myDB.messagesList(chan1).forEach(System.out::println);
 
-        myDB.updateMessageFromChannel(chan1, dte, "TotoLeBus", "Avec les droits ça fonctionne mieux", "Ah je me suis planté et je vais me perdre :/");
+        Message m4 = MessageFactory.createMessage(user2, System.currentTimeMillis(), "Ah je me suis planté et je vais me perdre :/");
+        myDB.updateMessageFromChannel(chan1, m3, m4);
 
         System.out.println("Apres chgmt de message de TotoLeBus : ");
         System.out.println(myDB.messagesList(chan1));
@@ -155,7 +160,6 @@ public class DatabaseImpl implements Database {
         this.createChannelsTable();
         this.createChanViewerTable();
     }
-
 
 
     @Override
@@ -214,27 +218,26 @@ public class DatabaseImpl implements Database {
     }
 
     @Override
-    public void addMessageToChannelTable(String channelName, long date, String msg, String author) throws SQLException {
+    public void addMessageToChannelTable(String channelName, Message msg) throws SQLException {
         Objects.requireNonNull(channelName);
-        recquirePositive(date);
+        //recquirePositive(date);
         Objects.requireNonNull(msg);
-        Objects.requireNonNull(author);
-        if (canUserViewChannel(channelName, author)) {
+        //Objects.requireNonNull(author);
+        if (canUserViewChannel(channelName, msg.getSender().getName())) {
             createPrepState(prepareInsertThreeValuesIntoTable(channelName));
-            insertDateMessageAuthor(date, msg, author);
+            insertDateMessageAuthor(msg.getDate(), msg.getContent(), msg.getSender().getName());
             executeRegisteredTask();
         }
     }
 
     @Override
-    public void updateMessageFromChannel(String channelName, long date, String author, String Oldmsg, String newMsg) throws SQLException {
+    public void updateMessageFromChannel(String channelName, Message oldMsg, Message newMsg) throws SQLException {
         Objects.requireNonNull(channelName);
-        recquirePositive(date);
-        Objects.requireNonNull(author);
-        Objects.requireNonNull(Oldmsg);
+        Objects.requireNonNull(oldMsg);
+        recquirePositive(oldMsg.getDate());
         Objects.requireNonNull(newMsg);
-        if (canUserViewChannel(channelName, author)) {
-            exeUpda(updateChannelMessageReq(channelName, date, author, Oldmsg, newMsg));
+        if (canUserViewChannel(channelName, oldMsg.getSender().getName()) && oldMsg.getSender().equals(newMsg.getSender())) {
+            exeUpda(updateChannelMessageReq(channelName, oldMsg.getDate(), newMsg.getSender().getName(), oldMsg.getContent(), newMsg.getContent()));
             executeRegisteredTask();
         }
     }
@@ -540,8 +543,8 @@ public class DatabaseImpl implements Database {
         prep = co.prepareStatement(request);
         prep.setString(1, userName);
         prep.setString(2, channelName);
-        if (prep.execute()) {
-            try (ResultSet tmp = prep.getResultSet()) {
+        if (prep.execute()) try (ResultSet tmp = prep.getResultSet()) {
+            if (tmp.next()) {
                 return true;
             }
         }
@@ -554,8 +557,8 @@ public class DatabaseImpl implements Database {
         prep = co.prepareStatement(request);
         prep.setString(1, channelName);
         prep.setString(2, user);
-        if (prep.execute()) {
-            try (ResultSet tmp = prep.getResultSet()) {
+        if (prep.execute()) try (ResultSet tmp = prep.getResultSet()) {
+            if (tmp.next()) {
                 return true;
             }
         }

@@ -73,25 +73,21 @@ public interface Database {
      * if he doesn't exist yet
      *
      * @param channelName the table in which we must insert the message
-     * @param date        the date when the message has been sent
      * @param msg         the message to stock
-     * @param author      the author of the message
      * @throws SQLException if a database access errors occurs
      */
-    void addMessageToChannelTable(String channelName, long date, String msg, String author) throws SQLException;
+    void addMessageToChannelTable(String channelName, Message msg) throws SQLException;
 
     /**
-     * This method change a message from an author at the moment "date"
+     * This method change a message from an author from the date oldMsg.getDate()
      * to a new message.
      *
      * @param channelName the name of the table
-     * @param date        the date of the old message
-     * @param author      the author of the message
-     * @param Oldmsg      the old message to change
+     * @param oldMsg      the old message to change
      * @param newMsg      the new message that will replace Oldmsg
      * @throws SQLException if a database access errors occurs
      */
-    void updateMessageFromChannel(String channelName, long date, String author, String Oldmsg, String newMsg) throws SQLException;
+    void updateMessageFromChannel(String channelName, Message oldMsg, Message newMsg) throws SQLException;
 
     /**
      * That function return a list of users that are
