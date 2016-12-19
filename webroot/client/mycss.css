@@ -45,6 +45,9 @@ table {
 	border-spacing: 0;
 }
 
+img {
+float:right;
+}
 /* */
 /* */
 /* */
@@ -140,10 +143,12 @@ a donner a ce niveau la. Ne pas metttre la position en absolute*/
 	overflow:auto;/*Fait apparaitre scrollbar lorsque limite de taille atteinte*/
 }
 
+
 textarea#TextZone{
 	width: 100%;
 	height:60%;
 }
+
 
 
 

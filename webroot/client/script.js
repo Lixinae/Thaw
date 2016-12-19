@@ -69,9 +69,9 @@ function createChannel(){
 
 // TODO
 function deleteChannel(){
-
+    target=
 	$.post("/api/private/deleteChannel",
-	    JSON.stringify({channelName:target,userName:username}))
+	    JSON.stringify({channelName:target,user:username}))
 	    .done(function(response){
             alert("success delete channel");
         })
@@ -162,9 +162,9 @@ function getListChannels(){
 				// Provoque un effet "On/Off" au chargement
 				var string = "<ul id=\"channels\" onclick=\"selectChannel()\">"
                 $.each(response,function(key,val){
-                    string = string +"<li>"+ val+"</li>";
+                    string = string +"<li>"+ val +"</li>";
                 });
-                string = string +"</ul>";
+                string = string + "</ul>";
                 listChannel.append(string);
 
             })
