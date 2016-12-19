@@ -131,8 +131,10 @@ public class Server extends AbstractVerticle {
             database.createChannelTable(channel2.getChannelName(), "test2");
             System.out.println("add channels ?");
         } catch (SQLException sql) {
+            System.out.println("EXPLOSIIOOOOOON");
             //channel already registered
         }
+        System.out.println("sdhfdgyfdgyfjgg " + database.getchannelList());
         channels.add(defaul);
         channels.add(channel);
         channels.add(channel2);

@@ -26,9 +26,6 @@ public class ChannelImpl implements Channel {
         allMessage = new ConcurrentLinkedQueue<>();
     }
 
-    /**
-     * @return the userName where it is called on
-     */
     @Override
     public String getCreatorName() {
         return creator.getName();
@@ -94,10 +91,6 @@ public class ChannelImpl implements Channel {
         return tmp;
     }
 
-    /**
-     * @param user the user you want you want to check
-     * @return true if the user is already connected, false otherwise
-     */
     @Override
     public boolean checkIfUserIsConnected(User user) {
         Objects.requireNonNull(user);
@@ -114,10 +107,6 @@ public class ChannelImpl implements Channel {
         return Collections.unmodifiableList(tmp);
     }
 
-    /**
-     * @param user The user you want to find
-     * @return The user if he exists, optional.empty otherwise
-     */
     @Override
     public Optional<User> findUser(User user) {
         if (messagesQueue.containsKey(user)) {

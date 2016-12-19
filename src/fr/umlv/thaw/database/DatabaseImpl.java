@@ -59,14 +59,14 @@ public class DatabaseImpl implements Database {
         DatabaseImpl myDB;
         long dte = System.currentTimeMillis();
         try {
-            myDB = new DatabaseImpl(Paths.get(".." + sep + "db"), "mafia");//Creation base du fichier mafia.db
+            myDB = new DatabaseImpl(Paths.get("." + sep + "db"), "mafia");//Creation base du fichier mafia.db
         } catch (SQLException sql) {
             System.err.println("can't open the db ");
             return;
         }
 
 
-        String chan1 = "Chan1";
+        String channelName = "Chan1";
         //test de createLogin
         try {
 
@@ -84,7 +84,7 @@ public class DatabaseImpl implements Database {
         }
         //La table chan1 étant supprimer à la fin, on peut la re créer sans risquer une erreur
 
-        myDB.createChannelTable(chan1, "George");
+        myDB.createChannelTable(channelName, "George");
 
         List<Channel> test = myDB.getchannelList();
         System.out.println("Nombre de channel : " + test.size());
@@ -93,32 +93,32 @@ public class DatabaseImpl implements Database {
         }
         Message m1 = MessageFactory.createMessage(user1, System.currentTimeMillis(), "Bonjour mon message");
 
-        myDB.addMessageToChannelTable(chan1, m1);
+        myDB.addMessageToChannelTable(channelName, m1);
         System.out.println("Messages dans Chan1 : ");
-        System.out.println(myDB.messagesList(chan1));
+        System.out.println(myDB.messagesList(channelName));
 
         Message m2 = MessageFactory.createMessage(user2, System.currentTimeMillis(), "J'i bien h@ck la secu >: )");
-        myDB.addMessageToChannelTable(chan1, m2);
+        myDB.addMessageToChannelTable(channelName, m2);
 
 
-        myDB.addUserToChan(chan1, "TotoLeBus", "George");
+        myDB.addUserToChan(channelName, "TotoLeBus", "George");
         Message m3 = MessageFactory.createMessage(user2, dte, "Avec les droits ça fonctionne mieux");
-        myDB.addMessageToChannelTable(chan1, m3);
+        myDB.addMessageToChannelTable(channelName, m3);
 
 
         System.out.println("Message dans Chan1 deuxième : ");
-        myDB.messagesList(chan1).forEach(System.out::println);
+        myDB.messagesList(channelName).forEach(System.out::println);
 
         Message m4 = MessageFactory.createMessage(user2, System.currentTimeMillis(), "Ah je me suis planté et je vais me perdre :/");
-        myDB.updateMessageFromChannel(chan1, m3, m4);
+        myDB.updateMessageFromChannel(channelName, m3, m4);
 
         System.out.println("Apres chgmt de message de TotoLeBus : ");
-        System.out.println(myDB.messagesList(chan1));
+        System.out.println(myDB.messagesList(channelName));
 
 
         System.out.println("Avant remove George de Chan1");
 
-        myDB.removeUserAccessToChan(chan1, "George", "George");
+        myDB.removeUserAccessToChan(channelName, "George", "George");
 
         System.out.println("George has been removed from Chan1");
         List<Channel> chans = myDB.getchannelList();
@@ -326,9 +326,10 @@ public class DatabaseImpl implements Database {
             while (rs.next()) {
                 String channame = rs.getString("CHANNAME");
                 String owner = rs.getString("OWNER");
-                ResultSet tmp = executeQuery("SELECT PSWD FROM USERS WHERE LOGIN LIKE '" + owner + "';");
+                ResultSet tmp = executeQuery("SELECT PSWD FROM users WHERE LOGIN LIKE '" + owner + "';");
                 while (tmp.next()) {
                     tmpChan = ChannelFactory.createChannel(HumanUserFactory.createHumanUser(owner, tmp.getString(1)), channame);
+                    System.out.println("truc");
                     channels.add(tmpChan);
                 }
             }
@@ -336,6 +337,7 @@ public class DatabaseImpl implements Database {
         } catch (SQLException sql) {
             throw new AssertionError("A database error has been occurred");
         }
+        System.out.println("fedfrvgtbhnj,kfrtgyhnj" + channels);
         if (channels.isEmpty()) {
             return new ArrayList<>();
         }

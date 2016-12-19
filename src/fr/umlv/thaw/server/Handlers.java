@@ -471,16 +471,21 @@ class Handlers {
         Optional<Channel> optChan = findChannelInList(channels, channelName);
         if (optChan.isPresent()) {
             Channel channel = optChan.get();
-            List<Message> tmpMess = channel.getListMessage();
-            List<Message> returnListMessage = tmpMess.subList(Math.max(tmpMess.size() - numberOfMessageWanted, 0), tmpMess.size());
-            answerToRequest(response, 200, returnListMessage, thawLogger);
-//             try {
-//                List<Message> tmpMess = database.messagesList(channel.getChannelName());//channel.getListMessage();
-//                List<Message> returnListMessage = tmpMess.subList(Math.max(tmpMess.size() - numberOfMessageWanted, 0), tmpMess.size());
-//                answerToRequest(response, 200, returnListMessage, thawLogger);
-//            } catch (SQLException sql) {
-//                answerToRequest(response, 400, "Problem for retrieving information at : " + channelName + " SQLException", thawLogger);
-//            }
+
+//            List<Message> tmpMess = channel.getListMessage();
+//            List<Message> returnListMessage = tmpMess.subList(Math.max(tmpMess.size() - numberOfMessageWanted, 0), tmpMess.size());
+//            answerToRequest(response, 200, returnListMessage, thawLogger);
+
+            try {
+                System.out.println(channel.getChannelName());
+                System.out.println("truc " + database.getchannelList());
+                List<Message> tmpMess = database.messagesList(channel.getChannelName());
+                System.out.println(tmpMess);
+                List<Message> returnListMessage = tmpMess.subList(Math.max(tmpMess.size() - numberOfMessageWanted, 0), tmpMess.size());
+                answerToRequest(response, 200, returnListMessage, thawLogger);
+            } catch (SQLException sql) {
+                answerToRequest(response, 400, "Problem for retrieving information at : " + channel.getChannelName() + " SQLException", thawLogger);
+            }
 
 
         } else {

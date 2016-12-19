@@ -13,7 +13,7 @@ import java.util.Optional;
 public interface Channel {
 
     /**
-     * @return the userName where it is called on
+     * @return the creator name of the channel
      */
     String getCreatorName();
 
