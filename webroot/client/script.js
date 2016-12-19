@@ -240,8 +240,8 @@ function chatMessageFormatting(username,msg,dateAsLong){
     var date = new Date(dateAsLong);
     var hours = addZero(date.getHours());
     var minutes = addZero(date.getMinutes());
-    var day = addZero(date.getDay());
-    var month = addZero(date.getMonth());
+    var day = addZero(date.getDate());
+    var month = correctMonth(date);
     var year = date.getFullYear();
     if(msg.length > 512){
        msg=msg.slice(0,512);
@@ -257,6 +257,10 @@ function addZero(i){
         i = "0"+i;
     }
     return i;
+}
+
+function correctMonth(date){
+    return addZero(date.getMonth()+1);
 }
 
 // Compatibilite pour IE si besoin
