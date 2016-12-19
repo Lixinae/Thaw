@@ -17,12 +17,15 @@ public class ChannelImpl implements Channel {
     private final HumanUser creator;
     //Prendre une LinkedQueue de message car un utilisateur peut envoyer plusieurs messages.
     private final ConcurrentHashMap<User, ConcurrentLinkedQueue<Message>> messagesQueue;
+    // Conserve la liste de tous les messages.
+    private final ConcurrentLinkedQueue<Message> allMessage;
 
 
     ChannelImpl(HumanUser creator, String channelName) {
         this.creator = Objects.requireNonNull(creator);
         this.channelName = Objects.requireNonNull(channelName);
         messagesQueue = new ConcurrentHashMap<>();
+        allMessage = new ConcurrentLinkedQueue<>();
     }
 
     /**
@@ -42,6 +45,7 @@ public class ChannelImpl implements Channel {
         }
         ConcurrentLinkedQueue<Message> lq = messagesQueue.get(user);
         if (lq.add(message)) {
+            allMessage.add(message);
             messagesQueue.put(user, lq);
             return messagesQueue.get(user).contains(message);
         }
@@ -51,7 +55,13 @@ public class ChannelImpl implements Channel {
     @Override
     public boolean delMessageFromQueue(User user, long date) {
         Objects.requireNonNull(user);
-        return messagesQueue.containsKey(user) && messagesQueue.get(user).removeIf(msg -> msg.getDate() == date);
+        if (messagesQueue.containsKey(user)) {
+            if (messagesQueue.get(user).removeIf(msg -> msg.getDate() == date)) {
+                allMessage.removeIf(msg -> msg.getDate() == date);
+                return true;
+            }
+        }
+        return false;
     }
 
     @Override
@@ -99,7 +109,9 @@ public class ChannelImpl implements Channel {
     @Override
     public List<Message> getListMessage() {
         List<Message> tmp = new ArrayList<>();
-        messagesQueue.forEach((key, value) -> tmp.addAll(value));
+//        messagesQueue.forEach((key, value) -> tmp.addAll(value));
+//        allMessage.forEach(tmp::add);
+        tmp.addAll(allMessage);
         tmp.sort((msg1, msg2) -> ((Long) msg1.getDate()).compareTo(msg2.getDate()));
         return Collections.unmodifiableList(tmp);
     }

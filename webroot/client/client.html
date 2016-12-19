@@ -1,43 +1,54 @@
 <html>
 <head>
-	<meta charset="UTF-8">
-	<link rel="stylesheet" href="mycss.css" type="text/css" media="all"/>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" href="mycss.css" type="text/css" media="all"/>
     <script src="../asset/jquery-3.1.1.js"></script>
     <script src="script.js"></script>
 
 </head>
 <body>
 <div class="background">
-	<h1>THAW</h1>
-	<div class="infoOnUser">
+    <h1>THAW</h1>
+    <div class="infoOnUser">
         <p> User Name :
             <text id="currentUser"> BaseUserName</text>
-		</p>
+        </p>
         <p> Current channel :
             <text id="currentChannel"> Default</text>
-		</p>
+        </p>
         <button name="button" id="logout" onclick="disconnectFromServer()"> Log out</button>
-	</div>
+    </div>
     <div class="cadres">
         <div class="listChannels">
+            <h2>Channels</h2>
+            <div class="listChannelsIntern">
+
+            </div>
+
         </div>
 
         <div class="tchat" id="tchat">
             <h2>Tchat</h2>
+            <div class="tchatIntern">
+
+            </div>
 
         </div>
 
         <div class="listUsers">
             <h2>Users</h2>
+            <div class="listUsersIntern">
+
+            </div>
         </div>
-	</div>
+    </div>
 
     <div class="textEntry">
-		<h2>Text Entry</h2>
-		<textarea id="TextZone">
-			Enter a message...
-		</textarea>
-        <button name="button" id="button" onclick="sendMessage()"> Send </button>
+        <h2>Text Entry</h2>
+        <textarea id="TextZone">
+                    Enter a message...
+                </textarea>
+        <button name="button" id="button" onclick="sendMessage()"> Send</button>
     </div>
 
 </div>

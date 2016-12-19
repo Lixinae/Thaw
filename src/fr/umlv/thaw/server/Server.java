@@ -106,13 +106,14 @@ public class Server extends AbstractVerticle {
         Message mes1 = MessageFactory.createMessage(test2, System.currentTimeMillis(), "2e message");
         Message mes2 = MessageFactory.createMessage(superUser, System.currentTimeMillis(), "3e message");
         Message mes3 = MessageFactory.createMessage(test2, System.currentTimeMillis(), "4e message");
-        defaul.addMessageToQueue(mes);
-        defaul.addMessageToQueue(mes1);
-        defaul.addMessageToQueue(mes2);
-        defaul.addMessageToQueue(mes3);
 
         superUser.joinChannel(defaul);
+        superUser.sendMessage(defaul, mes);
+        superUser.sendMessage(defaul, mes2);
+
         test2.joinChannel(defaul);
+        test2.sendMessage(defaul, mes1);
+        test2.sendMessage(defaul, mes3);
 
         channels.add(defaul);
         channels.add(channel);

@@ -22,14 +22,9 @@ import java.util.Optional;
 import java.util.logging.Level;
 import java.util.stream.Collectors;
 
-/**
- * Project :Thaw
- * Created by Narex on 09/12/2016.
- */
 class Handlers {
 
     // Order of handlers is same as the order of usage in the server
-
 
     /*##############################################################*/
     /////////////////// Connect to server Handler ///////////////////
@@ -45,9 +40,6 @@ class Handlers {
 
         if (json == null) {
             answerToRequest(response, 400, "Wrong Json format", thawLogger);
-        }
-        if (session == null) {
-            answerToRequest(response, 400, "No session", thawLogger);
         } else {
             analyzeConnecToServerRequest(session, response, json, thawLogger, authorizedHumanUsers, connectedUsers, channels);
         }
@@ -130,7 +122,7 @@ class Handlers {
         chan.removeUserFromChan(user);
         // Detruit la session courante
         routingContext.session().destroy();
-        thawLogger.log(Level.INFO, "Disconnected from server");
+        thawLogger.log(Level.INFO, "User '" + user.getName() + "' disconnected from server");
         response.putHeader("location", "/").setStatusCode(200).end();
     }
 
@@ -209,9 +201,6 @@ class Handlers {
         JsonObject json = routingContext.getBodyAsJson();
         if (json == null) {
             answerToRequest(response, 400, "Wrong JSON input", thawLogger);
-        }
-        if (session == null) {
-            answerToRequest(response, 400, "No session", thawLogger);
         } else {
             analyzeAddChannelRequest(session, response, json, thawLogger, channels);
         }
@@ -238,7 +227,6 @@ class Handlers {
     private static void createAndAddChannel(String newChannelName, HumanUser creator, List<Channel> channels) {
         Channel newChannel = ChannelFactory.createChannel(creator, newChannelName);
         channels.add(newChannel);
-//        creator.addChannel(newChannel);
     }
 
 
@@ -256,9 +244,6 @@ class Handlers {
 
         if (json == null) {
             answerToRequest(response, 400, "Wrong Json format", thawLogger);
-        }
-        if (session == null) {
-            answerToRequest(response, 400, "No session", thawLogger);
         } else {
             analyzeDeleteChannelRequest(response, session, json, thawLogger, channels);
         }
@@ -306,9 +291,6 @@ class Handlers {
         Session session = routingContext.session();
         if (json == null) {
             answerToRequest(response, 400, "Wrong Json format", thawLogger);
-        }
-        if (session == null) {
-            answerToRequest(response, 400, "No session", thawLogger);
         } else {
             analyzeConnecToChannelRequest(response, session, json, thawLogger, channels);
         }
@@ -369,16 +351,13 @@ class Handlers {
         Session session = routingContext.session();
         if (json == null) {
             answerToRequest(response, 400, "Wrong Json format", thawLogger);
-        }
-        if (session == null) {
-            answerToRequest(response, 400, "No session", thawLogger);
         } else {
-            analyzeSendMessageRequest(response, session, json, thawLogger, channels);
+            analyzeSendMessageRequest(response, session, json, thawLogger, channels, database);
         }
     }
 
     // Todo
-    private static void analyzeSendMessageRequest(HttpServerResponse response, Session session, JsonObject json, ThawLogger thawLogger, List<Channel> channels) {
+    private static void analyzeSendMessageRequest(HttpServerResponse response, Session session, JsonObject json, ThawLogger thawLogger, List<Channel> channels, Database database) {
         long date = System.currentTimeMillis();
 
         String message = json.getString("message");

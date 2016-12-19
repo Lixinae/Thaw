@@ -49,7 +49,7 @@ function textAreaDefaultValueDisappearOnClick(){
 // Et envoie l'information au serveur
 // TODO
 function createChannel(){
-
+    var newChannelName = "";
 	$.post("/api/private/createChannel",
 	    JSON.stringify({channelName:newChannelName,creatorName:username}))
 	    .done(function(response){
@@ -69,7 +69,8 @@ function createChannel(){
 
 // TODO
 function deleteChannel(){
-    target=
+    //target =
+    var target = "";
 	$.post("/api/private/deleteChannel",
 	    JSON.stringify({channelName:target,user:username}))
 	    .done(function(response){
@@ -123,18 +124,16 @@ function sendMessage(){
 		.always(function(){
 
         });
-
 }
 
-//TODO probleme de recuperation des messages lors de changement de salon
 function getListMessageForChannel(){
-	var listMessage = $(".tchat");
-	var child = listMessage.children();
-	listMessage.children().remove();
-	listMessage.append("<h2>Tchat</h2>");
+	var listMessage = $(".tchatIntern");
+	var currentChannel = $("#currentChannel").html();
+
 	$.post("/api/private/getListMessageForChannel",
 		JSON.stringify({channelName:currentChannel,numberOfMessage:1000}))
 	    .done(function(response){
+				listMessage.children().remove();
 	            var string = "";
 	            $.each(response,function(key){
 	                var date = response[key].date;
@@ -154,11 +153,11 @@ function getListMessageForChannel(){
 
 
 function getListChannels(){
-	var listChannel = $(".listChannels");
-	listChannel.children().remove();
-	listChannel.append("<h2>Channels</h2>");
+	var listChannel = $(".listChannelsIntern");
+
 	$.get("/api/private/getListChannel")
 	        .done(function(response){
+				listChannel.children().remove();
 				// Provoque un effet "On/Off" au chargement
 				var string = "<ul id=\"channels\" onclick=\"selectChannel()\">"
                 $.each(response,function(key,val){
@@ -180,14 +179,13 @@ function getListChannels(){
 
 // Fonctionne
 function getListUsersForChan(){
-	var usersListOnChan = $(".listUsers");
-	usersListOnChan.children().remove();
-
+	var usersListOnChan = $(".listUsersIntern");
     var currentChannel = $("#currentChannel").html();
-	usersListOnChan.append("<h2>Users</h2>");
+
 	$.post("/api/private/getListUserForChannel",
 	    JSON.stringify({channelName : currentChannel}))
 	    .done(function(response){
+			usersListOnChan.children().remove();
             var string ="<ul id=\"usersOnChan\">";
             $.each(response,function(key,val){
                 string = string +"<li>"+ val+"</li>";
