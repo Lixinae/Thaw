@@ -11,7 +11,6 @@ import fr.umlv.thaw.message.MessageFactory;
 import fr.umlv.thaw.user.User;
 import fr.umlv.thaw.user.humanUser.HumanUser;
 import fr.umlv.thaw.user.humanUser.HumanUserFactory;
-import fr.umlv.thaw.user.humanUser.HumanUserImpl;
 import io.vertx.core.AbstractVerticle;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
@@ -85,32 +84,27 @@ public class Server extends AbstractVerticle {
     @Override
     public void start(Future<Void> fut) {
         // todo Load database stuff here
-        // Garder block
         try {
             database.initializeDB();
         } catch (SQLException sql) {
             //database already set up correctly
         }
-        channels.addAll(database.getchannelList());
-        try {
-            authorizedHumanUsers.addAll(database.usersList());
-        } catch (SQLException e) {
-            // No human authorized -> Nobody can connect, so crash the server.
-            return;
-        }
-        // FIN GARDER
 
 
         // TEST ONLY //
         String hashPassword = Tools.toSHA256("password");
         String hashPassword2 = Tools.toSHA256("password2");
+        String hashPassword3 = Tools.toSHA256("password2");
 
-        HumanUserImpl superUser = HumanUserFactory.createHumanUser("superUser", hashPassword);
-        HumanUserImpl test2 = HumanUserFactory.createHumanUser("test2", hashPassword2);
+
+        HumanUser superUser = HumanUserFactory.createHumanUser("superUser", hashPassword);
+        HumanUser test2 = HumanUserFactory.createHumanUser("test2", hashPassword2);
+        HumanUser superUserOver = HumanUserFactory.createHumanUser("#SuperUser", hashPassword3);
         try {
             //if the examples users aren't registered yet
             database.createLogin(superUser);
             database.createLogin(test2);
+            database.createLogin(superUserOver);
         } catch (SQLException sql) {
             //login already exists
         } catch (NoSuchAlgorithmException nsae) {
@@ -118,6 +112,7 @@ public class Server extends AbstractVerticle {
             return;
         }
         authorizedHumanUsers.add(superUser);
+        authorizedHumanUsers.add(superUserOver);
         authorizedHumanUsers.add(test2);
         System.out.println("HEY LES CHANNELS =)");
 
@@ -131,13 +126,16 @@ public class Server extends AbstractVerticle {
             database.createChannelTable(channel2.getChannelName(), "test2");
             System.out.println("add channels ?");
         } catch (SQLException sql) {
-            System.out.println("EXPLOSIIOOOOOON");
+            System.out.println("Channels already registered");
             //channel already registered
         }
-        System.out.println("sdhfdgyfdgyfjgg " + database.getchannelList());
-        channels.add(defaul);
-        channels.add(channel);
-        channels.add(channel2);
+        channels.addAll(database.getchannelList());
+        try {
+            authorizedHumanUsers.addAll(database.usersList());
+        } catch (SQLException e) {
+            // No human authorized -> Nobody can connect, so crash the server.
+            return;
+        }
         System.out.println("Apres init des tables");
         System.out.println("add user to chan");
         //We add each users to every existing Channel
@@ -179,6 +177,7 @@ public class Server extends AbstractVerticle {
             database.messagesList(defaul.getChannelName()).forEach(System.out::println);
         } catch (SQLException sql) {
             //
+            System.out.println("Wooooooops");
         }
         System.out.println("preparation join");
 

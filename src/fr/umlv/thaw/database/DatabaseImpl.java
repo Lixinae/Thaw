@@ -290,21 +290,35 @@ public class DatabaseImpl implements Database {
     @Override
     public List<Message> messagesList(String channelName) throws SQLException {
         final String request = "SELECT PSWD FROM users WHERE LOGIN LIKE ? ;";
-        ResultSet rs = executeQuery("SELECT * FROM " + channelName + " ;");
+//        final String request2 = "SELECT * FROM " + channelName + " ;";
+        System.out.println("Message list avant execute query");
+        // Cette ligne plante dans le server !!!!
+        ResultSet rs = executeQuery("SELECT * FROM '" + channelName + "' ;");
+        System.out.println("Message list après execute query");
         List<Message> msgs = new ArrayList<>();
         HumanUser tmpUser;
         Message tmpMessage;
+        // rs.next() -> false
+        // Suite ne s'execute donc pas
+        // todo
+        System.out.println("Message list rs.next() = " + rs.next());
+
         while (rs.next()) {
             String author = rs.getString("AUTHOR");
             String message = rs.getString("MESSAGE");
             long date = rs.getLong("DATE");
+//            System.out.println(co);
+            System.out.println("Test avant prep");
             prep = co.prepareStatement(request);
+            System.out.println("Test après prep");
             prep.setString(1, author);
             if (prep.execute()) {
+                System.out.println("another test");
                 try (ResultSet tmp = prep.getResultSet()) {
                     tmpUser = HumanUserFactory.createHumanUser(author, tmp.getString("PSWD"));
                     tmpMessage = MessageFactory.createMessage(tmpUser, date, message);
                     msgs.add(tmpMessage);
+                    System.out.println("test in try");
                 }
             }
         }
@@ -345,7 +359,6 @@ public class DatabaseImpl implements Database {
         } catch (SQLException sql) {
             throw new AssertionError("A database error has been occurred");
         }
-        System.out.println("fedfrvgtbhnj,kfrtgyhnj" + channels);
         if (channels.isEmpty()) {
             return new ArrayList<>();
         }
