@@ -5,7 +5,6 @@ import fr.umlv.thaw.channel.Channel;
 import fr.umlv.thaw.message.Message;
 import fr.umlv.thaw.user.humanUser.HumanUser;
 
-import java.security.NoSuchAlgorithmException;
 import java.sql.SQLException;
 import java.util.List;
 
@@ -21,23 +20,16 @@ public interface Database {
      */
     void initializeDB() throws SQLException;
 
-    /**
-     * This method insert a new user into the table if he doesn't exist yet.
-     * The password will be ecrypt inside the function.
-     *
-     * @param humanUser the user you want to add to the database
-     * @throws NoSuchAlgorithmException if we cannot encrypt with our Algorithm
-     * @throws SQLException             if a database access errors occurs
-     */
-    void createLogin(HumanUser humanUser) throws NoSuchAlgorithmException, SQLException;
 
     /**
-     * Create a table that will maintain who can watch each channel
-     * This method should only be called once at the initialization.
+     * Create a channel with the given name and owner, if the
+     * table doesn't exist yet
      *
-     * @throws SQLException if a database access errors occurs
+     * @param channelName the name of the channel
+     * @param owner       the owner of the channel
+     * @throws SQLException if a database error occurs
      */
-    void createChanViewerTable() throws SQLException;
+    void createChannelTable(String channelName, String owner) throws SQLException;
 
     /**
      * This method allow the autohority to give access to the

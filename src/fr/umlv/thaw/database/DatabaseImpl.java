@@ -157,21 +157,19 @@ public class DatabaseImpl implements Database {
     }
 
 
-    @Override
-    public void createLogin(HumanUser humanUser) throws NoSuchAlgorithmException, SQLException {
-        Objects.requireNonNull(humanUser);
-        String login = humanUser.getName();
-        String cryptPass = humanUser.getPasswordHash();
-        exeUpda(createUsersTableRequest());
-        createPrepState(prepareInsertTwoValuesIntoTable("users"));
-        insertTwoValIntoTable(login, cryptPass);
-        executeRegisteredTask();
-    }
-
 
     @Override
-    public void createChanViewerTable() throws SQLException {
-        exeUpda(createChanViewerTableRequest());
+    public void createChannelTable(String channelName, String owner) throws SQLException {
+        Objects.requireNonNull(channelName);
+        Objects.requireNonNull(owner);
+        try {
+            exeUpda(createChannelTableRequest(channelName));
+        } catch (SQLException sql) {
+            System.err.println("Table " + channelName + " already exist");
+            return;
+        }
+        updateChannelsTable(channelName, owner);
+        updateChanViewerTable(channelName, owner);
     }
 
     @Override
@@ -336,17 +334,19 @@ public class DatabaseImpl implements Database {
 
     /*PRIVATE METHODS*/
 
-    private void createChannelTable(String channelName, String owner) throws SQLException {
-        Objects.requireNonNull(channelName);
-        Objects.requireNonNull(owner);
-        try {
-            exeUpda(createChannelTableRequest(channelName));
-        } catch (SQLException sql) {
-            System.err.println("Table " + channelName + " already exist");
-            return;
-        }
-        updateChannelsTable(channelName, owner);
-        updateChanViewerTable(channelName, owner);
+
+    private void createLogin(HumanUser humanUser) throws NoSuchAlgorithmException, SQLException {
+        Objects.requireNonNull(humanUser);
+        String login = humanUser.getName();
+        String cryptPass = humanUser.getPasswordHash();
+        exeUpda(createUsersTableRequest());
+        createPrepState(prepareInsertTwoValuesIntoTable("users"));
+        insertTwoValIntoTable(login, cryptPass);
+        executeRegisteredTask();
+    }
+
+    private void createChanViewerTable() throws SQLException {
+        exeUpda(createChanViewerTableRequest());
     }
 
 
