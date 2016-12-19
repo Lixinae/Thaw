@@ -70,15 +70,16 @@ public class Server extends AbstractVerticle {
      * @param enableLogger Enable the logger
      * @param ssl          Enable ssl
      * @param database     The database in which we will makes our jobs
-     * @throws IOException If the logger can't find or create the file
+     * @throws IOException  If the logger can't find or create the file
+     * @throws SQLException If we get problem during the reading of the database
      */
-    public Server(boolean enableLogger, boolean ssl, Database database) throws IOException {
-        channels = new ArrayList<>();
-        authorizedHumanUsers = new ArrayList<>(); // Need to construct authorized list
-        thawLogger = new ThawLogger(enableLogger);// Enable or not the logs of the server
-        this.ssl = ssl;
-        connectedUsers = new ArrayList<>();
+    public Server(boolean enableLogger, boolean ssl, Database database) throws IOException, SQLException {
         this.database = Objects.requireNonNull(database);
+        this.ssl = ssl;
+        thawLogger = new ThawLogger(enableLogger);// Enable or not the logs of the server
+        connectedUsers = new ArrayList<>();
+        channels = database.getchannelList();//We retrieve the channels that already existed
+        authorizedHumanUsers = database.usersList(); // We retrieve the registered user
     }
 
 
@@ -89,8 +90,9 @@ public class Server extends AbstractVerticle {
         try {
             database.initializeDB();
         } catch (SQLException sql) {
-            //databse already set up correctly
+            //database already set up correctly
         }
+
 
         // TEST ONLY //
         String hashPassword = Tools.toSHA256("password");
@@ -98,46 +100,92 @@ public class Server extends AbstractVerticle {
 
         HumanUserImpl superUser = HumanUserFactory.createHumanUser("superUser", hashPassword);
         HumanUserImpl test2 = HumanUserFactory.createHumanUser("test2", hashPassword2);
-        authorizedHumanUsers.add(superUser);
-        authorizedHumanUsers.add(test2);
-//        connectedUsers.add(superUser);
-        //connectedUsers.add(test2);
+        try {
+            //if the examples users aren't registered yet
+            database.createLogin(superUser);
+            database.createLogin(test2);
+        } catch (SQLException sql) {
+            //login already exists
+        } catch (NoSuchAlgorithmException nsae) {
+            //We need to crash here
+            return;
+        }
+
+        System.out.println("HEY LES CHANNELS =)");
+
         Channel defaul = ChannelFactory.createChannel(superUser, "default");
         Channel channel = ChannelFactory.createChannel(superUser, "Channel 1");
         Channel channel2 = ChannelFactory.createChannel(superUser, "Channel 2");
+        try {
+            database.createChannelTable(defaul.getChannelName(), "#SuperUser");
+            database.createChannelTable(channel.getChannelName(), "superUser");
+            database.createChannelTable(channel.getChannelName(), "test2");
+            System.out.println("add channels ?");
+            channels.add(defaul);
+            channels.add(channel);
+            channels.add(channel2);
 
+        } catch (SQLException sql) {
+            //channel already registered
+        }
+        System.out.println("Apres init des tables");
+        System.out.println("add user to chan");
+        //We add each users to every existing Channel
+        for (Channel chan : database.getchannelList()) {
+            try {
+                for (User usr : database.usersList()) {
+                    try {
+                        System.out.println("add ?");
+                        database.addUserToChan(chan.getChannelName(), usr.getName(), chan.getCreatorName());
+                    } catch (SQLException sql) {
+                        //the user already got the rights to see the channel
+                    }
+                }
+            } catch (SQLException sql) {
+                //
+            }
+        }
+        System.out.println("user added");
         //Les date pour 3eme et 4eme message seront tellement proche que le tri peut
         // un peut inverser les deux dernier mais pas de mal le tri est ok
+        System.out.println("preparations des mess");
         Message mes = MessageFactory.createMessage(superUser, System.currentTimeMillis(), "1er lessage");
         Message mes1 = MessageFactory.createMessage(test2, System.currentTimeMillis(), "2e message");
         Message mes2 = MessageFactory.createMessage(superUser, System.currentTimeMillis(), "3e message");
         Message mes3 = MessageFactory.createMessage(test2, System.currentTimeMillis(), "4e message");
+        System.out.println("fin preparation des mess");
+        try {
+            database.addMessageToChannelTable(defaul.getChannelName(), mes);
+            database.addMessageToChannelTable(defaul.getChannelName(), mes1);
+            database.addMessageToChannelTable(defaul.getChannelName(), mes2);
+            database.addMessageToChannelTable(defaul.getChannelName(), mes3);
+        } catch (SQLException sql) {
+            //
+        }
+        System.out.println("preparation join");
 
         superUser.joinChannel(defaul);
-        superUser.sendMessage(defaul, mes);
-        superUser.sendMessage(defaul, mes2);
-
         test2.joinChannel(defaul);
-        test2.sendMessage(defaul, mes1);
-        test2.sendMessage(defaul, mes3);
 
-        channels.add(defaul);
-        channels.add(channel);
-        channels.add(channel2);
 
 /////////////////////////////////////////////////////////////////////////////////
         final int bindPort = 8080;
         Router router = Router.router(vertx);
         router.route().handler(CookieHandler.create());
+        System.out.println("Cookie cree =)");
         router.route().handler(BodyHandler.create().setBodyLimit(maxUploadSize));
-
+        System.out.println("body ok");
         router.route().handler(SessionHandler.create(LocalSessionStore.create(vertx)));
-
-
+        System.out.println("Session handler ok");
+        System.out.println("avant listOfRequest");
         listOfRequest(router);
+        System.out.println("apres listOfRequest");
         router.route().handler(StaticHandler.create());
+        System.out.println("handler ok");
         if (ssl) {
+            System.out.println("Debut start SSL");
             startSSLserver(fut, bindPort, router);
+            System.out.println("Creation ok");
         } else {
             // No SSL requested, start a non-SSL HTTP server.
             startNonSSLserver(fut, bindPort, router);
@@ -203,7 +251,7 @@ public class Server extends AbstractVerticle {
         router.post("/api/private/deleteChannel").handler(routingContext -> Handlers.deleteChannelHandle(routingContext, thawLogger, channels));
         router.post("/api/private/connectToChannel").handler(routingContext -> Handlers.connectToChannelHandle(routingContext, thawLogger, channels));
         router.post("/api/private/sendMessage").handler(routingContext -> Handlers.sendMessageHandle(routingContext, thawLogger, channels, database));
-        router.post("/api/private/getListMessageForChannel").handler(routingContext -> Handlers.getListMessageForChannelHandle(routingContext, thawLogger, channels));
+        router.post("/api/private/getListMessageForChannel").handler(routingContext -> Handlers.getListMessageForChannelHandle(routingContext, thawLogger, channels, database));
         router.post("/api/private/getListUserForChannel").handler(routingContext -> Handlers.getListUserForChannelHandle(routingContext, thawLogger, channels));
         router.get("/api/private/getListChannel").handler(routingContext -> Handlers.getListChannelHandle(routingContext, thawLogger, channels));
 

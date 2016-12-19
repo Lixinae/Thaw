@@ -384,9 +384,14 @@ class Handlers {
         Message mes = MessageFactory.createMessage(humanUser, date, message);
 
         humanUser.sendMessage(chan, mes);
+        //To stock the messages
+        try {
+            database.addMessageToChannelTable(chan.getChannelName(), mes);
+        } catch (SQLException sql) {
+            answerToRequest(response, 400, "Message from " + humanUser.getName() + " to the channel " + chan.getChannelName() + " hasn't been registered correctly", thawLogger);
+        }
         // Todo : Analyser le message si un bot est connecté
 
-        // TODO Stocker les information du message dans la base de donnée du channel
 
         answerToRequest(response, 200, "Message: " + mes + " sent correctly to channel '" + channelName + '\'', thawLogger);
     }
@@ -397,18 +402,18 @@ class Handlers {
     /////////////////// Get list message for channel Handler ///////////////////
     /*##########################################################################*/
 
-    static void getListMessageForChannelHandle(RoutingContext routingContext, ThawLogger thawLogger, List<Channel> channels) {
+    static void getListMessageForChannelHandle(RoutingContext routingContext, ThawLogger thawLogger, List<Channel> channels, Database database) {
         thawLogger.log(Level.INFO, "In getListMessageForChannel request");
         HttpServerResponse response = routingContext.response();
         JsonObject json = routingContext.getBodyAsJson();
         if (json == null) {
             answerToRequest(response, 400, "Wrong Json format", thawLogger);
         } else {
-            analyzeGetListMessageForChannelRequest(response, json, thawLogger, channels);
+            analyzeGetListMessageForChannelRequest(response, json, thawLogger, channels, database);
         }
     }
 
-    private static void analyzeGetListMessageForChannelRequest(HttpServerResponse response, JsonObject json, ThawLogger thawLogger, List<Channel> channels) {
+    private static void analyzeGetListMessageForChannelRequest(HttpServerResponse response, JsonObject json, ThawLogger thawLogger, List<Channel> channels, Database database) {
         String channelName = json.getString("channelName");
         Integer numberOfMessageWanted = json.getInteger("numberOfMessage");
         if (!securityCheckGetListMessageForChannel(response, channelName, numberOfMessageWanted, thawLogger)) {
@@ -417,9 +422,13 @@ class Handlers {
         Optional<Channel> optChan = findChannelInList(channels, channelName);
         if (optChan.isPresent()) {
             Channel channel = optChan.get();
-            List<Message> tmpMess = channel.getListMessage();
-            List<Message> returnListMessage = tmpMess.subList(Math.max(tmpMess.size() - numberOfMessageWanted, 0), tmpMess.size());
-            answerToRequest(response, 200, returnListMessage, thawLogger);
+            try {
+                List<Message> tmpMess = database.messagesList(channel.getChannelName());//channel.getListMessage();
+                List<Message> returnListMessage = tmpMess.subList(Math.max(tmpMess.size() - numberOfMessageWanted, 0), tmpMess.size());
+                answerToRequest(response, 200, returnListMessage, thawLogger);
+            } catch (SQLException sql) {
+                answerToRequest(response, 400, "Problem for retrieving information at : " + channelName + " SQLException", thawLogger);
+            }
         } else {
             answerToRequest(response, 400, "Channel: " + channelName + " doesn't exist", thawLogger);
         }

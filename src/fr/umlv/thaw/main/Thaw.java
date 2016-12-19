@@ -46,9 +46,16 @@ public class Thaw {
 
         System.setProperty("vertx.disableFileCaching", "true");
         Database database = DatabaseFactory.createDatabase(Paths.get("./db"), "database");
+        database.initializeDB();
+        System.out.println("avant server");
         Server server = new Server(true, true, database);
+        System.out.println("apres server");
+        System.out.println("avant Vertx.vertx()");
         Vertx vertx = Vertx.vertx();
+        System.out.println("apres Vertx.vertx()");
+        System.out.println("before deploy");
         vertx.deployVerticle(server);
+        System.out.println("after deploy");
 
 //        vertx.deployVerticle(server, options);
 
