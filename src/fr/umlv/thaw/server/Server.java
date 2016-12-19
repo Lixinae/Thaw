@@ -117,7 +117,8 @@ public class Server extends AbstractVerticle {
             //We need to crash here
             return;
         }
-
+        authorizedHumanUsers.add(superUser);
+        authorizedHumanUsers.add(test2);
         System.out.println("HEY LES CHANNELS =)");
 
         // Garder le channel default !
