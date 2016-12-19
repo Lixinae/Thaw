@@ -5,6 +5,7 @@ import fr.umlv.thaw.channel.Channel;
 import fr.umlv.thaw.message.Message;
 import fr.umlv.thaw.user.humanUser.HumanUser;
 
+import java.security.NoSuchAlgorithmException;
 import java.sql.SQLException;
 import java.util.List;
 
@@ -20,6 +21,15 @@ public interface Database {
      */
     void initializeDB() throws SQLException;
 
+
+    /**
+     * Try to add the given user into the database if he isn't in yet.
+     *
+     * @param humanUser the User to add
+     * @throws NoSuchAlgorithmException if we cannot use the SHA256 algorithm
+     * @throws SQLException             if a database error occurs
+     */
+    void createLogin(HumanUser humanUser) throws NoSuchAlgorithmException, SQLException;
 
     /**
      * Create a channel with the given name and owner, if the

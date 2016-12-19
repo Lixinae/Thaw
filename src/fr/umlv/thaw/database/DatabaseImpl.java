@@ -159,6 +159,17 @@ public class DatabaseImpl implements Database {
 
 
     @Override
+    public void createLogin(HumanUser humanUser) throws NoSuchAlgorithmException, SQLException {
+        Objects.requireNonNull(humanUser);
+        String login = humanUser.getName();
+        String cryptPass = humanUser.getPasswordHash();
+        exeUpda(createUsersTableRequest());
+        createPrepState(prepareInsertTwoValuesIntoTable("users"));
+        insertTwoValIntoTable(login, cryptPass);
+        executeRegisteredTask();
+    }
+
+    @Override
     public void createChannelTable(String channelName, String owner) throws SQLException {
         Objects.requireNonNull(channelName);
         Objects.requireNonNull(owner);
@@ -244,6 +255,7 @@ public class DatabaseImpl implements Database {
         return userList;
     }
 
+
     @Override
     public List<HumanUser> retrieveUsersFromChan(String channel) throws SQLException {
         ResultSet rs = executeQuery(retriveUserFromChannelsRequest(Objects.requireNonNull(channel)));
@@ -295,7 +307,6 @@ public class DatabaseImpl implements Database {
         return Collections.unmodifiableList(msgs);
     }
 
-
     @Override
     public List<Channel> getchannelList() {
         ResultSet rs;
@@ -332,18 +343,8 @@ public class DatabaseImpl implements Database {
         co.close();
     }
 
+
     /*PRIVATE METHODS*/
-
-
-    private void createLogin(HumanUser humanUser) throws NoSuchAlgorithmException, SQLException {
-        Objects.requireNonNull(humanUser);
-        String login = humanUser.getName();
-        String cryptPass = humanUser.getPasswordHash();
-        exeUpda(createUsersTableRequest());
-        createPrepState(prepareInsertTwoValuesIntoTable("users"));
-        insertTwoValIntoTable(login, cryptPass);
-        executeRegisteredTask();
-    }
 
     private void createChanViewerTable() throws SQLException {
         exeUpda(createChanViewerTableRequest());
