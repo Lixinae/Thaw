@@ -71,27 +71,34 @@ public class Server extends AbstractVerticle {
      * @param ssl          Enable ssl
      * @param database     The database in which we will makes our jobs
      * @throws IOException  If the logger can't find or create the file
-     * @throws SQLException If we get problem during the reading of the database
      */
-    public Server(boolean enableLogger, boolean ssl, Database database) throws IOException, SQLException {
+    public Server(boolean enableLogger, boolean ssl, Database database) throws IOException {
         this.database = Objects.requireNonNull(database);
         this.ssl = ssl;
         thawLogger = new ThawLogger(enableLogger);// Enable or not the logs of the server
         connectedUsers = new ArrayList<>();
-        channels = database.getchannelList();//We retrieve the channels that already existed
-        authorizedHumanUsers = database.usersList(); // We retrieve the registered user
+        channels = new ArrayList<>();// database.getchannelList();//We retrieve the channels that already existed
+        authorizedHumanUsers = new ArrayList<>();// We retrieve the registered user
     }
 
 
     @Override
     public void start(Future<Void> fut) {
         // todo Load database stuff here
-
+        // Garder block
         try {
             database.initializeDB();
         } catch (SQLException sql) {
             //database already set up correctly
         }
+        channels.addAll(database.getchannelList());
+        try {
+            authorizedHumanUsers.addAll(database.usersList());
+        } catch (SQLException e) {
+            // No human authorized -> Nobody can connect, so crash the server.
+            return;
+        }
+        // FIN GARDER
 
 
         // TEST ONLY //
@@ -113,6 +120,7 @@ public class Server extends AbstractVerticle {
 
         System.out.println("HEY LES CHANNELS =)");
 
+        // Garder le channel default !
         Channel defaul = ChannelFactory.createChannel(superUser, "default");
         Channel channel = ChannelFactory.createChannel(superUser, "Channel 1");
         Channel channel2 = ChannelFactory.createChannel(superUser, "Channel 2");
@@ -172,20 +180,13 @@ public class Server extends AbstractVerticle {
         final int bindPort = 8080;
         Router router = Router.router(vertx);
         router.route().handler(CookieHandler.create());
-        System.out.println("Cookie cree =)");
         router.route().handler(BodyHandler.create().setBodyLimit(maxUploadSize));
-        System.out.println("body ok");
         router.route().handler(SessionHandler.create(LocalSessionStore.create(vertx)));
-        System.out.println("Session handler ok");
-        System.out.println("avant listOfRequest");
         listOfRequest(router);
-        System.out.println("apres listOfRequest");
         router.route().handler(StaticHandler.create());
-        System.out.println("handler ok");
         if (ssl) {
-            System.out.println("Debut start SSL");
+            // SSL requested, start a SSL HTTP server.
             startSSLserver(fut, bindPort, router);
-            System.out.println("Creation ok");
         } else {
             // No SSL requested, start a non-SSL HTTP server.
             startNonSSLserver(fut, bindPort, router);
