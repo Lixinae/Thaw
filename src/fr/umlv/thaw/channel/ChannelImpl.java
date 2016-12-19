@@ -15,9 +15,7 @@ public class ChannelImpl implements Channel {
 
     private final String channelName;
     private final HumanUser creator;
-    //Prendre une LinkedQueue de message car un utilisateur peut envoyer plusieurs messages.
     private final ConcurrentHashMap<User, ConcurrentLinkedQueue<Message>> messagesQueue;
-    // Conserve la liste de tous les messages.
     private final ConcurrentLinkedQueue<Message> allMessage;
 
 
@@ -32,8 +30,8 @@ public class ChannelImpl implements Channel {
      * @return the userName where it is called on
      */
     @Override
-    public String getName() {
-        return channelName;
+    public String getCreatorName() {
+        return creator.getName();
     }
 
     @Override

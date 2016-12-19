@@ -15,7 +15,7 @@ public interface Channel {
     /**
      * @return the userName where it is called on
      */
-    String getName();
+    String getCreatorName();
 
     /**
      * This method add a message that has been wrote by a user in a certain date
