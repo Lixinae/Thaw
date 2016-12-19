@@ -318,7 +318,7 @@ public class DatabaseImpl implements Database {
             rs = executeQuery("SELECT * FROM CHANNELS;");
         } catch (SQLException sql) {
             //no result have been found we must return an empty list
-            return Collections.emptyList();
+            return new ArrayList<>();
         }
         List<Channel> channels = new ArrayList<>();
         try {
@@ -336,7 +336,7 @@ public class DatabaseImpl implements Database {
             throw new AssertionError("A database error has been occurred");
         }
         if (channels.isEmpty()) {
-            return Collections.emptyList();
+            return new ArrayList<>();
         }
         return channels;
     }
