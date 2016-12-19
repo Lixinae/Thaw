@@ -157,6 +157,7 @@ public class DatabaseImpl implements Database {
 
     @Override
     public void initializeDB() throws SQLException {
+        this.exeUpda(createUsersTableRequest());
         this.createChannelsTable();
         this.createChanViewerTable();
     }
@@ -167,7 +168,6 @@ public class DatabaseImpl implements Database {
         Objects.requireNonNull(humanUser);
         String login = humanUser.getName();
         String cryptPass = humanUser.getPasswordHash();
-        exeUpda(createUsersTableRequest());
         createPrepState(prepareInsertTwoValuesIntoTable("users"));
         insertTwoValIntoTable(login, cryptPass);
         executeRegisteredTask();
