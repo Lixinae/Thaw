@@ -112,7 +112,7 @@ function selectChannel(){
 function sendMessage(){
     var  messageV = $('textArea#TextZone');
     $.post("/api/private/sendMessage",
-	    JSON.stringify({channel : currentChannel, message : messageV.val(),username : username}))
+	    JSON.stringify({channelName : currentChannel, message : messageV.val(),username : username}))
 	    .done(function(response){
             alert("success send message");
             messageV.val("");
@@ -126,6 +126,7 @@ function sendMessage(){
 
 }
 
+//TODO probleme de recuperation des messages lors de changement de salon
 function getListMessageForChannel(){
 	var listMessage = $(".tchat");
 	var child = listMessage.children();
@@ -144,8 +145,7 @@ function getListMessageForChannel(){
 	            listMessage.append(string);
         })
         .fail(function(response){
-        listMessage.append(child);
-            //alert("fail getListMessageForChannel");
+
         })
         .always(function() {
 
