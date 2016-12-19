@@ -293,13 +293,21 @@ public class DatabaseImpl implements Database {
 //        final String request2 = "SELECT * FROM " + channelName + " ;";
         System.out.println("Message list avant execute query");
 
-//        final String query = "SELECT * FROM ? ;";
+        final String query = "SELECT * FROM ? ;";
 
         // todo FIND BUGS aime pas ici :)
-        ResultSet rs = executeQuery("SELECT * FROM '" + channelName + "' ;");
-//        prep = co.prepareStatement(query);
 
-        System.out.println("Message list après execute query");
+
+        ResultSet rs = executeQuery("SELECT * FROM '" + channelName + "' ;");
+        // J'ai commencer mais je vois pas comment continuer pour corriger le truc
+        prep = co.prepareStatement(query);
+        prep.setString(1, channelName);
+        if (prep.execute()) {
+            try (ResultSet tmp = prep.getResultSet()) {
+
+            }
+        }
+
         List<Message> msgs = new ArrayList<>();
         HumanUser tmpUser;
         Message tmpMessage;
