@@ -129,13 +129,12 @@ public class Server extends AbstractVerticle {
             database.createChannelTable(channel.getChannelName(), "superUser");
             database.createChannelTable(channel2.getChannelName(), "test2");
             System.out.println("add channels ?");
-            channels.add(defaul);
-            channels.add(channel);
-            channels.add(channel2);
-
         } catch (SQLException sql) {
             //channel already registered
         }
+        channels.add(defaul);
+        channels.add(channel);
+        channels.add(channel2);
         System.out.println("Apres init des tables");
         System.out.println("add user to chan");
         //We add each users to every existing Channel
