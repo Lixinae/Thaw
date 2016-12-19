@@ -1,6 +1,8 @@
 package fr.umlv.thaw.database;
 
 
+import fr.umlv.thaw.channel.Channel;
+import fr.umlv.thaw.message.Message;
 import fr.umlv.thaw.user.humanUser.HumanUser;
 
 import java.security.NoSuchAlgorithmException;
@@ -8,6 +10,16 @@ import java.sql.SQLException;
 import java.util.List;
 
 public interface Database {
+
+    /**
+     * Initialize the database with the necessary tables.
+     * Must be launch only once at the creation of the
+     * database.
+     * Otherwise, an error could occur.
+     *
+     * @throws SQLException if a database access error has occurred
+     */
+    void initializeDB() throws SQLException;
 
     /**
      * This method insert a new user into the table if he doesn't exist yet.
@@ -18,23 +30,6 @@ public interface Database {
      * @throws SQLException             if a database access errors occurs
      */
     void createLogin(HumanUser humanUser) throws NoSuchAlgorithmException, SQLException;
-
-    /**
-     * Create a table that will stock the data from the channel
-     *
-     * @param channelName the name of the channel
-     * @param owner       the owner of the table
-     * @throws SQLException if a database access error occurs
-     */
-    void createChannelTable(String channelName, String owner) throws SQLException;
-
-    /**
-     * Create a table that will maintain the list of channels.
-     * This method should only be called once at the initialization.
-     *
-     * @throws SQLException if a database access error occurs
-     */
-    void createChannelsTable() throws SQLException;
 
     /**
      * Create a table that will maintain who can watch each channel
@@ -100,37 +95,36 @@ public interface Database {
      * That function return a list of users that are
      * in the database.
      *
-     * @return a list that contained the users name
+     * @return a list that contained all the HumanUser of the database
      * @throws SQLException if a database access errors occurs
      */
-    List<String> usersList() throws SQLException;
+    List<HumanUser> usersList() throws SQLException;
 
     /**
      * This method retrieve the user from the channel.
      *
      * @param channel the channel name
      * @return an Empty list if no users have been found
-     * otherwise this method return a List of user name
+     * otherwise this method return a List of HumanUser
      * @throws SQLException if a database access errors occurs
      */
-    List<String> retrieveUsersFromChan(String channel) throws SQLException;
+    List<HumanUser> retrieveUsersFromChan(String channel) throws SQLException;
 
     /**
      * This function retrieve the list of messages with every information
-     * (with the format DATE(as a long)0X00AUTHOR0X00MESSAGE\n)
      *
      * @param channelName channel in which we want to retrieve the messages
      * @return a String that represents the messages separate with '\n'.
      * @throws SQLException if an error occurs during database access
      */
-    String messagesList(String channelName) throws SQLException;
+    List<Message> messagesList(String channelName) throws SQLException;
 
     /**
      * This method return a List of the channels name on the database
      *
      * @return a List that contained every Channels name of the database
      */
-    List<String> channelList();
+    List<Channel> getchannelList();
 
     /**
      * Close the connections that may been opened by the database
