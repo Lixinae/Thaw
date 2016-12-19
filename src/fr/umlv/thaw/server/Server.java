@@ -100,6 +100,8 @@ public class Server extends AbstractVerticle {
         Channel channel = ChannelFactory.createChannel(superUser, "Channel 1");
         Channel channel2 = ChannelFactory.createChannel(superUser, "Channel 2");
 
+        //Les date pour 3eme et 4eme message seront tellement proche que le tri peut
+        // un peut inverser les deux dernier mais pas de mal le tri est ok
         Message mes = MessageFactory.createMessage(superUser, System.currentTimeMillis(), "1er lessage");
         Message mes1 = MessageFactory.createMessage(test2, System.currentTimeMillis(), "2e message");
         Message mes2 = MessageFactory.createMessage(superUser, System.currentTimeMillis(), "3e message");

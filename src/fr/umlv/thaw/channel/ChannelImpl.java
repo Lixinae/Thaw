@@ -100,6 +100,7 @@ public class ChannelImpl implements Channel {
     public List<Message> getListMessage() {
         List<Message> tmp = new ArrayList<>();
         messagesQueue.forEach((key, value) -> tmp.addAll(value));
+        tmp.sort((msg1, msg2) -> ((Long) msg1.getDate()).compareTo(msg2.getDate()));
         return Collections.unmodifiableList(tmp);
     }
 
@@ -170,8 +171,7 @@ public class ChannelImpl implements Channel {
         ChannelImpl channel = (ChannelImpl) o;
 
         if (!channelName.equals(channel.channelName)) return false;
-        if (!creator.equals(channel.creator)) return false;
-        return messagesQueue.equals(channel.messagesQueue);
+        return creator.equals(channel.creator) && messagesQueue.equals(channel.messagesQueue);
     }
 
     @Override
