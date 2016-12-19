@@ -69,6 +69,7 @@ public class Server extends AbstractVerticle {
     /**
      * @param enableLogger Enable the logger
      * @param ssl          Enable ssl
+     * @param database     The database in which we will makes our jobs
      * @throws IOException If the logger can't find or create the file
      */
     public Server(boolean enableLogger, boolean ssl, Database database) throws IOException {
@@ -85,6 +86,11 @@ public class Server extends AbstractVerticle {
     public void start(Future<Void> fut) {
         // todo Load database stuff here
 
+        try {
+            database.initializeDB();
+        } catch (SQLException sql) {
+            //databse already set up correctly
+        }
 
         // TEST ONLY //
         String hashPassword = Tools.toSHA256("password");
