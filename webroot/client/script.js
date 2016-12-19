@@ -112,14 +112,15 @@ function selectChannel(){
 // Envoie le message au serveur qui l'ajoutera à la base de donné du channel
 function sendMessage(){
     var  messageV = $('textArea#TextZone');
+    var currentChannel = $("#currentChannel").html();
     $.post("/api/private/sendMessage",
 	    JSON.stringify({channelName : currentChannel, message : messageV.val(),username : username}))
 	    .done(function(response){
-            alert("success send message");
             messageV.val("");
+            getListMessageForChannel();
 	    })
 	    .fail(function(response){
-            alert("fail send message");
+
 		})
 		.always(function(){
 

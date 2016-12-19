@@ -472,11 +472,10 @@ class Handlers {
         if (optChan.isPresent()) {
             Channel channel = optChan.get();
             List<Message> tmpMess = channel.getListMessage();
-                List<Message> returnListMessage = tmpMess.subList(Math.max(tmpMess.size() - numberOfMessageWanted, 0), tmpMess.size());
-                answerToRequest(response, 200, returnListMessage, thawLogger);
+            List<Message> returnListMessage = tmpMess.subList(Math.max(tmpMess.size() - numberOfMessageWanted, 0), tmpMess.size());
+            answerToRequest(response, 200, returnListMessage, thawLogger);
 //             try {
 //                List<Message> tmpMess = database.messagesList(channel.getChannelName());//channel.getListMessage();
-////                List<Message> tmpMess = channel.getListMessage();
 //                List<Message> returnListMessage = tmpMess.subList(Math.max(tmpMess.size() - numberOfMessageWanted, 0), tmpMess.size());
 //                answerToRequest(response, 200, returnListMessage, thawLogger);
 //            } catch (SQLException sql) {
