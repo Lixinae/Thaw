@@ -127,7 +127,7 @@ public class Server extends AbstractVerticle {
         try {
             database.createChannelTable(defaul.getChannelName(), "#SuperUser");
             database.createChannelTable(channel.getChannelName(), "superUser");
-            database.createChannelTable(channel.getChannelName(), "test2");
+            database.createChannelTable(channel2.getChannelName(), "test2");
             System.out.println("add channels ?");
             channels.add(defaul);
             channels.add(channel);
@@ -146,7 +146,7 @@ public class Server extends AbstractVerticle {
                         System.out.println("add ?");
                         database.addUserToChan(chan.getChannelName(), usr.getName(), chan.getCreatorName());
                     } catch (SQLException sql) {
-                        //the user already got the rights to see the channel
+                        System.out.println("pb adding : " + usr.getName());
                     }
                 }
             } catch (SQLException sql) {
@@ -167,6 +167,14 @@ public class Server extends AbstractVerticle {
             database.addMessageToChannelTable(defaul.getChannelName(), mes1);
             database.addMessageToChannelTable(defaul.getChannelName(), mes2);
             database.addMessageToChannelTable(defaul.getChannelName(), mes3);
+            System.out.println("messages added");
+        } catch (SQLException sql) {
+            //
+        }
+
+        try {
+            System.out.println("Messages ?  : ");
+            database.messagesList(defaul.getChannelName()).forEach(System.out::println);
         } catch (SQLException sql) {
             //
         }

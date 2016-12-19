@@ -466,7 +466,7 @@ public class DatabaseImpl implements Database {
 
 
     private String createChannelTableRequest(String channelname) {
-        return "create table if not exists  " + channelname + " (" +
+        return "create table if not exists  '" + channelname + "' (" +
                 "DATE INTEGER NOT NULL, " +
                 "MESSAGE TEXT NOT NULL, " +
                 "AUTHOR TEXT NOT NULL );";
