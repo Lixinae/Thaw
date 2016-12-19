@@ -1,6 +1,11 @@
 package fr.umlv.thaw.database;
 
 
+import fr.umlv.thaw.channel.Channel;
+import fr.umlv.thaw.channel.ChannelFactory;
+import fr.umlv.thaw.message.Message;
+import fr.umlv.thaw.message.MessageFactory;
+import fr.umlv.thaw.server.Tools;
 import fr.umlv.thaw.user.humanUser.HumanUser;
 import fr.umlv.thaw.user.humanUser.HumanUserFactory;
 
@@ -9,10 +14,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.security.NoSuchAlgorithmException;
 import java.sql.*;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 
 /**
  * This class represent an implementation of a Database
@@ -20,7 +22,6 @@ import java.util.Objects;
  */
 public class DatabaseImpl implements Database {
 
-    // private final Class sqlite = Class.forName("org.sqlite.JDBC");//to load sqlite.jar
     private final String forGetConnection;
     private final Connection co;
     private final Statement state;
@@ -65,65 +66,65 @@ public class DatabaseImpl implements Database {
         String chan1 = "Chan1";
         //test de createLogin
         try {
-            myDB.createChannelsTable();
-            myDB.createChanViewerTable();
+
+            myDB.initializeDB();
         } catch (SQLException sql) {
+            //nothing
         }
         try {
-            HumanUser user1 = HumanUserFactory.createHumanUser("George", "12345@A");
-            HumanUser user2 = HumanUserFactory.createHumanUser("TotoLeBus", "TotoLeBus");
+            HumanUser user1 = HumanUserFactory.createHumanUser("George", Tools.toSHA256("12345@A"));
+            HumanUser user2 = HumanUserFactory.createHumanUser("TotoLeBus", Tools.toSHA256("TotoLeBus"));
             myDB.createLogin(user1);
             myDB.createLogin(user2);
         } catch (SQLException sql) {
             //ne rien faire car pas envie de planter sur une erreur
         }
         //La table chan1 étant supprimer à la fin, on peut la re créer sans risquer une erreur
+
         myDB.createChannelTable(chan1, "George");
 
-        System.out.println("Nombre de channel : " + myDB.channelList().size());
-        myDB.addMessageToChannelTable(chan1, System.currentTimeMillis(), "Bonjour mon message", "George");
-        for (String chan : myDB.channelList()) {
+        List<Channel> test = myDB.getchannelList();
+        System.out.println("Nombre de channel : " + test.size());
+        for (Channel chan : test) {
             System.out.println("Channel : " + chan);
         }
+        myDB.addMessageToChannelTable(chan1, System.currentTimeMillis(), "Bonjour mon message", "George");
         System.out.println("Messages dans Chan1 : ");
         System.out.println(myDB.messagesList(chan1));
-
 
         myDB.addMessageToChannelTable(chan1, System.currentTimeMillis(), "J'i bien h@ck la secu >: )", "TotoLeBus");
 
 
-        myDB.addUserToChan("Chan1", "TotoLeBus", "George");
-        myDB.addMessageToChannelTable("Chan1", dte, "Avec les droits ça fonctionne mieux", "TotoLeBus");
+        myDB.addUserToChan(chan1, "TotoLeBus", "George");
+        myDB.addMessageToChannelTable(chan1, dte, "Avec les droits ça fonctionne mieux", "TotoLeBus");
 
 
         System.out.println("Message dans Chan1 deuxième : ");
-        System.out.println(myDB.messagesList("Chan1"));
-
+        myDB.messagesList(chan1).forEach(System.out::println);
 
         myDB.updateMessageFromChannel(chan1, dte, "TotoLeBus", "Avec les droits ça fonctionne mieux", "Ah je me suis planté et je vais me perdre :/");
 
         System.out.println("Apres chgmt de message de TotoLeBus : ");
-        System.out.println(myDB.messagesList("Chan1"));
+        System.out.println(myDB.messagesList(chan1));
 
 
         System.out.println("Avant remove George de Chan1");
 
-
         myDB.removeUserAccessToChan(chan1, "George", "George");
 
         System.out.println("George has been removed from Chan1");
-        List<String> chans = myDB.channelList();
+        List<Channel> chans = myDB.getchannelList();
         System.out.println("Nombre de channel present après suppresion de l'auteur : " + chans.size());
 
-        System.out.println("Liste d'utilisateur : ");
-        myDB.usersList().forEach(System.out::println);
-
-
         ResultSet rs = myDB.executeQuery("SELECT name FROM sqlite_master WHERE type='table';");
+
         System.out.println("Liste des tables présentent : ");
         while (rs.next()) {
             System.out.println("name : " + rs.getString(1));
         }
+        System.out.println("Liste d'utilisateur : ");
+        List<HumanUser> users = myDB.usersList();
+        users.forEach(l -> System.out.println("user : " + l));
 
 
         //Ne pas oublier ensuite de fermer notre bdd et le ResultSet precedemment ouvert.
@@ -146,6 +147,12 @@ public class DatabaseImpl implements Database {
     * Public's method
     * */
 
+    @Override
+    public void initializeDB() throws SQLException {
+        this.createChannelsTable();
+        this.createChanViewerTable();
+    }
+
 
     @Override
     public void createLogin(HumanUser humanUser) throws NoSuchAlgorithmException, SQLException {
@@ -158,27 +165,6 @@ public class DatabaseImpl implements Database {
         executeRegisteredTask();
     }
 
-    //TODO Garder le try-catch ou le virer ??? Je ne sais pas car je dois garder un comportement qui m'empeche de
-    // de rajouter lignes inutiles dans table "channels" et "chanviewer"
-    @Override
-    public void createChannelTable(String channelName, String owner) throws SQLException {
-        Objects.requireNonNull(channelName);
-        Objects.requireNonNull(owner);
-        System.out.println("Creation de la table : " + channelName);
-        try {
-            exeUpda(createChannelTableRequest(channelName));
-        } catch (SQLException sql) {
-            System.err.println("Table " + channelName + " already exist");
-            return;
-        }
-        updateChannelsTable(channelName, owner);
-        updateChanViewerTable(channelName, owner);
-    }
-
-    @Override
-    public void createChannelsTable() throws SQLException {
-        exeUpda(createChannelsTableRequest());
-    }
 
     @Override
     public void createChanViewerTable() throws SQLException {
@@ -203,9 +189,9 @@ public class DatabaseImpl implements Database {
         if (userCanControlAccessToChan(channel, authority) && !toKick.equals(authority)) {
             removeUserFromChanViewer(channel, toKick);
         } else if (userCanControlAccessToChan(channel, authority) && toKick.equals(authority)) {
-            List<String> toEject = retrieveUsersFromChan(channel);
-            for (String user : toEject) {
-                createPrepState(removeUserFromChanViewerRequest(channel, user));
+            List<HumanUser> toEject = retrieveUsersFromChan(channel);
+            for (HumanUser user : toEject) {
+                createPrepState(removeUserFromChanViewerRequest(channel, user.getName()));
                 prepExecuteUpdate();
             }
             createPrepState(removeChannelFromChannelsRequest(channel, toKick));
@@ -242,11 +228,13 @@ public class DatabaseImpl implements Database {
     }
 
     @Override
-    public List<String> usersList() throws SQLException {
-        ResultSet rs = executeQuery("select LOGIN from users");
-        List<String> userList = new ArrayList<>();
+    public List<HumanUser> usersList() throws SQLException {
+        ResultSet rs = executeQuery("select * from users");
+        List<HumanUser> userList = new ArrayList<>();
+        HumanUser hum;
         while (rs.next()) {
-            userList.add(rs.getString(1));
+            hum = HumanUserFactory.createHumanUser(rs.getString("LOGIN"), rs.getString("PSWD"));
+            userList.add(hum);
         }
         rs.close();
         if (userList.isEmpty()) {
@@ -255,13 +243,23 @@ public class DatabaseImpl implements Database {
         return userList;
     }
 
-
     @Override
-    public List<String> retrieveUsersFromChan(String channel) throws SQLException {
+    public List<HumanUser> retrieveUsersFromChan(String channel) throws SQLException {
         ResultSet rs = executeQuery(retriveUserFromChannelsRequest(Objects.requireNonNull(channel)));
-        List<String> users = new ArrayList<>();
+        final String request = "SELECT PSWD FROM users WHERE LOGIN LIKE ? ;";
+        List<HumanUser> users = new ArrayList<>();
+        HumanUser tmpUser;
+        String name;
         while (rs.next()) {
-            users.add(rs.getString(1));
+            name = rs.getString("MEMBER");
+            prep = co.prepareStatement(request);
+            prep.setString(1, name);
+            if (prep.execute()) {
+                try (ResultSet tmp = prep.getResultSet()) {
+                    tmpUser = HumanUserFactory.createHumanUser(name, tmp.getString("PSWD"));
+                    users.add(tmpUser);
+                }
+            }
         }
         rs.close();
         if (users.isEmpty()) {
@@ -270,36 +268,54 @@ public class DatabaseImpl implements Database {
         return users;
     }
 
-    @Override
-    public String messagesList(String channelName) throws SQLException {
-        ResultSet rs = executeQuery("select * from " + channelName);
-        StringBuilder messagesList = new StringBuilder();
-        while (rs.next()) {
-            messagesList.append(rs.getLong("DATE"));
-            messagesList.append("0X00");
-            messagesList.append(rs.getString("AUTHOR"));
-            messagesList.append("0X00");
-            messagesList.append(rs.getString("MESSAGE"));
-            messagesList.append("\n");
-        }
-        rs.close();
-        return messagesList.toString();
-    }
 
     @Override
-    public List<String> channelList() {
+    public List<Message> messagesList(String channelName) throws SQLException {
+        final String request = "SELECT PSWD FROM users WHERE LOGIN LIKE ? ;";
+        ResultSet rs = executeQuery("SELECT * FROM " + channelName + " ;");
+        List<Message> msgs = new ArrayList<>();
+        HumanUser tmpUser;
+        Message tmpMessage;
+        int i = 1;
+        while (rs.next()) {
+            String author = rs.getString("AUTHOR");
+            String message = rs.getString("MESSAGE");
+            long date = rs.getLong("DATE");
+            prep = co.prepareStatement(request);
+            prep.setString(1, author);
+            if (prep.execute()) {
+                try (ResultSet tmp = prep.getResultSet()) {
+                    tmpUser = HumanUserFactory.createHumanUser(author, tmp.getString("PSWD"));
+                    tmpMessage = MessageFactory.createMessage(tmpUser, date, message);
+                    msgs.add(tmpMessage);
+                }
+            }
+        }
+        rs.close();
+        return Collections.unmodifiableList(msgs);
+    }
+
+
+    @Override
+    public List<Channel> getchannelList() {
         ResultSet rs;
+        Channel tmpChan;
         try {
-            rs = executeQuery("SELECT CHANNAME FROM CHANNELS;");
+            rs = executeQuery("SELECT * FROM CHANNELS;");
         } catch (SQLException sql) {
             //no result have been found we must return an empty list
             return Collections.emptyList();
         }
-        List<String> channels = new ArrayList<>();
+        List<Channel> channels = new ArrayList<>();
         try {
             while (rs.next()) {
-                String name = rs.getString(1);
-                channels.add(name);
+                String channame = rs.getString("CHANNAME");
+                String owner = rs.getString("OWNER");
+                ResultSet tmp = executeQuery("SELECT PSWD FROM USERS WHERE LOGIN LIKE '" + owner + "';");
+                while (tmp.next()) {
+                    tmpChan = ChannelFactory.createChannel(HumanUserFactory.createHumanUser(owner, tmp.getString(1)), channame);
+                    channels.add(tmpChan);
+                }
             }
             rs.close();
         } catch (SQLException sql) {
@@ -317,6 +333,24 @@ public class DatabaseImpl implements Database {
     }
 
     /*PRIVATE METHODS*/
+
+    private void createChannelTable(String channelName, String owner) throws SQLException {
+        Objects.requireNonNull(channelName);
+        Objects.requireNonNull(owner);
+        try {
+            exeUpda(createChannelTableRequest(channelName));
+        } catch (SQLException sql) {
+            System.err.println("Table " + channelName + " already exist");
+            return;
+        }
+        updateChannelsTable(channelName, owner);
+        updateChanViewerTable(channelName, owner);
+    }
+
+
+    private void createChannelsTable() throws SQLException {
+        exeUpda(createChannelsTableRequest());
+    }
 
     private void exeBatch() throws SQLException {
         prep.executeBatch();
@@ -497,6 +531,19 @@ public class DatabaseImpl implements Database {
         }
     }
 
+    private Optional<String> retrievePassFromuser(String userName) throws SQLException {
+        Objects.requireNonNull(userName);
+        Optional<String> res;
+        ResultSet rs = executeQuery("SELECT PSWD FROM USERS WHERE LOGIN LIKE '" + userName + "';");
+        if (rs.next()) {
+            res = Optional.of(rs.getString(1));
+            rs.close();
+            return res;
+        }
+        rs.close();
+        return Optional.empty();
+    }
+
     //It's kind of dangerous to use a SQL query that could be change but, because it's on internal
     //use only and in a select only, this shouldn't be too risky for SQLInjection attacks
     private boolean canUserViewChannel(String channelName, String userName) throws SQLException {
@@ -513,13 +560,13 @@ public class DatabaseImpl implements Database {
     //It's kind of dangerous to use a SQL query that could be change but, because it's on internal
     //use only and in a select only, this shouldn't be too risky for SQLInjection attacks
     private boolean userCanControlAccessToChan(String channelName, String user) throws SQLException {
-        ResultSet rs = executeQuery("SELECT * FROM channels WHERE CHANNAME LIKE '" + channelName + "'" +
+        ResultSet tmp = executeQuery("SELECT * FROM channels WHERE CHANNAME LIKE '" + channelName + "'" +
                 " AND OWNER LIKE '" + user + "';");
-        if (rs.next()) {
-            rs.close();
+        if (tmp.next()) {
+            tmp.close();
             return true;
         }
-        rs.close();
+        tmp.close();
         return false;
     }
 
