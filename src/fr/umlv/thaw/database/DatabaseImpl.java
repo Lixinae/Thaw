@@ -286,6 +286,7 @@ public class DatabaseImpl implements Database {
     }
 
 
+    // todo
     @Override
     public List<Message> messagesList(String channelName) throws SQLException {
         final String request = "SELECT PSWD FROM users WHERE LOGIN LIKE ? ;";
@@ -326,12 +327,19 @@ public class DatabaseImpl implements Database {
             while (rs.next()) {
                 String channame = rs.getString("CHANNAME");
                 String owner = rs.getString("OWNER");
-                ResultSet tmp = executeQuery("SELECT PSWD FROM users WHERE LOGIN LIKE '" + owner + "';");
-                while (tmp.next()) {
-                    tmpChan = ChannelFactory.createChannel(HumanUserFactory.createHumanUser(owner, tmp.getString(1)), channame);
-                    System.out.println("truc");
-                    channels.add(tmpChan);
+                final String request = "SELECT PSWD FROM users WHERE LOGIN LIKE ?;";
+                prep = co.prepareStatement(request);
+                prep.setString(1, owner);
+                if (prep.execute()) {
+                    try (ResultSet tmp = prep.getResultSet()) {
+                        while (tmp.next()) {
+                            tmpChan = ChannelFactory.createChannel(HumanUserFactory.createHumanUser(owner, tmp.getString(1)), channame);
+                            System.out.println("truc");
+                            channels.add(tmpChan);
+                        }
+                    }
                 }
+
             }
             rs.close();
         } catch (SQLException sql) {
@@ -377,17 +385,14 @@ public class DatabaseImpl implements Database {
         prep.executeUpdate();
     }
 
-
     private void setAutoCommit(boolean b) throws SQLException {
         co.setAutoCommit(b);
     }
-
 
     private void createPrepState(String query) throws SQLException {
         Objects.requireNonNull(query);
         prep = co.prepareStatement(query);
     }
-
 
     private void setPrepStringValue(int idx, String value, boolean addToBatch) throws SQLException {
         Objects.requireNonNull(value);
@@ -405,12 +410,10 @@ public class DatabaseImpl implements Database {
         prep.setLong(1, value);
     }
 
-
     private ResultSet executeQuery(String query) throws SQLException {
         Objects.requireNonNull(query);
         return state.executeQuery(query);
     }
-
 
     private void exeUpda(String query) throws SQLException {
         Objects.requireNonNull(query);
@@ -423,20 +426,17 @@ public class DatabaseImpl implements Database {
         return "DROP TABLE IF EXISTS " + channel + " ;";
     }
 
-
     private String removeChannelFromChannelsRequest(String channel, String toKick) {
         return "DELETE FROM CHANNELS WHERE "
                 + "CHANNAME LIKE '" + channel + "' "
                 + " AND OWNER LIKE '" + toKick + "';";
     }
 
-
     private String removeUserFromChanViewerRequest(String channel, String toKick) {
         return "DELETE FROM CHANVIEWER WHERE "
                 + "CHANNAME LIKE '" + channel + "' "
                 + " AND MEMBER LIKE '" + toKick + "';";
     }
-
 
     private String retriveUserFromChannelsRequest(String channelName) {
         return "SELECT MEMBER FROM CHANVIEWER WHERE "
@@ -466,7 +466,6 @@ public class DatabaseImpl implements Database {
                 ");";
     }
 
-
     private String createChannelTableRequest(String channelname) {
         return "create table if not exists  '" + channelname + "' (" +
                 "DATE INTEGER NOT NULL, " +
@@ -475,7 +474,6 @@ public class DatabaseImpl implements Database {
 
         //return String.format("create table if not exists %s(DATE INTEGER NOT NULL, MESSAGE TEXT NOT NULL, AUTHOR TEXT NOT NULL);", channelname);
     }
-
 
     private String updateChannelMessageReq(String channelName, long date, String author, String Oldmsg, String newMsg) {
         return "UPDATE " + channelName +
@@ -522,7 +520,6 @@ public class DatabaseImpl implements Database {
         setPrepStringValue(2, secondVal, true);
     }
 
-
     private void insertDateMessageAuthor(long date, String message, String author) throws SQLException {
         setPrepLongValue(1, date, false);
         setPrepStringValue(2, message, false);
@@ -539,20 +536,20 @@ public class DatabaseImpl implements Database {
         }
     }
 
-
     private boolean canUserViewChannel(String channelName, String userName) throws SQLException {
         final String request = "SELECT * FROM chanviewer WHERE MEMBER LIKE ?  AND CHANNAME LIKE ? ;";
         prep = co.prepareStatement(request);
         prep.setString(1, userName);
         prep.setString(2, channelName);
-        if (prep.execute()) try (ResultSet tmp = prep.getResultSet()) {
-            if (tmp.next()) {
-                return true;
+        if (prep.execute()) {
+            try (ResultSet tmp = prep.getResultSet()) {
+                if (tmp.next()) {
+                    return true;
+                }
             }
         }
         return false;
     }
-
 
     private boolean userCanControlAccessToChan(String channelName, String user) throws SQLException {
         final String request = "SELECT * FROM channels WHERE CHANNAME LIKE ?  AND OWNER LIKE ? ;";
