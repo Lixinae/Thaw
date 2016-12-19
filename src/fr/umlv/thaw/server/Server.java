@@ -57,7 +57,7 @@ public class Server extends AbstractVerticle {
 
     private final boolean ssl;
 
-    public Server() throws IOException, SQLException, ClassNotFoundException {
+    private Server() throws IOException, SQLException, ClassNotFoundException {
         channels = new ArrayList<>();
         authorizedHumanUsers = new ArrayList<>();
         thawLogger = new ThawLogger(false);

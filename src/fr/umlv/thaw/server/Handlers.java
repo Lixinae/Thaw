@@ -29,7 +29,8 @@ class Handlers {
     /*##############################################################*/
     /////////////////// Connect to server Handler ///////////////////
     /*##############################################################*/
-    static void connectToServerHandle(RoutingContext routingContext, ThawLogger thawLogger,
+    static void connectToServerHandle(RoutingContext routingContext,
+                                      ThawLogger thawLogger,
                                       List<HumanUser> authorizedHumanUsers,
                                       List<User> connectedUsers,
                                       List<Channel> channels) {
@@ -45,7 +46,9 @@ class Handlers {
         }
     }
 
-    private static void analyzeConnecToServerRequest(Session session, HttpServerResponse response, JsonObject json,
+    private static void analyzeConnecToServerRequest(Session session,
+                                                     HttpServerResponse response,
+                                                     JsonObject json,
                                                      ThawLogger thawLogger,
                                                      List<HumanUser> authorizedHumanUsers,
                                                      List<User> connectedUsers,
@@ -58,7 +61,10 @@ class Handlers {
         boolean containsUser = true;
         for (HumanUser u : authorizedHumanUsers) {
             containsUser = connectedUsers.contains(u);
-            if ((u.getName().equals(userName) && u.compareHash(password)) && !containsUser) {
+            if (containsUser && u.getName().equals(userName)) {
+                break;
+            }
+            if ((u.getName().equals(userName) && u.compareHash(password))) {
                 connectedUsers.add(u);
                 session.put("user", u);
                 break;
@@ -86,8 +92,10 @@ class Handlers {
     /////////////////// Disconnect from server Handler ///////////////////
     /*####################################################################*/
 
-    // Todo
-    static void disconnectFromServerHandle(RoutingContext routingContext, ThawLogger thawLogger, List<Channel> channels, List<User> connectedUsers) {
+    static void disconnectFromServerHandle(RoutingContext routingContext,
+                                           ThawLogger thawLogger,
+                                           List<Channel> channels,
+                                           List<User> connectedUsers) {
         thawLogger.log(Level.INFO, "In disconnect from server request");
         HttpServerResponse response = routingContext.response();
         JsonObject json = routingContext.getBodyAsJson();
@@ -98,7 +106,12 @@ class Handlers {
         }
     }
 
-    private static void analyzeDisconnectFromServerRequest(RoutingContext routingContext, HttpServerResponse response, JsonObject json, ThawLogger thawLogger, List<Channel> channels, List<User> connectedUsers) {
+    private static void analyzeDisconnectFromServerRequest(RoutingContext routingContext,
+                                                           HttpServerResponse response,
+                                                           JsonObject json,
+                                                           ThawLogger thawLogger,
+                                                           List<Channel> channels,
+                                                           List<User> connectedUsers) {
 
         String currentChannel = json.getString("currentChannelName");
         Session session = routingContext.session();
@@ -132,7 +145,10 @@ class Handlers {
     /////////////////// Create Account Handler ///////////////////
     /*############################################################*/
 
-    static void createAccountHandle(RoutingContext routingContext, ThawLogger thawLogger, List<HumanUser> authorizedHumanUsers, Database database) {
+    static void createAccountHandle(RoutingContext routingContext,
+                                    ThawLogger thawLogger,
+                                    List<HumanUser> authorizedHumanUsers,
+                                    Database database) {
         thawLogger.log(Level.INFO, "In create account request");
         HttpServerResponse response = routingContext.response();
         JsonObject json = routingContext.getBodyAsJson();
@@ -143,8 +159,11 @@ class Handlers {
         }
     }
 
-    // todo
-    private static void analyzeCreateAccountRequest(HttpServerResponse response, JsonObject json, ThawLogger thawLogger, List<HumanUser> authorizedHumanUsers, Database database) {
+    private static void analyzeCreateAccountRequest(HttpServerResponse response,
+                                                    JsonObject json,
+                                                    ThawLogger thawLogger,
+                                                    List<HumanUser> authorizedHumanUsers,
+                                                    Database database) {
         String userName = json.getString("userName");
         String password = json.getString("password");
         if (verifyEmptyOrNull(userName, password)) {
@@ -172,9 +191,10 @@ class Handlers {
     /*############################################################*/
     /////////////////// Security Check Handler ///////////////////
     /*############################################################*/
-    // Todo
     // Check if the user is connected to the server
-    static void securityCheckHandle(RoutingContext routingContext, ThawLogger thawLogger, List<HumanUser> authorizedHumanUsers) {
+    static void securityCheckHandle(RoutingContext routingContext,
+                                    ThawLogger thawLogger,
+                                    List<HumanUser> authorizedHumanUsers) {
         thawLogger.log(Level.INFO, "In security check handler");
         Session session = routingContext.session();
         HttpServerResponse response = routingContext.response();
@@ -194,7 +214,9 @@ class Handlers {
     /////////////////// Add Channel Handler ///////////////////
     /*########################################################*/
 
-    static void addChannelHandle(RoutingContext routingContext, ThawLogger thawLogger, List<Channel> channels) {
+    static void addChannelHandle(RoutingContext routingContext,
+                                 ThawLogger thawLogger,
+                                 List<Channel> channels) {
         thawLogger.log(Level.INFO, "In addChannel request");
         HttpServerResponse response = routingContext.response();
         Session session = routingContext.session();
@@ -206,7 +228,11 @@ class Handlers {
         }
     }
 
-    private static void analyzeAddChannelRequest(Session session, HttpServerResponse response, JsonObject json, ThawLogger thawLogger, List<Channel> channels) {
+    private static void analyzeAddChannelRequest(Session session,
+                                                 HttpServerResponse response,
+                                                 JsonObject json,
+                                                 ThawLogger thawLogger,
+                                                 List<Channel> channels) {
         String newChannelName = json.getString("newChannelName");
         String creatorName = json.getString("creatorName");
         thawLogger.log(Level.INFO, newChannelName + " " + creatorName + " ");
@@ -224,7 +250,9 @@ class Handlers {
         }
     }
 
-    private static void createAndAddChannel(String newChannelName, HumanUser creator, List<Channel> channels) {
+    private static void createAndAddChannel(String newChannelName,
+                                            HumanUser creator,
+                                            List<Channel> channels) {
         Channel newChannel = ChannelFactory.createChannel(creator, newChannelName);
         channels.add(newChannel);
     }
@@ -236,7 +264,9 @@ class Handlers {
     /*############################################################*/
 
     // Todo A tester
-    static void deleteChannelHandle(RoutingContext routingContext, ThawLogger thawLogger, List<Channel> channels) {
+    static void deleteChannelHandle(RoutingContext routingContext,
+                                    ThawLogger thawLogger,
+                                    List<Channel> channels) {
         thawLogger.log(Level.INFO, "In deleteChannel request");
         HttpServerResponse response = routingContext.response();
         JsonObject json = routingContext.getBodyAsJson();
@@ -249,7 +279,11 @@ class Handlers {
         }
     }
 
-    private static void analyzeDeleteChannelRequest(HttpServerResponse response, Session session, JsonObject json, ThawLogger thawLogger, List<Channel> channels) {
+    private static void analyzeDeleteChannelRequest(HttpServerResponse response,
+                                                    Session session,
+                                                    JsonObject json,
+                                                    ThawLogger thawLogger,
+                                                    List<Channel> channels) {
 
         String channelName = json.getString("channelName");
         if (verifyEmptyOrNull(channelName)) {
@@ -284,7 +318,9 @@ class Handlers {
     /////////////////// Connect to Channel Handler ///////////////////
     /*################################################################*/
 
-    static void connectToChannelHandle(RoutingContext routingContext, ThawLogger thawLogger, List<Channel> channels) {
+    static void connectToChannelHandle(RoutingContext routingContext,
+                                       ThawLogger thawLogger,
+                                       List<Channel> channels) {
         thawLogger.log(Level.INFO, "In connectToChannel request");
         HttpServerResponse response = routingContext.response();
         JsonObject json = routingContext.getBodyAsJson();
@@ -296,8 +332,11 @@ class Handlers {
         }
     }
 
-    //TODO : refactoriser davantage le code
-    private static void analyzeConnecToChannelRequest(HttpServerResponse response, Session session, JsonObject json, ThawLogger thawLogger, List<Channel> channels) {
+    private static void analyzeConnecToChannelRequest(HttpServerResponse response,
+                                                      Session session,
+                                                      JsonObject json,
+                                                      ThawLogger thawLogger,
+                                                      List<Channel> channels) {
         String oldChannelName = json.getString("oldChannelName");
         String channelName = json.getString("channelName");
 
@@ -332,7 +371,9 @@ class Handlers {
         }
     }
 
-    private static boolean establishConnection(HumanUser humanUser, Channel chan, Channel oldChan) {
+    private static boolean establishConnection(HumanUser humanUser,
+                                               Channel chan,
+                                               Channel oldChan) {
         return humanUser.quitChannel(oldChan) && humanUser.joinChannel(chan);
     }
 
@@ -344,7 +385,10 @@ class Handlers {
 
     // Fonctionne
     // TODO : Traitement des messages en cas de bot et stockage dans la base de donnée
-    static void sendMessageHandle(RoutingContext routingContext, ThawLogger thawLogger, List<Channel> channels, Database database) {
+    static void sendMessageHandle(RoutingContext routingContext,
+                                  ThawLogger thawLogger,
+                                  List<Channel> channels,
+                                  Database database) {
         thawLogger.log(Level.INFO, "In sendMessage request");
         JsonObject json = routingContext.getBodyAsJson();
         HttpServerResponse response = routingContext.response();
@@ -357,7 +401,12 @@ class Handlers {
     }
 
     // Todo
-    private static void analyzeSendMessageRequest(HttpServerResponse response, Session session, JsonObject json, ThawLogger thawLogger, List<Channel> channels, Database database) {
+    private static void analyzeSendMessageRequest(HttpServerResponse response,
+                                                  Session session,
+                                                  JsonObject json,
+                                                  ThawLogger thawLogger,
+                                                  List<Channel> channels,
+                                                  Database database) {
         long date = System.currentTimeMillis();
 
         String message = json.getString("message");
@@ -422,13 +471,19 @@ class Handlers {
         Optional<Channel> optChan = findChannelInList(channels, channelName);
         if (optChan.isPresent()) {
             Channel channel = optChan.get();
-            try {
-                List<Message> tmpMess = database.messagesList(channel.getChannelName());//channel.getListMessage();
+            List<Message> tmpMess = channel.getListMessage();
                 List<Message> returnListMessage = tmpMess.subList(Math.max(tmpMess.size() - numberOfMessageWanted, 0), tmpMess.size());
                 answerToRequest(response, 200, returnListMessage, thawLogger);
-            } catch (SQLException sql) {
-                answerToRequest(response, 400, "Problem for retrieving information at : " + channelName + " SQLException", thawLogger);
-            }
+//             try {
+//                List<Message> tmpMess = database.messagesList(channel.getChannelName());//channel.getListMessage();
+////                List<Message> tmpMess = channel.getListMessage();
+//                List<Message> returnListMessage = tmpMess.subList(Math.max(tmpMess.size() - numberOfMessageWanted, 0), tmpMess.size());
+//                answerToRequest(response, 200, returnListMessage, thawLogger);
+//            } catch (SQLException sql) {
+//                answerToRequest(response, 400, "Problem for retrieving information at : " + channelName + " SQLException", thawLogger);
+//            }
+
+
         } else {
             answerToRequest(response, 400, "Channel: " + channelName + " doesn't exist", thawLogger);
         }
