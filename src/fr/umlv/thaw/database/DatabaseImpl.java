@@ -292,8 +292,13 @@ public class DatabaseImpl implements Database {
         final String request = "SELECT PSWD FROM users WHERE LOGIN LIKE ? ;";
 //        final String request2 = "SELECT * FROM " + channelName + " ;";
         System.out.println("Message list avant execute query");
-        // Cette ligne plante dans le server !!!!
+
+//        final String query = "SELECT * FROM ? ;";
+
+        // todo FIND BUGS aime pas ici :)
         ResultSet rs = executeQuery("SELECT * FROM '" + channelName + "' ;");
+//        prep = co.prepareStatement(query);
+
         System.out.println("Message list après execute query");
         List<Message> msgs = new ArrayList<>();
         HumanUser tmpUser;
