@@ -14,7 +14,10 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.security.NoSuchAlgorithmException;
 import java.sql.*;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.Objects;
 
 /**
  * This class represent an implementation of a Database
@@ -276,7 +279,6 @@ public class DatabaseImpl implements Database {
         List<Message> msgs = new ArrayList<>();
         HumanUser tmpUser;
         Message tmpMessage;
-        int i = 1;
         while (rs.next()) {
             String author = rs.getString("AUTHOR");
             String message = rs.getString("MESSAGE");
@@ -531,42 +533,31 @@ public class DatabaseImpl implements Database {
         }
     }
 
-    private Optional<String> retrievePassFromuser(String userName) throws SQLException {
-        Objects.requireNonNull(userName);
-        Optional<String> res;
-        ResultSet rs = executeQuery("SELECT PSWD FROM USERS WHERE LOGIN LIKE '" + userName + "';");
-        if (rs.next()) {
-            res = Optional.of(rs.getString(1));
-            rs.close();
-            return res;
-        }
-        rs.close();
-        return Optional.empty();
-    }
 
-    //It's kind of dangerous to use a SQL query that could be change but, because it's on internal
-    //use only and in a select only, this shouldn't be too risky for SQLInjection attacks
     private boolean canUserViewChannel(String channelName, String userName) throws SQLException {
-        ResultSet rs = executeQuery("SELECT * FROM chanviewer WHERE MEMBER LIKE '" + userName + "'" +
-                " AND CHANNAME LIKE '" + channelName + "';");
-        if (rs.next()) {
-            rs.close();
-            return true;
+        final String request = "SELECT * FROM chanviewer WHERE MEMBER LIKE ?  AND CHANNAME LIKE ? ;";
+        prep = co.prepareStatement(request);
+        prep.setString(1, userName);
+        prep.setString(2, channelName);
+        if (prep.execute()) {
+            try (ResultSet tmp = prep.getResultSet()) {
+                return true;
+            }
         }
-        rs.close();
         return false;
     }
 
-    //It's kind of dangerous to use a SQL query that could be change but, because it's on internal
-    //use only and in a select only, this shouldn't be too risky for SQLInjection attacks
+
     private boolean userCanControlAccessToChan(String channelName, String user) throws SQLException {
-        ResultSet tmp = executeQuery("SELECT * FROM channels WHERE CHANNAME LIKE '" + channelName + "'" +
-                " AND OWNER LIKE '" + user + "';");
-        if (tmp.next()) {
-            tmp.close();
-            return true;
+        final String request = "SELECT * FROM channels WHERE CHANNAME LIKE ?  AND OWNER LIKE ? ;";
+        prep = co.prepareStatement(request);
+        prep.setString(1, channelName);
+        prep.setString(2, user);
+        if (prep.execute()) {
+            try (ResultSet tmp = prep.getResultSet()) {
+                return true;
+            }
         }
-        tmp.close();
         return false;
     }
 
