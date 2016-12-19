@@ -181,6 +181,7 @@ public class DatabaseImpl implements Database {
             exeUpda(createChannelTableRequest(channelName));
         } catch (SQLException sql) {
             System.err.println("Table " + channelName + " already exist");
+            sql.printStackTrace();
             return;
         }
         updateChannelsTable(channelName, owner);
@@ -399,13 +400,7 @@ public class DatabaseImpl implements Database {
 
     private void setPrepLongValue(int idx, Long value, boolean addToBatch) throws SQLException {
         Objects.requireNonNull(value);
-        if (idx <= 0) {
-            throw new IllegalArgumentException("idx must be > 0");
-        }
-        prep.setLong(idx, value);
-        if (addToBatch) {
-            prep.addBatch();
-        }
+        prep.setLong(1, value);
     }
 
 
@@ -471,7 +466,12 @@ public class DatabaseImpl implements Database {
 
 
     private String createChannelTableRequest(String channelname) {
-        return String.format("create table if not exists %s(DATE INTEGER NOT NULL, MESSAGE TEXT NOT NULL, AUTHOR TEXT NOT NULL);", channelname);
+        return "create table if not exists  " + channelname + " (" +
+                "DATE INTEGER NOT NULL, " +
+                "MESSAGE TEXT NOT NULL, " +
+                "AUTHOR TEXT NOT NULL );";
+
+        //return String.format("create table if not exists %s(DATE INTEGER NOT NULL, MESSAGE TEXT NOT NULL, AUTHOR TEXT NOT NULL);", channelname);
     }
 
 
