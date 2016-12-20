@@ -69,7 +69,7 @@ public class Server extends AbstractVerticle {
      * @param enableLogger Enable the logger
      * @param ssl          Enable ssl
      * @param database     The database in which we will makes our jobs
-     * @throws IOException  If the logger can't find or create the file
+     * @throws IOException If the logger can't find or create the file
      */
     public Server(boolean enableLogger, boolean ssl, Database database) throws IOException {
         this.database = Objects.requireNonNull(database);
@@ -113,7 +113,6 @@ public class Server extends AbstractVerticle {
         authorizedHumanUsers.add(superUser);
         authorizedHumanUsers.add(superUserOver);
         authorizedHumanUsers.add(test2);
-        System.out.println("HEY LES CHANNELS =)");
 
         // Garder le channel default !
         Channel defaul = ChannelFactory.createChannel(superUser, "default");
@@ -123,10 +122,8 @@ public class Server extends AbstractVerticle {
             database.createChannelTable(defaul.getChannelName(), "#SuperUser");
             database.createChannelTable(channel.getChannelName(), "superUser");
             database.createChannelTable(channel2.getChannelName(), "test2");
-            System.out.println("add channels ?");
         } catch (SQLException sql) {
             System.out.println("Channels already registered");
-            //channel already registered
         }
         channels.addAll(database.getChannelList());
         try {
@@ -135,14 +132,11 @@ public class Server extends AbstractVerticle {
             // No human authorized -> Nobody can connect, so crash the server.
             return;
         }
-        System.out.println("Apres init des tables");
-        System.out.println("add user to chan");
         //We add each users to every existing Channel
         for (Channel chan : database.getChannelList()) {
             try {
                 for (User usr : database.getAllUsersList()) {
                     try {
-                        System.out.println("add ?");
                         database.addUserToChan(chan.getChannelName(), usr.getName(), chan.getCreatorName());
                     } catch (SQLException sql) {
                         System.out.println("pb adding : " + usr.getName());
@@ -152,34 +146,19 @@ public class Server extends AbstractVerticle {
                 //
             }
         }
-        System.out.println("user added");
-        //Les date pour 3eme et 4eme message seront tellement proche que le tri peut
-        // un peut inverser les deux dernier mais pas de mal le tri est ok
-        System.out.println("preparations des mess");
         Message mes = MessageFactory.createMessage(superUser, System.currentTimeMillis(), "1er lessage");
         Message mes1 = MessageFactory.createMessage(test2, System.currentTimeMillis(), "2e message");
         Message mes2 = MessageFactory.createMessage(superUser, System.currentTimeMillis(), "3e message");
         Message mes3 = MessageFactory.createMessage(test2, System.currentTimeMillis(), "4e message");
-        System.out.println("fin preparation des mess");
         try {
             database.addMessageToChannelTable(defaul.getChannelName(), mes);
             database.addMessageToChannelTable(defaul.getChannelName(), mes1);
             database.addMessageToChannelTable(defaul.getChannelName(), mes2);
             database.addMessageToChannelTable(defaul.getChannelName(), mes3);
-            System.out.println("messages added");
         } catch (SQLException sql) {
             //
             System.out.println("Message not added ! Exception !");
         }
-
-        try {
-            System.out.println("Messages ?  : ");
-            database.getMessagesList(defaul.getChannelName()).forEach(System.out::println);
-        } catch (SQLException sql) {
-            //
-            System.out.println("Wooooooops SQL exception, no message in list");
-        }
-        System.out.println("preparation join");
 
         superUser.joinChannel(defaul);
         test2.joinChannel(defaul);
