@@ -149,7 +149,10 @@ textarea#TextZone{
 	height:60%;
 }
 
-
+textarea#newChannelText{
+    width: 50%;
+    height: 8%;
+}
 
 
 
