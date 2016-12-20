@@ -216,7 +216,8 @@ class Handlers {
 
     static void addChannelHandle(RoutingContext routingContext,
                                  ThawLogger thawLogger,
-                                 List<Channel> channels) {
+                                 List<Channel> channels,
+                                 Database database) {
         thawLogger.log(Level.INFO, "In addChannel request");
         HttpServerResponse response = routingContext.response();
         Session session = routingContext.session();
@@ -224,7 +225,7 @@ class Handlers {
         if (json == null) {
             answerToRequest(response, 400, "Wrong JSON input", thawLogger);
         } else {
-            analyzeAddChannelRequest(session, response, json, thawLogger, channels);
+            analyzeAddChannelRequest(session, response, json, thawLogger, channels, database);
         }
     }
 
@@ -232,7 +233,8 @@ class Handlers {
                                                  HttpServerResponse response,
                                                  JsonObject json,
                                                  ThawLogger thawLogger,
-                                                 List<Channel> channels) {
+                                                 List<Channel> channels,
+                                                 Database database) {
         String newChannelName = json.getString("newChannelName");
         String creatorName = json.getString("creatorName");
         thawLogger.log(Level.INFO, newChannelName + " " + creatorName + " ");
@@ -245,16 +247,28 @@ class Handlers {
             answerToRequest(response, 400, "Channel " + newChannelName + " already exists", thawLogger);
         } else {
             HumanUser creator = session.get("user");
-            createAndAddChannel(newChannelName, creator, channels);
-            answerToRequest(response, 200, "Channel " + newChannelName + " successfully created", thawLogger);
+            try {
+                createAndAddChannel(newChannelName, creator, channels, database);
+                answerToRequest(response, 200, "Channel " + newChannelName + " successfully created", thawLogger);
+            } catch (SQLException sql) {
+                answerToRequest(response, 400, "A SQLExcpetion has been occured during the creation of the channel : " + newChannelName, thawLogger);
+            }
         }
     }
 
     private static void createAndAddChannel(String newChannelName,
                                             HumanUser creator,
-                                            List<Channel> channels) {
+                                            List<Channel> channels,
+                                            Database database) throws SQLException {
+        String creatorName = creator.getName();
         Channel newChannel = ChannelFactory.createChannel(creator, newChannelName);
         channels.add(newChannel);
+        database.createChannelTable(newChannelName, creator.getName());
+        for (HumanUser usr : database.getAllUsersList()) {
+            if (!usr.equals(creator)) {
+                database.addUserToChan(newChannelName, usr.getName(), creatorName);
+            }
+        }
     }
 
 
