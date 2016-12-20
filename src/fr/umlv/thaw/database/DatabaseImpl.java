@@ -59,7 +59,7 @@ public class DatabaseImpl implements Database {
         DatabaseImpl myDB;
         long dte = System.currentTimeMillis();
         try {
-            myDB = new DatabaseImpl(Paths.get("." + sep + "db"), "mafia");//Creation base du fichier mafia.db
+            myDB = new DatabaseImpl(Paths.get(".." + sep + "db"), "mafia");//Creation base du fichier mafia.db
         } catch (SQLException sql) {
             System.err.println("can't open the db ");
             return;
@@ -115,8 +115,12 @@ public class DatabaseImpl implements Database {
         System.out.println("Apres chgmt de message de TotoLeBus : ");
         System.out.println(myDB.messagesList(channelName));
 
-
+        myDB.removeUserAccessToChan(channelName, "TotoLeBus", "George");
+        System.out.println("TotoLeBus n'a plus acces a " + channelName);
         System.out.println("Avant remove George de Chan1");
+
+        System.out.println("uti present : ");
+        System.out.println(myDB.retrieveUsersFromChan(channelName));
 
         myDB.removeUserAccessToChan(channelName, "George", "George");
 
@@ -171,7 +175,6 @@ public class DatabaseImpl implements Database {
         String cryptPass = humanUser.getPasswordHash();
         final String query = prepareInsertTwoValuesIntoTable("users");
         prep = co.prepareStatement(query);
-//        createPrepState(prepareInsertTwoValuesIntoTable("users"));
         insertTwoValIntoTable(login, cryptPass);
         executeRegisteredTask();
     }
@@ -181,15 +184,15 @@ public class DatabaseImpl implements Database {
         Objects.requireNonNull(channelName);
         Objects.requireNonNull(owner);
         try {
-//            final String query = createChannelTableRequest(channelName);
-//            exeUpda(query);
-            // todo -> FindBugs
-            final String query = "create table if not exists  '" + channelName + "' (" +
+
+            final String query = "create table if not exists '" + channelName + "' (" +
                     "DATE INTEGER NOT NULL, " +
                     "MESSAGE TEXT NOT NULL, " +
                     "AUTHOR TEXT NOT NULL );";
 
-            state.executeUpdate(query);
+
+            prep = co.prepareStatement(query);
+            prep.executeUpdate();
 
         } catch (SQLException sql) {
             System.err.println("Table " + channelName + " already exist");
@@ -224,34 +227,29 @@ public class DatabaseImpl implements Database {
             final String query = "DELETE FROM CHANVIEWER WHERE "
                     + "CHANNAME LIKE '" + channel + "' "
                     + " AND MEMBER LIKE '" + toKick + "';";
-            state.executeUpdate(query);
+            prep = co.prepareStatement(query);
+            prep.executeUpdate();
         } else if (userCanControlAccessToChan(channel, authority) && toKick.equals(authority)) {
             List<HumanUser> toEject = retrieveUsersFromChan(channel);
             for (HumanUser user : toEject) {
                 // todo -> findBugs
-//                createPrepState(removeUserFromChanViewerRequest(channel, user.getName()));
                 final String query = "DELETE FROM CHANVIEWER WHERE "
                         + "CHANNAME LIKE '" + channel + "' "
                         + " AND MEMBER LIKE '" + user.getName() + "';";
                 prep = co.prepareStatement(query);
 
                 prep.executeUpdate();
-//                prepExecuteUpdate();
             }
             // todo -> findBugs
-//            createPrepState(removeChannelFromChannelsRequest(channel, toKick));
             final String query = "DELETE FROM CHANNELS WHERE "
                     + "CHANNAME LIKE '" + channel + "' "
                     + " AND OWNER LIKE '" + toKick + "';";
             prep = co.prepareStatement(query);
             prep.executeUpdate();
-//            prepExecuteUpdate();
             // todo -> findBugs
-//            createPrepState(removeChannel(channel));
             final String query2 = "DROP TABLE IF EXISTS " + channel + " ;";
             prep = co.prepareStatement(query2);
             prep.executeUpdate();
-//            prepExecuteUpdate();
         }
     }
 
@@ -283,21 +281,19 @@ public class DatabaseImpl implements Database {
         requirePositive(oldMsg.getDate());
         Objects.requireNonNull(newMsg);
         if (canUserViewChannel(channelName, oldMsg.getSender().getName()) && oldMsg.getSender().equals(newMsg.getSender())) {
-//            final String query = updateChannelMessageReq(channelName, newMsg.getContent(), oldMsg.getDate(), oldMsg.getContent(),newMsg.getSender().getName());
-//            exeUpda(query);
 
             // todo -> Find bugs
             final String query = "UPDATE " + channelName +
-                    " SET MESSAGE='" + newMsg + "'"
+                    " SET MESSAGE='" + newMsg.getContent() + "'"
                     + " WHERE "
                     + "DATE=" + oldMsg.getDate()
                     + " AND "
                     + " MESSAGE LIKE '" + oldMsg.getContent() + "'"
                     + " AND "
-                    + " AUTHOR LIKE '" + newMsg.getSender().getName() + "'"
+                    + " AUTHOR LIKE '" + oldMsg.getSender().getName() + "'"
                     + ";";
-            state.executeUpdate(query);
-            executeRegisteredTask();
+            prep = co.prepareStatement(query);
+            prep.executeUpdate();
         }
     }
 
