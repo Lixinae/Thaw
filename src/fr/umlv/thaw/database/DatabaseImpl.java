@@ -53,7 +53,6 @@ public class DatabaseImpl implements Database {
     /*CONSTRUCTOR'S TOOLS*/
 
     //TODO Ne pas oublier de virer le main une fois que l'on aura fait toutes
-    // les methodes necessaire
     public static void main(String[] args) throws Exception {
         String sep = FileSystems.getDefault().getSeparator();
         DatabaseImpl myDB;
@@ -100,7 +99,6 @@ public class DatabaseImpl implements Database {
         Message m2 = MessageFactory.createMessage(user2, System.currentTimeMillis(), "J'i bien h@ck la secu >: )");
         myDB.addMessageToChannelTable(channelName, m2);
 
-
         myDB.addUserToChan(channelName, "TotoLeBus", "George");
         Message m3 = MessageFactory.createMessage(user2, dte, "Avec les droits ça fonctionne mieux");
         myDB.addMessageToChannelTable(channelName, m3);
@@ -108,9 +106,6 @@ public class DatabaseImpl implements Database {
 
         System.out.println("Message dans Chan1 deuxième : ");
         myDB.getMessagesList(channelName).forEach(System.out::println);
-
-//        Message m4 = MessageFactory.createMessage(user2, System.currentTimeMillis(), "Ah je me suis planté et je vais me perdre :/");
-//        myDB.updateMessageFromChannel(channelName, m3, m4);
 
         System.out.println("Apres chgmt de message de TotoLeBus : ");
         System.out.println(myDB.getMessagesList(channelName));
@@ -231,7 +226,6 @@ public class DatabaseImpl implements Database {
             prep.setString(1, channelName);
             prep.setString(2, userNametoKick);
             prep.executeUpdate();
-//            final String query2 = "DROP TABLE IF EXISTS ? ;";
             prep = co.prepareStatement(String.format("DROP TABLE IF EXISTS %s", channelName));
             prep.executeUpdate();
         }
@@ -242,11 +236,7 @@ public class DatabaseImpl implements Database {
         Objects.requireNonNull(channelName);
         Objects.requireNonNull(msg);
         if (canUserViewChannel(channelName, msg.getSender().getName())) {
-            System.out.println("addMessageToChannelTable after if");
-//            String query = prepareInsertThreeValuesIntoTable(channelName);
-            System.out.println("Après prepareInsertThreeValue");
             prep = co.prepareStatement(String.format("insert into '%s' values (?, ?, ?)", channelName));
-            System.out.println("After prep stae");
             insertDateMessageAuthor(msg.getDate(), msg.getContent(), msg.getSender().getName());
             executeRegisteredTask();
         }
@@ -306,8 +296,6 @@ public class DatabaseImpl implements Database {
 
     @Override
     public List<Message> getMessagesList(String channelName) throws SQLException {
-        System.out.println("Message list avant execute query");
-        // todo FIND BUGS
         boolean hasResult;
         try (PreparedStatement p2 = co.prepareStatement(String.format("SELECT * FROM  \"%s\"", channelName))) {
             final String request = "SELECT PSWD FROM users WHERE LOGIN LIKE ? ;";
@@ -337,23 +325,6 @@ public class DatabaseImpl implements Database {
             }
             return Collections.unmodifiableList(msgs);
         }
-//        ResultSet rs = executeQuery("SELECT * FROM 'default';");
-        // J'ai commencer mais je vois pas comment continuer pour corriger le truc
-//        System.out.println("channel name = "+channelName);
-//        final String query = "SELECT * FROM 'default' ;";
-//        prep = co.prepareStatement(query);
-////        prep.setString(1, channelName);
-//        if (prep.execute()) {
-//            try (ResultSet tmp = prep.getResultSet()) {
-//                String author = tmp.getString("AUTHOR");
-//                String message = tmp.getString("MESSAGE");
-//                long date = tmp.getLong("DATE");
-//
-//                System.out.println("author "+ author);
-//            }
-//        }
-
-
     }
 
     @Override
@@ -479,7 +450,6 @@ public class DatabaseImpl implements Database {
 
 
     private void updateChannelsTable(String channelName, String owner) throws SQLException {
-//        createPrepState(prepareInsertTwoValuesIntoTable("channels"));
         final String query = prepareInsertTwoValuesIntoTable("channels");
         prep = co.prepareStatement(query);
         insertTwoValIntoTable(channelName, owner);
@@ -487,7 +457,6 @@ public class DatabaseImpl implements Database {
     }
 
     private void updateChanViewerTable(String channelName, String member) throws SQLException {
-//        createPrepState(prepareInsertTwoValuesIntoTable("chanviewer"));
         final String query = prepareInsertTwoValuesIntoTable("chanviewer");
         prep = co.prepareStatement(query);
         insertTwoValIntoTable(channelName, member);
@@ -500,7 +469,6 @@ public class DatabaseImpl implements Database {
     }
 
     private void insertDateMessageAuthor(long date, String message, String author) throws SQLException {
-//        setPrepLongValue(date);
         prep.setLong(1, date);
         setPrepStringValue(2, message, false);
         setPrepStringValue(3, author, true);
