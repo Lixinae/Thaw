@@ -185,6 +185,13 @@ class Handlers {
             e.printStackTrace();
         }
         authorizedHumanUsers.add(humanUser);
+        for (Channel chan : database.getChannelList()) {
+            try {
+                database.addUserToChan(chan.getChannelName(), humanUser.getName(), chan.getCreatorName());
+            } catch (SQLException sql) {
+                answerToRequest(response, 422, "User '" + userName + " cannot be added to the channel : " + chan.getChannelName(), thawLogger);
+            }
+        }
         answerToRequest(response, 200, "Account '" + userName + "' created", thawLogger);
     }
 
