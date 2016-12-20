@@ -29,7 +29,7 @@ function setReloadInterval(){
 
 /* Permet d'avoir un texte par defaut dans la zone de d'ecriture de message et qui disparait lors du clique sur la zone */
 function textAreaDefaultValueDisappearOnClick(){
-	$('textArea#TextZone')
+	$('textArea')
     .focus(function() {
         if (this.value === this.defaultValue) {
             this.value = '';
@@ -48,12 +48,13 @@ function textAreaDefaultValueDisappearOnClick(){
 // Permet de creer un channel
 // Et envoie l'information au serveur
 // TODO
-function createChannel(){
-    var newChannelName = "";
-	$.post("/api/private/createChannel",
-	    JSON.stringify({channelName:newChannelName,creatorName:username}))
+function addChannel(){
+    var newChannelName = $('#newChannelText').val();
+	$.post("/api/private/addChannel",
+	    JSON.stringify({newChannelName:newChannelName,creatorName:username}))
 	    .done(function(response){
-            alert("success create channel");
+	        $('#newChannelText').val('')
+            getListChannel()
         })
         .fail(function(response){
             alert("fail create channel");
