@@ -221,10 +221,6 @@ public class DatabaseImpl implements Database {
         Objects.requireNonNull(toKick);
         Objects.requireNonNull(authority);
         if (userCanControlAccessToChan(channel, authority) && !toKick.equals(authority)) {
-//            removeUserFromChanViewer(channel, toKick);
-
-//            final String query = removeUserFromChanViewerRequest(channel, toKick);
-//            exeUpda(query);
             // todo -> FindBugs
             final String query = "DELETE FROM CHANVIEWER WHERE "
                     + "CHANNAME LIKE '" + channel + "' "
@@ -258,9 +254,7 @@ public class DatabaseImpl implements Database {
     @Override
     public void addMessageToChannelTable(String channelName, Message msg) throws SQLException {
         Objects.requireNonNull(channelName);
-        //requirePositive(date);
         Objects.requireNonNull(msg);
-        //Objects.requireNonNull(author);
         if (canUserViewChannel(channelName, msg.getSender().getName())) {
             System.out.println("addMessageToChannelTable after if");
             // Erreur ici !
@@ -269,7 +263,6 @@ public class DatabaseImpl implements Database {
             final String query = "insert into '" + channelName + "' values (?, ?, ?)";
             System.out.println("Après prepareInsertThreeValue");
             prep = co.prepareStatement(query);
-//            createPrepState(query);
             System.out.println("After prep stae");
             insertDateMessageAuthor(msg.getDate(), msg.getContent(), msg.getSender().getName());
             executeRegisteredTask();
@@ -451,33 +444,13 @@ public class DatabaseImpl implements Database {
         exeUpda(query);
     }
 
-//    private void exeBatch() throws SQLException {
-//        prep.executeBatch();
-//    }
 
     private void executeRegisteredTask() throws SQLException {
-//        setAutoCommit(false);
-//        exeBatch();
-//        setAutoCommit(true);
         co.setAutoCommit(false);
         prep.executeBatch();
         co.setAutoCommit(true);
     }
 
-    //The difference between this method and exeUpda is that
-    //this method can perfom delete operation on Database
-//    private void prepExecuteUpdate() throws SQLException {
-//        prep.exeUpda();
-//    }
-
-//    private void setAutoCommit(boolean b) throws SQLException {
-//        co.setAutoCommit(b);
-//    }
-
-//    private void createPrepState(String query) throws SQLException {
-//        Objects.requireNonNull(query);
-//        prep = co.prepareStatement(query);
-//    }
 
     private void setPrepStringValue(int idx, String value, boolean addToBatch) throws SQLException {
         Objects.requireNonNull(value);
@@ -490,10 +463,6 @@ public class DatabaseImpl implements Database {
         }
     }
 
-//    private void setPrepLongValue(Long value) throws SQLException {
-//        Objects.requireNonNull(value);
-//        prep.setLong(1, value);
-//    }
 
     private ResultSet executeQuery(String query) throws SQLException {
         Objects.requireNonNull(query);
@@ -506,28 +475,6 @@ public class DatabaseImpl implements Database {
     }
 
     /* CREATION AND UPDATE REQUEST WITH SQL SYNTAX */
-
-    private String removeChannel(String channel) {
-        return "DROP TABLE IF EXISTS " + channel + " ;";
-    }
-
-    private String removeChannelFromChannelsRequest(String channel, String toKick) {
-        return "DELETE FROM CHANNELS WHERE "
-                + "CHANNAME LIKE '" + channel + "' "
-                + " AND OWNER LIKE '" + toKick + "';";
-    }
-
-    private String removeUserFromChanViewerRequest(String channel, String toKick) {
-        return "DELETE FROM CHANVIEWER WHERE "
-                + "CHANNAME LIKE '" + channel + "' "
-                + " AND MEMBER LIKE '" + toKick + "';";
-    }
-
-    private String retriveUserFromChannelsRequest(String channelName) {
-        return "SELECT MEMBER FROM CHANVIEWER WHERE "
-                + "CHANNAME LIKE '" + channelName + "';";
-    }
-
     private String createUsersTableRequest() {
         return "create table if not exists users(" +
                 "LOGIN TEXT NOT NULL, " +
@@ -551,44 +498,17 @@ public class DatabaseImpl implements Database {
                 ");";
     }
 
-    private String createChannelTableRequest(String channelname) {
-        return "create table if not exists  '" + channelname + "' (" +
-                "DATE INTEGER NOT NULL, " +
-                "MESSAGE TEXT NOT NULL, " +
-                "AUTHOR TEXT NOT NULL );";
 
-        //return String.format("create table if not exists %s(DATE INTEGER NOT NULL, MESSAGE TEXT NOT NULL, AUTHOR TEXT NOT NULL);", channelname);
-    }
-
-    private String updateChannelMessageReq(String channelName, String newMsg, long date, String Oldmsg, String author) {
-        return "UPDATE " + channelName +
-                " SET MESSAGE='" + newMsg + "'"
-                + " WHERE "
-                + "DATE=" + date
-                + " AND "
-                + " MESSAGE LIKE '" + Oldmsg + "'"
-                + " AND "
-                + " AUTHOR LIKE '" + author + "'"
-                + ";";
-
-    }
 
     // Tu passe toujours des constantes, donc j'ai laisser la fonction, car pas de bug( vu que tu donne que des constantes en parametre )
     private String prepareInsertTwoValuesIntoTable(String tableName) {
         return "insert into " + Objects.requireNonNull(tableName) + " values (?, ?)";
     }
 
-    private String prepareInsertThreeValuesIntoTable(String tableName) {
-        return "insert into '" + Objects.requireNonNull(tableName) + "' values (?, ?, ?)";
-    }
 
 
     /*CREATE AND UPDATE TABLES*/
 
-    private void removeUserFromChanViewer(String channel, String toKick) throws SQLException {
-        final String query = removeUserFromChanViewerRequest(channel, toKick);
-        exeUpda(query);
-    }
 
     private void updateChannelsTable(String channelName, String owner) throws SQLException {
 //        createPrepState(prepareInsertTwoValuesIntoTable("channels"));
@@ -657,6 +577,5 @@ public class DatabaseImpl implements Database {
         }
         return false;
     }
-
 
 }
