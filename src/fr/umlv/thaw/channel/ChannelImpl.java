@@ -103,7 +103,7 @@ public class ChannelImpl implements Channel {
 //        messagesQueue.forEach((key, value) -> tmp.addAll(value));
 //        allMessage.forEach(tmp::add);
         tmp.addAll(allMessage);
-        tmp.sort((msg1, msg2) -> ((Long) msg1.getDate()).compareTo(msg2.getDate()));
+        tmp.sort(Comparator.comparingLong(Message::getDate));
         return Collections.unmodifiableList(tmp);
     }
 
