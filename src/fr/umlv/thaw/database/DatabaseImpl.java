@@ -157,9 +157,10 @@ public class DatabaseImpl implements Database {
 
     @Override
     public void initializeDB() throws SQLException {
-        this.exeUpda(createUsersTableRequest());
-        this.createChannelsTable();
-        this.createChanViewerTable();
+        final String query = createUsersTableRequest();
+        exeUpda(query);
+        createChannelsTable();
+        createChanViewerTable();
     }
 
 
@@ -168,7 +169,9 @@ public class DatabaseImpl implements Database {
         Objects.requireNonNull(humanUser);
         String login = humanUser.getName();
         String cryptPass = humanUser.getPasswordHash();
-        createPrepState(prepareInsertTwoValuesIntoTable("users"));
+        final String query = prepareInsertTwoValuesIntoTable("users");
+        prep = co.prepareStatement(query);
+//        createPrepState(prepareInsertTwoValuesIntoTable("users"));
         insertTwoValIntoTable(login, cryptPass);
         executeRegisteredTask();
     }
@@ -178,7 +181,16 @@ public class DatabaseImpl implements Database {
         Objects.requireNonNull(channelName);
         Objects.requireNonNull(owner);
         try {
-            exeUpda(createChannelTableRequest(channelName));
+//            final String query = createChannelTableRequest(channelName);
+//            exeUpda(query);
+            // todo -> FindBugs
+            final String query = "create table if not exists  '" + channelName + "' (" +
+                    "DATE INTEGER NOT NULL, " +
+                    "MESSAGE TEXT NOT NULL, " +
+                    "AUTHOR TEXT NOT NULL );";
+
+            state.executeUpdate(query);
+
         } catch (SQLException sql) {
             System.err.println("Table " + channelName + " already exist");
             sql.printStackTrace();
@@ -204,28 +216,61 @@ public class DatabaseImpl implements Database {
         Objects.requireNonNull(toKick);
         Objects.requireNonNull(authority);
         if (userCanControlAccessToChan(channel, authority) && !toKick.equals(authority)) {
-            removeUserFromChanViewer(channel, toKick);
+//            removeUserFromChanViewer(channel, toKick);
+
+//            final String query = removeUserFromChanViewerRequest(channel, toKick);
+//            exeUpda(query);
+            // todo -> FindBugs
+            final String query = "DELETE FROM CHANVIEWER WHERE "
+                    + "CHANNAME LIKE '" + channel + "' "
+                    + " AND MEMBER LIKE '" + toKick + "';";
+            state.executeUpdate(query);
         } else if (userCanControlAccessToChan(channel, authority) && toKick.equals(authority)) {
             List<HumanUser> toEject = retrieveUsersFromChan(channel);
             for (HumanUser user : toEject) {
-                createPrepState(removeUserFromChanViewerRequest(channel, user.getName()));
-                prepExecuteUpdate();
+                // todo -> findBugs
+//                createPrepState(removeUserFromChanViewerRequest(channel, user.getName()));
+                final String query = "DELETE FROM CHANVIEWER WHERE "
+                        + "CHANNAME LIKE '" + channel + "' "
+                        + " AND MEMBER LIKE '" + user.getName() + "';";
+                prep = co.prepareStatement(query);
+
+                prep.executeUpdate();
+//                prepExecuteUpdate();
             }
-            createPrepState(removeChannelFromChannelsRequest(channel, toKick));
-            prepExecuteUpdate();
-            createPrepState(removeChannel(channel));
-            prepExecuteUpdate();
+            // todo -> findBugs
+//            createPrepState(removeChannelFromChannelsRequest(channel, toKick));
+            final String query = "DELETE FROM CHANNELS WHERE "
+                    + "CHANNAME LIKE '" + channel + "' "
+                    + " AND OWNER LIKE '" + toKick + "';";
+            prep = co.prepareStatement(query);
+            prep.executeUpdate();
+//            prepExecuteUpdate();
+            // todo -> findBugs
+//            createPrepState(removeChannel(channel));
+            final String query2 = "DROP TABLE IF EXISTS " + channel + " ;";
+            prep = co.prepareStatement(query2);
+            prep.executeUpdate();
+//            prepExecuteUpdate();
         }
     }
 
     @Override
     public void addMessageToChannelTable(String channelName, Message msg) throws SQLException {
         Objects.requireNonNull(channelName);
-        //recquirePositive(date);
+        //requirePositive(date);
         Objects.requireNonNull(msg);
         //Objects.requireNonNull(author);
         if (canUserViewChannel(channelName, msg.getSender().getName())) {
-            createPrepState(prepareInsertThreeValuesIntoTable(channelName));
+            System.out.println("addMessageToChannelTable after if");
+            // Erreur ici !
+//            String query = prepareInsertThreeValuesIntoTable(channelName);
+            // todo Un bug ici avec findBugs, tu l'avais mis dans une fonction, evitant ainsi à findbugs de le trouver
+            final String query = "insert into '" + channelName + "' values (?, ?, ?)";
+            System.out.println("Après prepareInsertThreeValue");
+            prep = co.prepareStatement(query);
+//            createPrepState(query);
+            System.out.println("After prep stae");
             insertDateMessageAuthor(msg.getDate(), msg.getContent(), msg.getSender().getName());
             executeRegisteredTask();
         }
@@ -235,10 +280,23 @@ public class DatabaseImpl implements Database {
     public void updateMessageFromChannel(String channelName, Message oldMsg, Message newMsg) throws SQLException {
         Objects.requireNonNull(channelName);
         Objects.requireNonNull(oldMsg);
-        recquirePositive(oldMsg.getDate());
+        requirePositive(oldMsg.getDate());
         Objects.requireNonNull(newMsg);
         if (canUserViewChannel(channelName, oldMsg.getSender().getName()) && oldMsg.getSender().equals(newMsg.getSender())) {
-            exeUpda(updateChannelMessageReq(channelName, oldMsg.getDate(), newMsg.getSender().getName(), oldMsg.getContent(), newMsg.getContent()));
+//            final String query = updateChannelMessageReq(channelName, newMsg.getContent(), oldMsg.getDate(), oldMsg.getContent(),newMsg.getSender().getName());
+//            exeUpda(query);
+
+            // todo -> Find bugs
+            final String query = "UPDATE " + channelName +
+                    " SET MESSAGE='" + newMsg + "'"
+                    + " WHERE "
+                    + "DATE=" + oldMsg.getDate()
+                    + " AND "
+                    + " MESSAGE LIKE '" + oldMsg.getContent() + "'"
+                    + " AND "
+                    + " AUTHOR LIKE '" + newMsg.getSender().getName() + "'"
+                    + ";";
+            state.executeUpdate(query);
             executeRegisteredTask();
         }
     }
@@ -261,8 +319,12 @@ public class DatabaseImpl implements Database {
 
 
     @Override
-    public List<HumanUser> retrieveUsersFromChan(String channel) throws SQLException {
-        ResultSet rs = executeQuery(retriveUserFromChannelsRequest(Objects.requireNonNull(channel)));
+    public List<HumanUser> retrieveUsersFromChan(String channelName) throws SQLException {
+        Objects.requireNonNull(channelName);
+//        final String query = retriveUserFromChannelsRequest(channel);
+        // todo -> FindBugs
+        final String query = "SELECT MEMBER FROM CHANVIEWER WHERE " + "CHANNAME LIKE '" + channelName + "';";
+        ResultSet rs = executeQuery(query);
         final String request = "SELECT PSWD FROM users WHERE LOGIN LIKE ? ;";
         List<HumanUser> users = new ArrayList<>();
         HumanUser tmpUser;
@@ -290,48 +352,42 @@ public class DatabaseImpl implements Database {
     @Override
     public List<Message> messagesList(String channelName) throws SQLException {
         final String request = "SELECT PSWD FROM users WHERE LOGIN LIKE ? ;";
-//        final String request2 = "SELECT * FROM " + channelName + " ;";
+
         System.out.println("Message list avant execute query");
 
-        final String query = "SELECT * FROM ? ;";
 
         // todo FIND BUGS aime pas ici :)
-
-
         ResultSet rs = executeQuery("SELECT * FROM '" + channelName + "' ;");
+//        ResultSet rs = executeQuery("SELECT * FROM 'default';");
         // J'ai commencer mais je vois pas comment continuer pour corriger le truc
-        prep = co.prepareStatement(query);
-        prep.setString(1, channelName);
-        if (prep.execute()) {
-            try (ResultSet tmp = prep.getResultSet()) {
-
-            }
-        }
+//        System.out.println("channel name = "+channelName);
+//        final String query = "SELECT * FROM 'default' ;";
+//        prep = co.prepareStatement(query);
+////        prep.setString(1, channelName);
+//        if (prep.execute()) {
+//            try (ResultSet tmp = prep.getResultSet()) {
+//                String author = tmp.getString("AUTHOR");
+//                String message = tmp.getString("MESSAGE");
+//                long date = tmp.getLong("DATE");
+//
+//                System.out.println("author "+ author);
+//            }
+//        }
 
         List<Message> msgs = new ArrayList<>();
         HumanUser tmpUser;
         Message tmpMessage;
-        // rs.next() -> false
-        // Suite ne s'execute donc pas
-        // todo
-        System.out.println("Message list rs.next() = " + rs.next());
-
         while (rs.next()) {
             String author = rs.getString("AUTHOR");
             String message = rs.getString("MESSAGE");
             long date = rs.getLong("DATE");
-//            System.out.println(co);
-            System.out.println("Test avant prep");
             prep = co.prepareStatement(request);
-            System.out.println("Test après prep");
             prep.setString(1, author);
             if (prep.execute()) {
-                System.out.println("another test");
                 try (ResultSet tmp = prep.getResultSet()) {
                     tmpUser = HumanUserFactory.createHumanUser(author, tmp.getString("PSWD"));
                     tmpMessage = MessageFactory.createMessage(tmpUser, date, message);
                     msgs.add(tmpMessage);
-                    System.out.println("test in try");
                 }
             }
         }
@@ -361,7 +417,6 @@ public class DatabaseImpl implements Database {
                     try (ResultSet tmp = prep.getResultSet()) {
                         while (tmp.next()) {
                             tmpChan = ChannelFactory.createChannel(HumanUserFactory.createHumanUser(owner, tmp.getString(1)), channame);
-                            System.out.println("truc");
                             channels.add(tmpChan);
                         }
                     }
@@ -387,38 +442,43 @@ public class DatabaseImpl implements Database {
     /*PRIVATE METHODS*/
 
     private void createChanViewerTable() throws SQLException {
-        exeUpda(createChanViewerTableRequest());
+        final String query = createChanViewerTableRequest();
+        exeUpda(query);
     }
 
 
     private void createChannelsTable() throws SQLException {
-        exeUpda(createChannelsTableRequest());
+        final String query = createChannelsTableRequest();
+        exeUpda(query);
     }
 
-    private void exeBatch() throws SQLException {
-        prep.executeBatch();
-    }
+//    private void exeBatch() throws SQLException {
+//        prep.executeBatch();
+//    }
 
     private void executeRegisteredTask() throws SQLException {
-        setAutoCommit(false);
-        exeBatch();
-        setAutoCommit(true);
+//        setAutoCommit(false);
+//        exeBatch();
+//        setAutoCommit(true);
+        co.setAutoCommit(false);
+        prep.executeBatch();
+        co.setAutoCommit(true);
     }
 
     //The difference between this method and exeUpda is that
     //this method can perfom delete operation on Database
-    private void prepExecuteUpdate() throws SQLException {
-        prep.executeUpdate();
-    }
+//    private void prepExecuteUpdate() throws SQLException {
+//        prep.exeUpda();
+//    }
 
-    private void setAutoCommit(boolean b) throws SQLException {
-        co.setAutoCommit(b);
-    }
+//    private void setAutoCommit(boolean b) throws SQLException {
+//        co.setAutoCommit(b);
+//    }
 
-    private void createPrepState(String query) throws SQLException {
-        Objects.requireNonNull(query);
-        prep = co.prepareStatement(query);
-    }
+//    private void createPrepState(String query) throws SQLException {
+//        Objects.requireNonNull(query);
+//        prep = co.prepareStatement(query);
+//    }
 
     private void setPrepStringValue(int idx, String value, boolean addToBatch) throws SQLException {
         Objects.requireNonNull(value);
@@ -431,10 +491,10 @@ public class DatabaseImpl implements Database {
         }
     }
 
-    private void setPrepLongValue(int idx, Long value, boolean addToBatch) throws SQLException {
-        Objects.requireNonNull(value);
-        prep.setLong(1, value);
-    }
+//    private void setPrepLongValue(Long value) throws SQLException {
+//        Objects.requireNonNull(value);
+//        prep.setLong(1, value);
+//    }
 
     private ResultSet executeQuery(String query) throws SQLException {
         Objects.requireNonNull(query);
@@ -501,7 +561,7 @@ public class DatabaseImpl implements Database {
         //return String.format("create table if not exists %s(DATE INTEGER NOT NULL, MESSAGE TEXT NOT NULL, AUTHOR TEXT NOT NULL);", channelname);
     }
 
-    private String updateChannelMessageReq(String channelName, long date, String author, String Oldmsg, String newMsg) {
+    private String updateChannelMessageReq(String channelName, String newMsg, long date, String Oldmsg, String author) {
         return "UPDATE " + channelName +
                 " SET MESSAGE='" + newMsg + "'"
                 + " WHERE "
@@ -519,24 +579,29 @@ public class DatabaseImpl implements Database {
     }
 
     private String prepareInsertThreeValuesIntoTable(String tableName) {
-        return "insert into " + Objects.requireNonNull(tableName) + " values (?, ?, ?)";
+        return "insert into '" + Objects.requireNonNull(tableName) + "' values (?, ?, ?)";
     }
 
 
     /*CREATE AND UPDATE TABLES*/
 
     private void removeUserFromChanViewer(String channel, String toKick) throws SQLException {
-        exeUpda(removeUserFromChanViewerRequest(channel, toKick));
+        final String query = removeUserFromChanViewerRequest(channel, toKick);
+        exeUpda(query);
     }
 
     private void updateChannelsTable(String channelName, String owner) throws SQLException {
-        createPrepState(prepareInsertTwoValuesIntoTable("channels"));
+//        createPrepState(prepareInsertTwoValuesIntoTable("channels"));
+        final String query = prepareInsertTwoValuesIntoTable("channels");
+        prep = co.prepareStatement(query);
         insertTwoValIntoTable(channelName, owner);
         executeRegisteredTask();
     }
 
     private void updateChanViewerTable(String channelName, String member) throws SQLException {
-        createPrepState(prepareInsertTwoValuesIntoTable("chanviewer"));
+//        createPrepState(prepareInsertTwoValuesIntoTable("chanviewer"));
+        final String query = prepareInsertTwoValuesIntoTable("chanviewer");
+        prep = co.prepareStatement(query);
         insertTwoValIntoTable(channelName, member);
         executeRegisteredTask();
     }
@@ -547,7 +612,8 @@ public class DatabaseImpl implements Database {
     }
 
     private void insertDateMessageAuthor(long date, String message, String author) throws SQLException {
-        setPrepLongValue(1, date, false);
+//        setPrepLongValue(date);
+        prep.setLong(1, date);
         setPrepStringValue(2, message, false);
         setPrepStringValue(3, author, true);
     }
@@ -556,7 +622,7 @@ public class DatabaseImpl implements Database {
 
     /*CHECK CONSTRAINT*/
 
-    private void recquirePositive(long l) {
+    private void requirePositive(long l) {
         if (l < 0) {
             throw new IllegalArgumentException("Long must be > 0");
         }
@@ -582,9 +648,11 @@ public class DatabaseImpl implements Database {
         prep = co.prepareStatement(request);
         prep.setString(1, channelName);
         prep.setString(2, user);
-        if (prep.execute()) try (ResultSet tmp = prep.getResultSet()) {
-            if (tmp.next()) {
-                return true;
+        if (prep.execute()) {
+            try (ResultSet tmp = prep.getResultSet()) {
+                if (tmp.next()) {
+                    return true;
+                }
             }
         }
         return false;

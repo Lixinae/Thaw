@@ -170,6 +170,7 @@ public class Server extends AbstractVerticle {
             System.out.println("messages added");
         } catch (SQLException sql) {
             //
+            System.out.println("Message not added ! Exception !");
         }
 
         try {
@@ -177,7 +178,7 @@ public class Server extends AbstractVerticle {
             database.messagesList(defaul.getChannelName()).forEach(System.out::println);
         } catch (SQLException sql) {
             //
-            System.out.println("Wooooooops");
+            System.out.println("Wooooooops SQL exception, no message in list");
         }
         System.out.println("preparation join");
 
