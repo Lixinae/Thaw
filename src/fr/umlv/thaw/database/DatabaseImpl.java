@@ -324,9 +324,9 @@ public class DatabaseImpl implements Database {
         List<HumanUser> users = new ArrayList<>();
         HumanUser tmpUser;
         String name;
+        prep = co.prepareStatement(request);
         while (rs.next()) {
             name = rs.getString("MEMBER");
-            prep = co.prepareStatement(request);
             prep.setString(1, name);
             if (prep.execute()) {
                 try (ResultSet tmp = prep.getResultSet()) {
@@ -369,11 +369,12 @@ public class DatabaseImpl implements Database {
         List<Message> msgs = new ArrayList<>();
         HumanUser tmpUser;
         Message tmpMessage;
+        prep = co.prepareStatement(request);
         while (rs.next()) {
             String author = rs.getString("AUTHOR");
             String message = rs.getString("MESSAGE");
             long date = rs.getLong("DATE");
-            prep = co.prepareStatement(request);
+
             prep.setString(1, author);
             if (prep.execute()) {
                 try (ResultSet tmp = prep.getResultSet()) {
@@ -399,11 +400,11 @@ public class DatabaseImpl implements Database {
         }
         List<Channel> channels = new ArrayList<>();
         try {
+            final String request = "SELECT PSWD FROM users WHERE LOGIN LIKE ?;";
+            prep = co.prepareStatement(request);
             while (rs.next()) {
                 String channame = rs.getString("CHANNAME");
                 String owner = rs.getString("OWNER");
-                final String request = "SELECT PSWD FROM users WHERE LOGIN LIKE ?;";
-                prep = co.prepareStatement(request);
                 prep.setString(1, owner);
                 if (prep.execute()) {
                     try (ResultSet tmp = prep.getResultSet()) {
