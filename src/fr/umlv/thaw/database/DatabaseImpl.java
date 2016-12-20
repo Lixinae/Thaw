@@ -306,10 +306,37 @@ public class DatabaseImpl implements Database {
 
     @Override
     public List<Message> getMessagesList(String channelName) throws SQLException {
-        final String request = "SELECT PSWD FROM users WHERE LOGIN LIKE ? ;";
         System.out.println("Message list avant execute query");
         // todo FIND BUGS
-        ResultSet rs = executeQuery("SELECT * FROM '" + channelName + "' ;");
+        boolean hasResult;
+        try (PreparedStatement p2 = co.prepareStatement(String.format("SELECT * FROM  \"%s\"", channelName))) {
+            final String request = "SELECT PSWD FROM users WHERE LOGIN LIKE ? ;";
+            List<Message> msgs = new ArrayList<>();
+            HumanUser tmpUser;
+            Message tmpMessage;
+            prep = co.prepareStatement(request);
+            hasResult = p2.execute();
+            while (hasResult) {
+                try (ResultSet rs = p2.getResultSet()) {
+                    while (rs.next()) {
+                        String author = rs.getString("AUTHOR");
+                        String message = rs.getString("MESSAGE");
+                        long date = rs.getLong("DATE");
+
+                        prep.setString(1, author);
+                        if (prep.execute()) {
+                            try (ResultSet tmp = prep.getResultSet()) {
+                                tmpUser = HumanUserFactory.createHumanUser(author, tmp.getString("PSWD"));
+                                tmpMessage = MessageFactory.createMessage(tmpUser, date, message);
+                                msgs.add(tmpMessage);
+                            }
+                        }
+                    }
+                }
+                hasResult = p2.getMoreResults();
+            }
+            return Collections.unmodifiableList(msgs);
+        }
 //        ResultSet rs = executeQuery("SELECT * FROM 'default';");
         // J'ai commencer mais je vois pas comment continuer pour corriger le truc
 //        System.out.println("channel name = "+channelName);
@@ -326,26 +353,7 @@ public class DatabaseImpl implements Database {
 //            }
 //        }
 
-        List<Message> msgs = new ArrayList<>();
-        HumanUser tmpUser;
-        Message tmpMessage;
-        prep = co.prepareStatement(request);
-        while (rs.next()) {
-            String author = rs.getString("AUTHOR");
-            String message = rs.getString("MESSAGE");
-            long date = rs.getLong("DATE");
 
-            prep.setString(1, author);
-            if (prep.execute()) {
-                try (ResultSet tmp = prep.getResultSet()) {
-                    tmpUser = HumanUserFactory.createHumanUser(author, tmp.getString("PSWD"));
-                    tmpMessage = MessageFactory.createMessage(tmpUser, date, message);
-                    msgs.add(tmpMessage);
-                }
-            }
-        }
-        rs.close();
-        return Collections.unmodifiableList(msgs);
     }
 
     @Override
