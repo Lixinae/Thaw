@@ -83,7 +83,6 @@ public class Server extends AbstractVerticle {
 
     @Override
     public void start(Future<Void> fut) {
-        // todo Load database stuff here
         try {
             database.initializeDB();
         } catch (SQLException sql) {

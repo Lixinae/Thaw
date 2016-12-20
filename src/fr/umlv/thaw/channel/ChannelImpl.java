@@ -120,7 +120,6 @@ public class ChannelImpl implements Channel {
         return creator.equals(user);
     }
 
-    // Todo possible erreur sur le remove -> concurrent modif -> utilisation d'un moyen detourner
     @Override
     public void moveUsersToAnotherChannel(Channel newChannel) {
         List<User> tmpToRemove = new ArrayList<>();

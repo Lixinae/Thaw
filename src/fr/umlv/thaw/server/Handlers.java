@@ -384,7 +384,6 @@ class Handlers {
     /*##########################################################*/
 
     // Fonctionne
-    // TODO : Traitement des messages en cas de bot et stockage dans la base de donnée
     static void sendMessageHandle(RoutingContext routingContext,
                                   ThawLogger thawLogger,
                                   List<Channel> channels,
@@ -400,7 +399,7 @@ class Handlers {
         }
     }
 
-    // Todo
+    // TODO : Traitement des messages en cas de bot et stockage dans la base de donnée
     private static void analyzeSendMessageRequest(HttpServerResponse response,
                                                   Session session,
                                                   JsonObject json,

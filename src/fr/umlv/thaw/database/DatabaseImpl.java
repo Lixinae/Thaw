@@ -206,7 +206,6 @@ public class DatabaseImpl implements Database {
         Objects.requireNonNull(userNametoKick);
         Objects.requireNonNull(authorityName);
         if (userCanControlAccessToChan(channelName, authorityName) && !userNametoKick.equals(authorityName)) {
-            // todo -> FindBugs
             final String query = "DELETE FROM CHANVIEWER WHERE "
                     + "CHANNAME LIKE ?"
                     + " AND MEMBER LIKE ? ;";
@@ -225,7 +224,6 @@ public class DatabaseImpl implements Database {
                 prep.setString(2, user.getName());
                 prep.executeUpdate();
             }
-            // todo -> findBugs
             final String query2 = "DELETE FROM CHANNELS WHERE "
                     + "CHANNAME LIKE ?  "
                     + " AND OWNER LIKE ? ;";
@@ -233,7 +231,6 @@ public class DatabaseImpl implements Database {
             prep.setString(1, channelName);
             prep.setString(2, userNametoKick);
             prep.executeUpdate();
-            // todo -> findBugs
 //            final String query2 = "DROP TABLE IF EXISTS ? ;";
             prep = co.prepareStatement(String.format("DROP TABLE IF EXISTS %s", channelName));
             prep.executeUpdate();
@@ -307,7 +304,6 @@ public class DatabaseImpl implements Database {
     }
 
 
-    // todo
     @Override
     public List<Message> getMessagesList(String channelName) throws SQLException {
         final String request = "SELECT PSWD FROM users WHERE LOGIN LIKE ? ;";
