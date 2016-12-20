@@ -59,7 +59,7 @@ public class DatabaseImpl implements Database {
         DatabaseImpl myDB;
         long dte = System.currentTimeMillis();
         try {
-            myDB = new DatabaseImpl(Paths.get("." + sep + "db"), "mafia");//Creation base du fichier mafia.db
+            myDB = new DatabaseImpl(Paths.get(".." + sep + "db"), "mafia");//Creation base du fichier mafia.db
         } catch (SQLException sql) {
             System.err.println("can't open the db ");
             return;
@@ -288,26 +288,27 @@ public class DatabaseImpl implements Database {
     @Override
     public List<HumanUser> getUsersListFromChan(String channelName) throws SQLException {
         Objects.requireNonNull(channelName);
-//        final String query = retriveUserFromChannelsRequest(channel);
         // todo -> FindBugs
-        final String query = "SELECT MEMBER FROM CHANVIEWER WHERE " + "CHANNAME LIKE '" + channelName + "';";
-        ResultSet rs = executeQuery(query);
+        final String query = "SELECT MEMBER FROM CHANVIEWER WHERE CHANNAME LIKE ? ;";
+        PreparedStatement p2 = co.prepareStatement(query);
+        p2.setString(1, channelName);
         final String request = "SELECT PSWD FROM users WHERE LOGIN LIKE ? ;";
         List<HumanUser> users = new ArrayList<>();
         HumanUser tmpUser;
         String name;
         prep = co.prepareStatement(request);
-        while (rs.next()) {
-            name = rs.getString("MEMBER");
-            prep.setString(1, name);
-            if (prep.execute()) {
-                try (ResultSet tmp = prep.getResultSet()) {
-                    tmpUser = HumanUserFactory.createHumanUser(name, tmp.getString("PSWD"));
-                    users.add(tmpUser);
+        if (p2.execute()) {
+            try (ResultSet rs = p2.getResultSet()) {
+                name = rs.getString("MEMBER");
+                prep.setString(1, name);
+                if (prep.execute()) {
+                    try (ResultSet tmp = prep.getResultSet()) {
+                        tmpUser = HumanUserFactory.createHumanUser(name, tmp.getString("PSWD"));
+                        users.add(tmpUser);
+                    }
                 }
             }
         }
-        rs.close();
         if (users.isEmpty()) {
             return Collections.emptyList();
         }
