@@ -54,7 +54,7 @@ float:right;
 
 
 body{
-	background-color:#D3D3D3;
+	background-color:#D3D3E5;
 }
 
 h1{
@@ -72,7 +72,6 @@ h2{
 }
 
 .background{
-	border: red thin solid;/*Seulement pour test inclusion, à virer par la suite*/
 	background-color:#D3D3E5;
 	margin:10px;
 }
