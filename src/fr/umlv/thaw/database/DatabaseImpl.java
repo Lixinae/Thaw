@@ -279,31 +279,31 @@ public class DatabaseImpl implements Database {
     @Override
     public List<HumanUser> getUsersListFromChan(String channelName) throws SQLException {
         Objects.requireNonNull(channelName);
-        // todo -> FindBugs
         final String query = "SELECT MEMBER FROM CHANVIEWER WHERE CHANNAME LIKE ? ;";
-        PreparedStatement p2 = co.prepareStatement(query);
-        p2.setString(1, channelName);
-        final String request = "SELECT PSWD FROM users WHERE LOGIN LIKE ? ;";
-        List<HumanUser> users = new ArrayList<>();
-        HumanUser tmpUser;
-        String name;
-        prep = co.prepareStatement(request);
-        if (p2.execute()) {
-            try (ResultSet rs = p2.getResultSet()) {
-                name = rs.getString("MEMBER");
-                prep.setString(1, name);
-                if (prep.execute()) {
-                    try (ResultSet tmp = prep.getResultSet()) {
-                        tmpUser = HumanUserFactory.createHumanUser(name, tmp.getString("PSWD"));
-                        users.add(tmpUser);
+        try (PreparedStatement p2 = co.prepareStatement(query)) {
+            p2.setString(1, channelName);
+            final String request = "SELECT PSWD FROM users WHERE LOGIN LIKE ? ;";
+            List<HumanUser> users = new ArrayList<>();
+            HumanUser tmpUser;
+            String name;
+            prep = co.prepareStatement(request);
+            if (p2.execute()) {
+                try (ResultSet rs = p2.getResultSet()) {
+                    name = rs.getString("MEMBER");
+                    prep.setString(1, name);
+                    if (prep.execute()) {
+                        try (ResultSet tmp = prep.getResultSet()) {
+                            tmpUser = HumanUserFactory.createHumanUser(name, tmp.getString("PSWD"));
+                            users.add(tmpUser);
+                        }
                     }
                 }
             }
+            if (users.isEmpty()) {
+                return Collections.emptyList();
+            }
+            return users;
         }
-        if (users.isEmpty()) {
-            return Collections.emptyList();
-        }
-        return users;
     }
 
 
