@@ -478,9 +478,9 @@ class Handlers {
 
             try {
                 System.out.println(channel.getChannelName());
-                System.out.println("truc " + database.getchannelList());
+                System.out.println("truc " + database.getChannelList());
                 // SQL exeception sur database.messageList
-                List<Message> tmpMess = database.messagesList(channel.getChannelName());
+                List<Message> tmpMess = database.getMessagesList(channel.getChannelName());
                 System.out.println("argh " + tmpMess);
                 List<Message> returnListMessage = tmpMess.subList(Math.max(tmpMess.size() - numberOfMessageWanted, 0), tmpMess.size());
                 answerToRequest(response, 200, returnListMessage, thawLogger);

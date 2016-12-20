@@ -59,7 +59,7 @@ public class DatabaseImpl implements Database {
         DatabaseImpl myDB;
         long dte = System.currentTimeMillis();
         try {
-            myDB = new DatabaseImpl(Paths.get(".." + sep + "db"), "mafia");//Creation base du fichier mafia.db
+            myDB = new DatabaseImpl(Paths.get("." + sep + "db"), "mafia");//Creation base du fichier mafia.db
         } catch (SQLException sql) {
             System.err.println("can't open the db ");
             return;
@@ -86,7 +86,7 @@ public class DatabaseImpl implements Database {
 
         myDB.createChannelTable(channelName, "George");
 
-        List<Channel> test = myDB.getchannelList();
+        List<Channel> test = myDB.getChannelList();
         System.out.println("Nombre de channel : " + test.size());
         for (Channel chan : test) {
             System.out.println("Channel : " + chan);
@@ -95,7 +95,7 @@ public class DatabaseImpl implements Database {
 
         myDB.addMessageToChannelTable(channelName, m1);
         System.out.println("Messages dans Chan1 : ");
-        System.out.println(myDB.messagesList(channelName));
+        System.out.println(myDB.getMessagesList(channelName));
 
         Message m2 = MessageFactory.createMessage(user2, System.currentTimeMillis(), "J'i bien h@ck la secu >: )");
         myDB.addMessageToChannelTable(channelName, m2);
@@ -107,25 +107,25 @@ public class DatabaseImpl implements Database {
 
 
         System.out.println("Message dans Chan1 deuxième : ");
-        myDB.messagesList(channelName).forEach(System.out::println);
+        myDB.getMessagesList(channelName).forEach(System.out::println);
 
-        Message m4 = MessageFactory.createMessage(user2, System.currentTimeMillis(), "Ah je me suis planté et je vais me perdre :/");
-        myDB.updateMessageFromChannel(channelName, m3, m4);
+//        Message m4 = MessageFactory.createMessage(user2, System.currentTimeMillis(), "Ah je me suis planté et je vais me perdre :/");
+//        myDB.updateMessageFromChannel(channelName, m3, m4);
 
         System.out.println("Apres chgmt de message de TotoLeBus : ");
-        System.out.println(myDB.messagesList(channelName));
+        System.out.println(myDB.getMessagesList(channelName));
 
         myDB.removeUserAccessToChan(channelName, "TotoLeBus", "George");
         System.out.println("TotoLeBus n'a plus acces a " + channelName);
         System.out.println("Avant remove George de Chan1");
 
         System.out.println("uti present : ");
-        System.out.println(myDB.retrieveUsersFromChan(channelName));
+        System.out.println(myDB.getUsersListFromChan(channelName));
 
         myDB.removeUserAccessToChan(channelName, "George", "George");
 
         System.out.println("George has been removed from Chan1");
-        List<Channel> chans = myDB.getchannelList();
+        List<Channel> chans = myDB.getChannelList();
         System.out.println("Nombre de channel present après suppresion de l'auteur : " + chans.size());
 
         ResultSet rs = myDB.executeQuery("SELECT name FROM sqlite_master WHERE type='table';");
@@ -135,7 +135,7 @@ public class DatabaseImpl implements Database {
             System.out.println("name : " + rs.getString(1));
         }
         System.out.println("Liste d'utilisateur : ");
-        List<HumanUser> users = myDB.usersList();
+        List<HumanUser> users = myDB.getAllUsersList();
         users.forEach(l -> System.out.println("user : " + l));
 
 
@@ -185,14 +185,12 @@ public class DatabaseImpl implements Database {
         Objects.requireNonNull(owner);
         try {
 
-            // todo -> findBugs
-
+            // Impossible de corriger le bug de findBugs ici
+            // ? ne marche pas pour les nom de tables avec le prep !
             final String query = "create table if not exists '" + channelName + "' (" +
                     "DATE INTEGER NOT NULL, " +
                     "MESSAGE TEXT NOT NULL, " +
                     "AUTHOR TEXT NOT NULL );";
-
-
             prep = co.prepareStatement(query);
             prep.executeUpdate();
 
@@ -228,7 +226,7 @@ public class DatabaseImpl implements Database {
             prep = co.prepareStatement(query);
             prep.executeUpdate();
         } else if (userCanControlAccessToChan(channel, authority) && toKick.equals(authority)) {
-            List<HumanUser> toEject = retrieveUsersFromChan(channel);
+            List<HumanUser> toEject = getUsersListFromChan(channel);
             for (HumanUser user : toEject) {
                 // todo -> findBugs
                 final String query = "DELETE FROM CHANVIEWER WHERE "
@@ -257,9 +255,9 @@ public class DatabaseImpl implements Database {
         Objects.requireNonNull(msg);
         if (canUserViewChannel(channelName, msg.getSender().getName())) {
             System.out.println("addMessageToChannelTable after if");
-            // Erreur ici !
 //            String query = prepareInsertThreeValuesIntoTable(channelName);
-            // todo Un bug ici avec findBugs, tu l'avais mis dans une fonction, evitant ainsi à findbugs de le trouver
+            // findBugs trouve un bug à cause de "insert into '" + channelName ,
+            // sauf qu'on ne peut pas mettre de prepared statement avec un '?' avec un "insert into ?"
             final String query = "insert into '" + channelName + "' values (?, ?, ?)";
             System.out.println("Après prepareInsertThreeValue");
             prep = co.prepareStatement(query);
@@ -269,31 +267,46 @@ public class DatabaseImpl implements Database {
         }
     }
 
-    @Override
-    public void updateMessageFromChannel(String channelName, Message oldMsg, Message newMsg) throws SQLException {
-        Objects.requireNonNull(channelName);
-        Objects.requireNonNull(oldMsg);
-        requirePositive(oldMsg.getDate());
-        Objects.requireNonNull(newMsg);
-        if (canUserViewChannel(channelName, oldMsg.getSender().getName()) && oldMsg.getSender().equals(newMsg.getSender())) {
+//    @Override
+//    public void updateMessageFromChannel(String channelName, Message oldMsg, Message newMsg) throws SQLException {
+//        Objects.requireNonNull(channelName);
+//        Objects.requireNonNull(oldMsg);
+//        requirePositive(oldMsg.getDate());
+//        Objects.requireNonNull(newMsg);
+//        if (canUserViewChannel(channelName, oldMsg.getSender().getName()) && oldMsg.getSender().equals(newMsg.getSender())) {
+//
+//            // Impossible de corriger le bug de findBugs ici
+//            // ? ne marche pas pour les nom de tables avec le prep !
+////            final String query = "UPDATE " + channelName +
+////                    " SET MESSAGE='" + newMsg.getContent() + "'"
+////                    + " WHERE "
+////                    + "DATE=" + oldMsg.getDate()
+////                    + " AND "
+////                    + " MESSAGE LIKE '" + oldMsg.getContent() + "'"
+////                    + " AND "
+////                    + " AUTHOR LIKE '" + oldMsg.getSender().getName() + "'"
+////                    + ";";
+//            final String query = "UPDATE ?"
+//                    +" SET MESSAGE=?"
+//                    + " WHERE "
+//                    + "DATE=?"
+//                    + " AND "
+//                    + " MESSAGE LIKE ?"
+//                    + " AND "
+//                    + " AUTHOR LIKE ?"
+//                    + ";";
+//            prep = co.prepareStatement(query);
+//            prep.setString(1,channelName);
+//            prep.setString(2, newMsg.getContent());
+//            prep.setLong(3, oldMsg.getDate());
+//            prep.setString(4, oldMsg.getContent());
+//            prep.setString(5, oldMsg.getSender().getName());
+//            prep.executeUpdate();
+//        }
+//    }
 
-            // todo -> Find bugs
-            final String query = "UPDATE " + channelName +
-                    " SET MESSAGE='" + newMsg.getContent() + "'"
-                    + " WHERE "
-                    + "DATE=" + oldMsg.getDate()
-                    + " AND "
-                    + " MESSAGE LIKE '" + oldMsg.getContent() + "'"
-                    + " AND "
-                    + " AUTHOR LIKE '" + oldMsg.getSender().getName() + "'"
-                    + ";";
-            prep = co.prepareStatement(query);
-            prep.executeUpdate();
-        }
-    }
-
     @Override
-    public List<HumanUser> usersList() throws SQLException {
+    public List<HumanUser> getAllUsersList() throws SQLException {
         ResultSet rs = executeQuery("select * from users");
         List<HumanUser> userList = new ArrayList<>();
         HumanUser hum;
@@ -314,7 +327,7 @@ public class DatabaseImpl implements Database {
 
 
     @Override
-    public List<HumanUser> retrieveUsersFromChan(String channelName) throws SQLException {
+    public List<HumanUser> getUsersListFromChan(String channelName) throws SQLException {
         Objects.requireNonNull(channelName);
 //        final String query = retriveUserFromChannelsRequest(channel);
         // todo -> FindBugs
@@ -345,7 +358,7 @@ public class DatabaseImpl implements Database {
 
     // todo
     @Override
-    public List<Message> messagesList(String channelName) throws SQLException {
+    public List<Message> getMessagesList(String channelName) throws SQLException {
         final String request = "SELECT PSWD FROM users WHERE LOGIN LIKE ? ;";
         System.out.println("Message list avant execute query");
         // todo FIND BUGS
@@ -389,7 +402,7 @@ public class DatabaseImpl implements Database {
     }
 
     @Override
-    public List<Channel> getchannelList() {
+    public List<Channel> getChannelList() {
         ResultSet rs;
         Channel tmpChan;
         try {
@@ -498,7 +511,6 @@ public class DatabaseImpl implements Database {
                 "MEMBER TEXT NOT NULL " +
                 ");";
     }
-
 
 
     // Tu passe toujours des constantes, donc j'ai laisser la fonction, car pas de bug( vu que tu donne que des constantes en parametre )

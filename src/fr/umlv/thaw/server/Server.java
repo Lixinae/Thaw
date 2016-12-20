@@ -76,7 +76,7 @@ public class Server extends AbstractVerticle {
         this.ssl = ssl;
         thawLogger = new ThawLogger(enableLogger);// Enable or not the logs of the server
         connectedUsers = new ArrayList<>();
-        channels = new ArrayList<>();// database.getchannelList();//We retrieve the channels that already existed
+        channels = new ArrayList<>();// database.getChannelList();//We retrieve the channels that already existed
         authorizedHumanUsers = new ArrayList<>();// We retrieve the registered user
     }
 
@@ -129,9 +129,9 @@ public class Server extends AbstractVerticle {
             System.out.println("Channels already registered");
             //channel already registered
         }
-        channels.addAll(database.getchannelList());
+        channels.addAll(database.getChannelList());
         try {
-            authorizedHumanUsers.addAll(database.usersList());
+            authorizedHumanUsers.addAll(database.getAllUsersList());
         } catch (SQLException e) {
             // No human authorized -> Nobody can connect, so crash the server.
             return;
@@ -139,9 +139,9 @@ public class Server extends AbstractVerticle {
         System.out.println("Apres init des tables");
         System.out.println("add user to chan");
         //We add each users to every existing Channel
-        for (Channel chan : database.getchannelList()) {
+        for (Channel chan : database.getChannelList()) {
             try {
-                for (User usr : database.usersList()) {
+                for (User usr : database.getAllUsersList()) {
                     try {
                         System.out.println("add ?");
                         database.addUserToChan(chan.getChannelName(), usr.getName(), chan.getCreatorName());
@@ -175,7 +175,7 @@ public class Server extends AbstractVerticle {
 
         try {
             System.out.println("Messages ?  : ");
-            database.messagesList(defaul.getChannelName()).forEach(System.out::println);
+            database.getMessagesList(defaul.getChannelName()).forEach(System.out::println);
         } catch (SQLException sql) {
             //
             System.out.println("Wooooooops SQL exception, no message in list");

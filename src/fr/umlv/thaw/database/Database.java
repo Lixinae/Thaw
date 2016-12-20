@@ -78,16 +78,16 @@ public interface Database {
      */
     void addMessageToChannelTable(String channelName, Message msg) throws SQLException;
 
-    /**
-     * This method change a message from an author from the date oldMsg.getDate()
-     * to a new message.
-     *
-     * @param channelName the name of the table
-     * @param oldMsg      the old message to change
-     * @param newMsg      the new message that will replace Oldmsg
-     * @throws SQLException if a database access errors occurs
-     */
-    void updateMessageFromChannel(String channelName, Message oldMsg, Message newMsg) throws SQLException;
+//    /**
+//     * This method change a message from an author from the date oldMsg.getDate()
+//     * to a new message.
+//     *
+//     * @param channelName the name of the table
+//     * @param oldMsg      the old message to change
+//     * @param newMsg      the new message that will replace Oldmsg
+//     * @throws SQLException if a database access errors occurs
+//     */
+//    void updateMessageFromChannel(String channelName, Message oldMsg, Message newMsg) throws SQLException;
 
     /**
      * That function return a list of users that are
@@ -96,7 +96,7 @@ public interface Database {
      * @return a list that contained all the HumanUser of the database
      * @throws SQLException if a database access errors occurs
      */
-    List<HumanUser> usersList() throws SQLException;
+    List<HumanUser> getAllUsersList() throws SQLException;
 
     /**
      * This method retrieve the user from the channel.
@@ -106,7 +106,7 @@ public interface Database {
      * otherwise this method return a List of HumanUser
      * @throws SQLException if a database access errors occurs
      */
-    List<HumanUser> retrieveUsersFromChan(String channel) throws SQLException;
+    List<HumanUser> getUsersListFromChan(String channel) throws SQLException;
 
     /**
      * This function retrieve the list of messages with every information
@@ -115,14 +115,14 @@ public interface Database {
      * @return a String that represents the messages separate with '\n'.
      * @throws SQLException if an error occurs during database access
      */
-    List<Message> messagesList(String channelName) throws SQLException;
+    List<Message> getMessagesList(String channelName) throws SQLException;
 
     /**
      * This method return a List of the channels name on the database
      *
      * @return a List that contained every Channels name of the database
      */
-    List<Channel> getchannelList();
+    List<Channel> getChannelList();
 
     /**
      * Close the connections that may been opened by the database
