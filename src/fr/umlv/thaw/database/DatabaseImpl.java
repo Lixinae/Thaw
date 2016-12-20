@@ -306,8 +306,12 @@ public class DatabaseImpl implements Database {
         ResultSet rs = executeQuery("select * from users");
         List<HumanUser> userList = new ArrayList<>();
         HumanUser hum;
+        String login;
+        String pswd;
         while (rs.next()) {
-            hum = HumanUserFactory.createHumanUser(rs.getString("LOGIN"), rs.getString("PSWD"));
+            login = rs.getString("LOGIN");
+            pswd = rs.getString("PSWD");
+            hum = HumanUserFactory.createHumanUser(login, pswd);
             userList.add(hum);
         }
         rs.close();
@@ -352,11 +356,8 @@ public class DatabaseImpl implements Database {
     @Override
     public List<Message> messagesList(String channelName) throws SQLException {
         final String request = "SELECT PSWD FROM users WHERE LOGIN LIKE ? ;";
-
         System.out.println("Message list avant execute query");
-
-
-        // todo FIND BUGS aime pas ici :)
+        // todo FIND BUGS
         ResultSet rs = executeQuery("SELECT * FROM '" + channelName + "' ;");
 //        ResultSet rs = executeQuery("SELECT * FROM 'default';");
         // J'ai commencer mais je vois pas comment continuer pour corriger le truc
@@ -574,6 +575,7 @@ public class DatabaseImpl implements Database {
 
     }
 
+    // Tu passe toujours des constantes, donc j'ai laisser la fonction, car pas de bug( vu que tu donne que des constantes en parametre )
     private String prepareInsertTwoValuesIntoTable(String tableName) {
         return "insert into " + Objects.requireNonNull(tableName) + " values (?, ?)";
     }
