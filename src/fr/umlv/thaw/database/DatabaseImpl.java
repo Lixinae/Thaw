@@ -214,37 +214,42 @@ public class DatabaseImpl implements Database {
     }
 
     @Override
-    public void removeUserAccessToChan(String channel, String toKick, String authority) throws SQLException {
-        Objects.requireNonNull(channel);
-        Objects.requireNonNull(toKick);
-        Objects.requireNonNull(authority);
-        if (userCanControlAccessToChan(channel, authority) && !toKick.equals(authority)) {
+    public void removeUserAccessToChan(String channelName, String userNametoKick, String authorityName) throws SQLException {
+        Objects.requireNonNull(channelName);
+        Objects.requireNonNull(userNametoKick);
+        Objects.requireNonNull(authorityName);
+        if (userCanControlAccessToChan(channelName, authorityName) && !userNametoKick.equals(authorityName)) {
             // todo -> FindBugs
             final String query = "DELETE FROM CHANVIEWER WHERE "
-                    + "CHANNAME LIKE '" + channel + "' "
-                    + " AND MEMBER LIKE '" + toKick + "';";
+                    + "CHANNAME LIKE ?"
+                    + " AND MEMBER LIKE ? ;";
+
             prep = co.prepareStatement(query);
+            prep.setString(1, channelName);
             prep.executeUpdate();
-        } else if (userCanControlAccessToChan(channel, authority) && toKick.equals(authority)) {
+        }else if (userCanControlAccessToChan(channel, authority) && toKick.equals(authority)) {
             List<HumanUser> toEject = getUsersListFromChan(channel);
             for (HumanUser user : toEject) {
                 // todo -> findBugs
                 final String query = "DELETE FROM CHANVIEWER WHERE "
-                        + "CHANNAME LIKE '" + channel + "' "
-                        + " AND MEMBER LIKE '" + user.getName() + "';";
+                        + "CHANNAME LIKE ? "
+                        + " AND MEMBER LIKE ? ;";
                 prep = co.prepareStatement(query);
-
+                prep.setString(1, channelName);
+                prep.setString(2, user.getName());
                 prep.executeUpdate();
             }
             // todo -> findBugs
             final String query = "DELETE FROM CHANNELS WHERE "
-                    + "CHANNAME LIKE '" + channel + "' "
-                    + " AND OWNER LIKE '" + toKick + "';";
+                    + "CHANNAME LIKE ?  "
+                    + " AND OWNER LIKE ? ;";
             prep = co.prepareStatement(query);
+            prep.setString(1, channelName);
+            prep.setString(2, userNametoKick);
             prep.executeUpdate();
             // todo -> findBugs
-            final String query2 = "DROP TABLE IF EXISTS " + channel + " ;";
-            prep = co.prepareStatement(query2);
+//            final String query2 = "DROP TABLE IF EXISTS ? ;";
+            prep = co.prepareStatement(String.format("DROP TABLE IF EXISTS %s", channelName));
             prep.executeUpdate();
         }
     }
