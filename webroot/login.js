@@ -12,7 +12,6 @@ function connectToServer(userName,password){
 	$.post("/api/connectToServer",
 	    JSON.stringify({userName:userName,password:password})) // Crypté le pass ?
 	    .done(function(response){
-            alert("success connectToServer");
             sessionStorage.userName = JSON.stringify(userName);//to memorize login through session
 			window.location.href = "./client/client.html"; // Redirige vers la page du tchat
         })
@@ -26,6 +25,9 @@ function connectToServer(userName,password){
 function createLogin(userName,password){
     var userName = $('#userNameEntry').val();
     var password = $('#userPasswordEntry').val();
+    var patt = new RegExp("^[a-zA-Z][\\w]+$")//the username contains only alphanumeric characters and can contains the _ character
+    //the userName must also begin with a letter (uppercase or lowercase)
+    if(patt.test(userName)){
 	$.post("/api/createAccount",
 	    JSON.stringify({userName:userName,password:password}))
 	    .done(function(response){
@@ -37,4 +39,7 @@ function createLogin(userName,password){
         .always(function() {
 
         });
+    }else{
+        alert("username must contains only alphanumeric characters and must begin with a letter")
+    }
 }
