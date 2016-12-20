@@ -25,7 +25,6 @@ import java.util.Objects;
  */
 public class DatabaseImpl implements Database {
 
-    private final String forGetConnection;
     private final Connection co;
     private final Statement state;
     private PreparedStatement prep;
@@ -44,9 +43,10 @@ public class DatabaseImpl implements Database {
         Objects.requireNonNull(pathToDB);
         Objects.requireNonNull(dbName);
         Class.forName("org.sqlite.JDBC");
-        forGetConnection = "jdbc:sqlite:" + pathToDB + FileSystems.getDefault().getSeparator() + dbName + ".db";
-        co = createConnection();
-        state = createStatement();
+        String forGetConnection = "jdbc:sqlite:" + pathToDB + FileSystems.getDefault().getSeparator() + dbName + ".db";
+        co = DriverManager.getConnection(forGetConnection);
+        Objects.requireNonNull(co);
+        state = co.createStatement();
     }
 
 
@@ -144,15 +144,6 @@ public class DatabaseImpl implements Database {
 
         rs.close();
         myDB.close();
-    }
-
-    private Connection createConnection() throws SQLException {
-        return DriverManager.getConnection(forGetConnection);
-    }
-
-    private Statement createStatement() throws SQLException {
-        Objects.requireNonNull(co);
-        return co.createStatement();
     }
 
     /*
