@@ -78,17 +78,6 @@ public interface Database {
      */
     void addMessageToChannelTable(String channelName, Message msg) throws SQLException;
 
-//    /**
-//     * This method change a message from an author from the date oldMsg.getDate()
-//     * to a new message.
-//     *
-//     * @param channelName the name of the table
-//     * @param oldMsg      the old message to change
-//     * @param newMsg      the new message that will replace Oldmsg
-//     * @throws SQLException if a database access errors occurs
-//     */
-//    void updateMessageFromChannel(String channelName, Message oldMsg, Message newMsg) throws SQLException;
-
     /**
      * That function return a list of users that are
      * in the database.
