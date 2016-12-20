@@ -185,6 +185,8 @@ public class DatabaseImpl implements Database {
         Objects.requireNonNull(owner);
         try {
 
+            // todo -> findBugs
+
             final String query = "create table if not exists '" + channelName + "' (" +
                     "DATE INTEGER NOT NULL, " +
                     "MESSAGE TEXT NOT NULL, " +
