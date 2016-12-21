@@ -33,7 +33,7 @@ function createLogin(userName,password){
         })
         .fail(function(response){
         if(! patt.test(userName)){
-        alert("username must contains only alphanumeric characters and must begin with a letter");
+        alert("username must contains only alphanumeric characters must begin with a letter and contains at least 2 characters);
         }
             alert("Impossible to create login.");
         })

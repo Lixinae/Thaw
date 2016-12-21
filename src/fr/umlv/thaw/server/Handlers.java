@@ -179,7 +179,7 @@ class Handlers {
                                                     Database database) {
         String userName = json.getString("userName");
         String password = json.getString("password");
-        boolean pattern = userName.matches("^[a-zA-Z][\\w]+$");//the password must be alphanumeric, start with letter and can contains _
+        boolean pattern = userName.matches("^[a-zA-Z][\\w]+$");//the password must be alphanumeric, start with letter, can contains _ and got at least 2 characters
         if (verifyEmptyOrNull(userName, password) || !pattern) {
             answerToRequest(response, 400, "Wrong JSON input", thawLogger);
             return;
