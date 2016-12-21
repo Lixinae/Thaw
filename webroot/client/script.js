@@ -25,6 +25,7 @@ function setReloadInterval(){
     // Intervals will be much lower once live
     getListChannelsTimer = setInterval(getListChannels,2000);// 10 000 for debug
     getListMessageTimer = setInterval(getListMessageForChannel,500); // 10 000 for debug
+    getListUsersForChan = setInterval(getListUsersForChan,1000);
 }
 
 /*Allow to get default message in a textarea that will disappear when we click in the zone*/
