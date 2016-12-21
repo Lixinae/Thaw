@@ -423,7 +423,7 @@ class Handlers {
         }
     }
 
-    // TODO : Traitement des messages en cas de bot et stockage dans la base de donnée
+    // TODO : Traitement des messages en cas de bot
     private static void analyzeSendMessageRequest(HttpServerResponse response,
                                                   Session session,
                                                   JsonObject json,
@@ -431,8 +431,7 @@ class Handlers {
                                                   List<Channel> channels,
                                                   Database database) {
         long date = System.currentTimeMillis();
-
-        String message = json.getString("message").trim().replaceAll("\\<.*?>", "");
+        String message = json.getString("message").trim().replaceAll("<", "&lt;").replaceAll(">", "&gt;");//one of this characters will take now 4 characters
         String userName = json.getString("username");
         String channelName = json.getString("channelName");
 
@@ -452,6 +451,8 @@ class Handlers {
             answerToRequest(response, 400, "HumanUser: '" + humanUser.getName() + "' is not connected to chan", thawLogger);
             return;
         }
+
+
         if (message.length() > 512) {
             message = message.substring(0, 512);
         }
