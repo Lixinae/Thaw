@@ -432,7 +432,7 @@ class Handlers {
                                                   Database database) {
         long date = System.currentTimeMillis();
 
-        String message = json.getString("message");
+        String message = json.getString("message").trim().replaceAll("\\<.*?>", "");
         String userName = json.getString("username");
         String channelName = json.getString("channelName");
 
@@ -452,11 +452,13 @@ class Handlers {
             answerToRequest(response, 400, "HumanUser: '" + humanUser.getName() + "' is not connected to chan", thawLogger);
             return;
         }
-
+        if (message.length() > 512) {
+            message = message.substring(0, 512);
+        }
         Message mes = MessageFactory.createMessage(humanUser, date, message);
 
         humanUser.sendMessage(chan, mes);
-        //To stock the messages
+        //To stock the message
         try {
             database.addMessageToChannelTable(chan.getChannelName(), mes);
         } catch (SQLException sql) {

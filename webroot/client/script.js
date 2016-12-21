@@ -3,8 +3,7 @@ var currentChannel = "default";
 var username = JSON.parse(sessionStorage.userName); //retrieve the login from the login page
 var getListChannelsTimer;
 var getListMessageTimer;
-// var  messageV = $("#TextZone"); -> Textzone est un id
-// var  messageV = $(".TextZone"); -> TextZone est une classe
+
 
 
 $(document).ready(function(){
@@ -24,11 +23,11 @@ function initialize(){
 
 function setReloadInterval(){
     // Intervals will be much lower once live
-    getListChannelsTimer = setInterval(getListChannels,10000);// 10 000 for debug
-    getListMessageTimer = setInterval(getListMessageForChannel,10000); // 10 000 for debug
+    getListChannelsTimer = setInterval(getListChannels,2000);// 10 000 for debug
+    getListMessageTimer = setInterval(getListMessageForChannel,500); // 10 000 for debug
 }
 
-/* Permet d'avoir un texte par defaut dans la zone de d'ecriture de message et qui disparait lors du clique sur la zone */
+/*Allow to get default message in a textarea that will disappear when we click in the zone*/
 function textAreaDefaultValueDisappearOnClick(){
 	$('textArea')
     .focus(function() {
@@ -84,7 +83,7 @@ function deleteChannel(){
 }
 
 
-// Fonctionne
+//TODO faire fonctionner selectChannel() une fois que l'on aura ajoute des images pour suppr un channel
 function selectChannel(){
 	var ul = $("#channels");
 	ul.click(function(event) {
@@ -100,7 +99,7 @@ function selectChannel(){
                 getListMessageForChannel();
             })
             .fail(function(response){
-//                alert("fail connectToChannel");
+
             })
             .always(function() {
 
@@ -108,8 +107,7 @@ function selectChannel(){
 	});
 }
 
-// L'utilisateur saisie un message
-// Envoie le message au serveur qui l'ajoutera à la base de donné du channel
+
 function sendMessage(){
     var  messageV = $('textArea#TextZone');
     var currentChannel = $("#currentChannel").html();
@@ -209,8 +207,7 @@ function disconnectFromServer(){
 		$.post("/api/private/disconnectFromServer",
 	    JSON.stringify({userName : curUser, currentChannelName:currentChannel}))
 	    .done(function(response){
-	    //Nettoyage des timer pour eviter d'effecteur des requetes alors que
-	    //l'utilisateur s'est deco
+	    //clear all the timer when logout
 	    window.clearInterval(getListChannelsTimer);
 	    window.clearInterval(getListMessageTimer);
         window.location.href = "../index.html";
@@ -231,7 +228,7 @@ les informations de date et les balises HTML necessaires au
 bon formattage.
 
 Format actuel :
-<p>hh:mm DD/MM/YYYY : <br> monMessage <br>
+<p>hh:mm DD/MM/YYYY username : <br> monMessage <br>
 
 le split permet de recuperer les sauts de lignes et
 y inserer les balises html adequat pour le formattage
@@ -243,11 +240,8 @@ function chatMessageFormatting(username,msg,dateAsLong){
     var day = addZero(date.getDate());
     var month = correctMonth(date);
     var year = date.getFullYear();
-    if(msg.length > 512){
-       msg=msg.slice(0,512);
-    }
    return "<p>"+ hours+":"+minutes +" "+day+"/"+month+"/"+year+" "+username+" : "
-                                   +"<br>"+msg.split("\n").join("<br>")+"</p>"+"<br>";
+                                   +"<br><br>"+msg.split("\n").join("<br>")+"</p>"+"<br>";
 }
 
 function addZero(i){
