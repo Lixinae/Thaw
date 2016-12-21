@@ -46,9 +46,6 @@ function textAreaDefaultValueDisappearOnClick(){
 
 
 
-// Permet de creer un channel
-// Et envoie l'information au serveur
-// TODO
 function addChannel(){
     var newChannelName = $('#newChannelText').val();
 	$.post("/api/private/addChannel",
@@ -208,8 +205,9 @@ function getListUsersForChan(){
 
 function disconnectFromServer(){
         var currentChannel = $("#currentChannel").html();
+        var curUser = $("#currentUser").val();
 		$.post("/api/private/disconnectFromServer",
-	    JSON.stringify({userName : username, currentChannelName:currentChannel}))
+	    JSON.stringify({userName : curUser, currentChannelName:currentChannel}))
 	    .done(function(response){
 	    //Nettoyage des timer pour eviter d'effecteur des requetes alors que
 	    //l'utilisateur s'est deco
@@ -248,8 +246,6 @@ function chatMessageFormatting(username,msg,dateAsLong){
     if(msg.length > 512){
        msg=msg.slice(0,512);
     }
-    /*return "<p>"+ date.parse("DD/MM/YYYY HH:mm ")+" ["+username+"] : "
-                                              +"<br>"+msg.split("\n").join("<br>")+"</p>"+"<br>";*/
    return "<p>"+ hours+":"+minutes +" "+day+"/"+month+"/"+year+" "+username+" : "
                                    +"<br>"+msg.split("\n").join("<br>")+"</p>"+"<br>";
 }
