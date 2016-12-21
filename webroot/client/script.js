@@ -9,6 +9,7 @@ var getListMessageTimer;
 
 $(document).ready(function(){
 			$("#currentUser").html(username);
+			$("#currentUser").val(username);//we stock the login of the user into a field
 			$("#currentChannel").html(currentChannel);
 			initialize();
 			setReloadInterval();
@@ -93,8 +94,9 @@ function selectChannel(){
 		var target = getEventTarget(event);
         var targetChannel = target.innerHTML;
         var oldChannel = $("#currentChannel").html();
+        var curUser = $("#currentUser").val();
         $.post("/api/private/connectToChannel",
-            JSON.stringify({channelName : targetChannel,userName : username,oldChannelName : oldChannel}))
+            JSON.stringify({channelName : targetChannel,userName : curUser,oldChannelName : oldChannel}))
             .done(function (response){
                 $("#currentChannel").html(targetChannel);
                 getListUsersForChan();
@@ -114,8 +116,9 @@ function selectChannel(){
 function sendMessage(){
     var  messageV = $('textArea#TextZone');
     var currentChannel = $("#currentChannel").html();
+    var curUser = $("#currentUser").val();//we retrieve the current user of the application that has been stock before
     $.post("/api/private/sendMessage",
-	    JSON.stringify({channelName : currentChannel, message : messageV.val(),username : username}))
+	    JSON.stringify({channelName : currentChannel, message : messageV.val(),username : curUser}))
 	    .done(function(response){
             messageV.val("");
             getListMessageForChannel();
@@ -203,7 +206,6 @@ function getListUsersForChan(){
         });
 }
 
-//TODO : voir comment repermettre le login apres deco
 function disconnectFromServer(){
         var currentChannel = $("#currentChannel").html();
 		$.post("/api/private/disconnectFromServer",

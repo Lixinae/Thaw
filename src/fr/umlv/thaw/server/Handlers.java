@@ -66,6 +66,7 @@ class Handlers {
             }
             if ((u.getName().equals(userName) && u.compareHash(password))) {
                 connectedUsers.add(u);
+                session.put(u.getName(), u);
                 session.put("user", u);
                 break;
             }
@@ -443,7 +444,7 @@ class Handlers {
             return;
         }
         Channel chan = channelOptional.get();
-        HumanUser humanUser = session.get("user");
+        HumanUser humanUser = session.get(userName);
 
         if (!chan.checkIfUserIsConnected(humanUser)) {
             answerToRequest(response, 400, "HumanUser: '" + humanUser.getName() + "' is not connected to chan", thawLogger);
