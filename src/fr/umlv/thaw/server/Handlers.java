@@ -362,8 +362,8 @@ class Handlers {
                                                       List<Channel> channels) {
         String oldChannelName = json.getString("oldChannelName");
         String channelName = json.getString("channelName");
-
-        if (verifyEmptyOrNull(oldChannelName, channelName)) {
+        String userName = json.getString("userName");
+        if (verifyEmptyOrNull(oldChannelName, channelName, userName)) {
             answerToRequest(response, 400, "Wrong JSON input", thawLogger);
             return;
         }
@@ -372,7 +372,7 @@ class Handlers {
             answerToRequest(response, 400, "Channel :" + channelName + " does not exist", thawLogger);
         } else {
             Channel chan = optchannel.get();
-            HumanUser humanUser = session.get("user");
+            HumanUser humanUser = session.get(userName);
             // Check if the user is already connected to the given channel
             if (chan.checkIfUserIsConnected(humanUser)) {
                 answerToRequest(response, 400, "HumanUser :" + humanUser.getName() + " is already connected", thawLogger);
