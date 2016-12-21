@@ -67,6 +67,13 @@ class Handlers {
                 break;
             }
 
+            if (containsUser && u.getName().equals(tmp.getName()) && !u.compareHash(tmp.getPasswordHash())) {
+                thawLogger.log(Level.INFO, "User " + u.getName() + " went back & tried to connect with different password\nRemoving from connected user list");
+                connectedUsers.remove(u);
+                containsUser = connectedUsers.contains(u);
+                break;
+            }
+
             if (u.equals(tmp)) {
                 connectedUsers.add(u);
                 containsUser = connectedUsers.contains(u);
