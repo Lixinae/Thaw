@@ -42,17 +42,17 @@ class Handlers {
         if (json == null) {
             answerToRequest(response, 400, "Wrong Json format", thawLogger);
         } else {
-            analyzeConnecToServerRequest(session, response, json, thawLogger, authorizedHumanUsers, connectedUsers, channels);
+            analyzeConnectToServerRequest(session, response, json, thawLogger, authorizedHumanUsers, connectedUsers, channels);
         }
     }
 
-    private static void analyzeConnecToServerRequest(Session session,
-                                                     HttpServerResponse response,
-                                                     JsonObject json,
-                                                     ThawLogger thawLogger,
-                                                     List<HumanUser> authorizedHumanUsers,
-                                                     List<User> connectedUsers,
-                                                     List<Channel> channels) {
+    private static void analyzeConnectToServerRequest(Session session,
+                                                      HttpServerResponse response,
+                                                      JsonObject json,
+                                                      ThawLogger thawLogger,
+                                                      List<HumanUser> authorizedHumanUsers,
+                                                      List<User> connectedUsers,
+                                                      List<Channel> channels) {
         String userName = json.getString("userName");
         String password = json.getString("password");
         if (verifyEmptyOrNull(userName, password)) {
@@ -135,7 +135,7 @@ class Handlers {
         HumanUser user = session.get(userName);
         connectedUsers.remove(user);
         chan.removeUserFromChan(user);
-        // Detruit la session courante
+        // Destroy the HumanUser associated with the given userName. We don't stock any other value per user.
         routingContext.session().remove(userName);
         thawLogger.log(Level.INFO, "User '" + user.getName() + "' disconnected from server");
         response.putHeader("location", "/").setStatusCode(200).end();
