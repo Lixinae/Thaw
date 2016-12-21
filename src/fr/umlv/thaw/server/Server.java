@@ -25,6 +25,8 @@ import sun.security.x509.X500Name;
 
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.security.*;
 import java.security.cert.CertificateException;
@@ -187,7 +189,10 @@ public class Server extends AbstractVerticle {
     private void startSSLserver(Future<Void> fut, int bindPort, Router router) {
         vertx.executeBlocking(future -> {
                     HttpServerOptions httpOpts = new HttpServerOptions();
-                    generateKeyPairAndCertificate(fut);
+                    Path path = Paths.get("./config/webserver/.keystore.jks");
+                    if (Files.notExists(path)) {
+                        generateKeyPairAndCertificate(fut);
+                    }
                     httpOpts.setKeyStoreOptions(new JksOptions().setPath("./config/webserver/.keystore.jks").setPassword("password"));
                     httpOpts.setSsl(true);
                     future.complete(httpOpts);
