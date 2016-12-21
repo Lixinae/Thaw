@@ -58,20 +58,24 @@ class Handlers {
         if (verifyEmptyOrNull(userName, password)) {
             answerToRequest(response, 400, "Wrong JSON input", thawLogger);
         }
-        boolean containsUser = true;
+        boolean containsUser = false;
+        String passwordHash = Tools.toSHA256(password);
+        HumanUser tmp = HumanUserFactory.createHumanUser(userName, passwordHash);
         for (HumanUser u : authorizedHumanUsers) {
             containsUser = connectedUsers.contains(u);
-            if (containsUser && u.getName().equals(userName)) {
+            if (containsUser && u.equals(tmp)) { //.getName().equals(userName) && u.compareHash(password)) {
                 break;
             }
-            if ((u.getName().equals(userName) && u.compareHash(password))) {
+
+            if (u.equals(tmp)) {
                 connectedUsers.add(u);
+                containsUser = connectedUsers.contains(u);
                 session.put(u.getName(), u);
                 session.put("user", u);
                 break;
             }
         }
-        if (session.get("user") == null || containsUser) {
+        if (session.get("user") == null || !containsUser) {
             answerToRequest(response, 400, "HumanUser: '" + userName + "' authentication failed", thawLogger);
         } else {
             Optional<Channel> optChannel = findChannelInList(channels, "default");
