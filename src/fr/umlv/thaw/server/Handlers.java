@@ -431,7 +431,7 @@ class Handlers {
                                                   List<Channel> channels,
                                                   Database database) {
         long date = System.currentTimeMillis();
-        String message = json.getString("message").trim().replaceAll("<", "&lt;").replaceAll(">", "&gt;");//one of this characters will take now 4 characters
+        String message = json.getString("message");//one of this characters will take now 4 characters
         String userName = json.getString("username");
         String channelName = json.getString("channelName");
 
@@ -439,6 +439,7 @@ class Handlers {
             answerToRequest(response, 400, "Wrong JSON input", thawLogger);
             return;
         }
+        message = message.trim().replaceAll("<", "&lt;").replaceAll(">", "&gt;");
         Optional<Channel> channelOptional = findChannelInList(channels, channelName);
         if (!channelOptional.isPresent()) {
             answerToRequest(response, 400, "Channel: '" + channelName + "' doesn't exist", thawLogger);
@@ -457,13 +458,13 @@ class Handlers {
             message = message.substring(0, 512);
         }
         Message mes = MessageFactory.createMessage(humanUser, date, message);
-
         humanUser.sendMessage(chan, mes);
         //To stock the message
         try {
             database.addMessageToChannelTable(chan.getChannelName(), mes);
         } catch (SQLException sql) {
             answerToRequest(response, 400, "Message from " + humanUser.getName() + " to the channel " + chan.getChannelName() + " hasn't been registered correctly", thawLogger);
+            return;
         }
         // Todo : Analyser le message si un bot est connecté
 
