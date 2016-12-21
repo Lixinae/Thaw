@@ -5,7 +5,6 @@ import fr.umlv.thaw.user.User;
 import fr.umlv.thaw.user.humanUser.HumanUser;
 
 import java.util.List;
-import java.util.Optional;
 
 /**
  * This interface contains every method that is useful to implement a channel.
@@ -66,16 +65,11 @@ public interface Channel {
      */
     boolean checkIfUserIsConnected(User user);
 
+    // Est utilisé uniquement dans le fichier de test !
     /**
      * @return the channel's messages as a List
      */
     List<Message> getListMessage();
-
-    /**
-     * @param user The user you want to find
-     * @return The user if he exists, optional.empty otherwise
-     */
-    Optional<User> findUser(User user);
 
     /**
      * @param user the user you want to check if he is creator

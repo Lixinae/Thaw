@@ -100,19 +100,9 @@ public class ChannelImpl implements Channel {
     @Override
     public List<Message> getListMessage() {
         List<Message> tmp = new ArrayList<>();
-//        messagesQueue.forEach((key, value) -> tmp.addAll(value));
-//        allMessage.forEach(tmp::add);
         tmp.addAll(allMessage);
         tmp.sort(Comparator.comparingLong(Message::getDate));
         return Collections.unmodifiableList(tmp);
-    }
-
-    @Override
-    public Optional<User> findUser(User user) {
-        if (messagesQueue.containsKey(user)) {
-            return Optional.of(user);
-        }
-        return Optional.empty();
     }
 
     @Override
