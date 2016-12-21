@@ -6,8 +6,6 @@ import fr.umlv.thaw.channel.ChannelFactory;
 import fr.umlv.thaw.database.Database;
 import fr.umlv.thaw.database.DatabaseFactory;
 import fr.umlv.thaw.logger.ThawLogger;
-import fr.umlv.thaw.message.Message;
-import fr.umlv.thaw.message.MessageFactory;
 import fr.umlv.thaw.user.User;
 import fr.umlv.thaw.user.humanUser.HumanUser;
 import fr.umlv.thaw.user.humanUser.HumanUserFactory;
@@ -39,10 +37,6 @@ import java.util.Objects;
 import java.util.logging.Level;
 
 
-/**
- * Project :Thaw
- * Created by Narex on 31/10/2016.
- */
 public class Server extends AbstractVerticle {
 
     private static final int KB = 1024;
@@ -83,103 +77,28 @@ public class Server extends AbstractVerticle {
 
     @Override
     public void start(Future<Void> fut) {
-
-        try {
-            thawLogger.log(Level.INFO, "Initializing database");
-            database.initializeDB();
-        } catch (SQLException sql) {
-            //database already set up correctly
-            thawLogger.log(Level.INFO, "Database already set up");
-        }
-
-
-        // TEST ONLY //
-        String hashPassword = Tools.toSHA256("password");
-        String hashPassword2 = Tools.toSHA256("password2");
-        String hashPassword3 = Tools.toSHA256("password2");
-
-
-        HumanUser superUser = HumanUserFactory.createHumanUser("superUser", hashPassword);
-        HumanUser test2 = HumanUserFactory.createHumanUser("test2", hashPassword2);
-        HumanUser superUserOver = HumanUserFactory.createHumanUser("#SuperUser", hashPassword3);
-        try {
-            //if the examples users aren't registered yet
-            database.createLogin(superUser);
-            database.createLogin(test2);
-            database.createLogin(superUserOver);
-        } catch (SQLException sql) {
-            //login already exists
-        } catch (NoSuchAlgorithmException nsae) {
-            //We need to crash here
+        initializeDatabase();
+        // We need to keep at least one super user to create the default channel & have an account to use the test-api
+        String hashPassword = Tools.toSHA256("password2");
+        HumanUser superUser = HumanUserFactory.createHumanUser("#SuperUser", hashPassword);
+        if (createLogin(superUser)) {
             return;
         }
-        authorizedHumanUsers.add(superUser);
-        authorizedHumanUsers.add(superUserOver);
-        authorizedHumanUsers.add(test2);
-
         // Garder le channel default !
         Channel defaul = ChannelFactory.createChannel(superUser, "default");
-        Channel channel = ChannelFactory.createChannel(superUser, "Channel 1");
-        Channel channel2 = ChannelFactory.createChannel(superUser, "Channel 2");
-        try {
-            database.createChannelTable(defaul.getChannelName(), "#SuperUser");
-            database.createChannelTable(channel.getChannelName(), "superUser");
-            database.createChannelTable(channel2.getChannelName(), "test2");
-        } catch (SQLException sql) {
-            thawLogger.log(Level.INFO, "Channels already registered");
-        }
+        createChannelTable(defaul);
         thawLogger.log(Level.INFO, "Loading database data ");
-        try {
-            thawLogger.log(Level.INFO, "Loading authorized HumanUser list");
-            authorizedHumanUsers.addAll(database.getAllUsersList());
-        } catch (SQLException e) {
-            // No human authorized -> Nobody can connect, so crash the server.
+        if (loadAuthorizedHumanUsers()) {
             return;
         }
-        thawLogger.log(Level.INFO, "Loading channel list");
-        channels.addAll(database.getChannelList());
-
-        thawLogger.log(Level.INFO, "Binding each user to his channel");
-        //We add each users to every existing Channel
-        for (Channel chan : database.getChannelList()) {
-            try {
-                for (User usr : database.getAllUsersList()) {
-                    try {
-                        database.addUserToChan(chan.getChannelName(), usr.getName(), chan.getCreatorName());
-                    } catch (SQLException sql) {
-                        System.out.println("pb adding : " + usr.getName());
-                    }
-                }
-            } catch (SQLException sql) {
-                //
-            }
-        }
-        Message mes = MessageFactory.createMessage(superUser, System.currentTimeMillis(), "1er lessage");
-        Message mes1 = MessageFactory.createMessage(test2, System.currentTimeMillis(), "2e message");
-        Message mes2 = MessageFactory.createMessage(superUser, System.currentTimeMillis(), "3e message");
-        Message mes3 = MessageFactory.createMessage(test2, System.currentTimeMillis(), "4e message");
-        try {
-            database.addMessageToChannelTable(defaul.getChannelName(), mes);
-            database.addMessageToChannelTable(defaul.getChannelName(), mes1);
-            database.addMessageToChannelTable(defaul.getChannelName(), mes2);
-            database.addMessageToChannelTable(defaul.getChannelName(), mes3);
-        } catch (SQLException sql) {
-            //
-            System.out.println("Message not added ! Exception !");
-        }
-
+        loadChannelList();
+        loadUserForChannels();
         superUser.joinChannel(defaul);
-        test2.joinChannel(defaul);
-
         thawLogger.log(Level.INFO, "Database loading is done");
 /////////////////////////////////////////////////////////////////////////////////
         final int bindPort = 8080;
         Router router = Router.router(vertx);
-        router.route().handler(CookieHandler.create());
-        router.route().handler(BodyHandler.create().setBodyLimit(maxUploadSize));
-        router.route().handler(SessionHandler.create(LocalSessionStore.create(vertx)));
-        listOfRequest(router);
-        router.route().handler(StaticHandler.create());
+        allRoutes(router);
         if (ssl) {
             // SSL requested, start a SSL HTTP server.
             startSSLserver(fut, bindPort, router);
@@ -187,6 +106,76 @@ public class Server extends AbstractVerticle {
             // No SSL requested, start a non-SSL HTTP server.
             startNonSSLserver(fut, bindPort, router);
         }
+    }
+
+    private void allRoutes(Router router) {
+        router.route().handler(CookieHandler.create());
+        router.route().handler(BodyHandler.create().setBodyLimit(maxUploadSize));
+        router.route().handler(SessionHandler.create(LocalSessionStore.create(vertx)));
+        listOfRequest(router);
+        router.route().handler(StaticHandler.create());
+    }
+
+    private void loadUserForChannels() {
+        thawLogger.log(Level.INFO, "Binding each user to his channel");
+        //We add each users to every existing Channel
+        for (Channel chan : channels) {
+            for (User usr : authorizedHumanUsers) {
+                try {
+                    database.addUserToChan(chan.getChannelName(), usr.getName(), chan.getCreatorName());
+                } catch (SQLException sql) {
+                    thawLogger.log(Level.WARNING, "Problem adding : " + usr.getName());
+                }
+            }
+        }
+    }
+
+    private void loadChannelList() {
+        thawLogger.log(Level.INFO, "Loading channel list");
+        channels.addAll(database.getChannelList());
+    }
+
+    private boolean loadAuthorizedHumanUsers() {
+        try {
+            thawLogger.log(Level.INFO, "Loading authorized HumanUser list");
+            authorizedHumanUsers.addAll(database.getAllUsersList());
+        } catch (SQLException e) {
+            // No human authorized -> Nobody can connect, so crash the server.
+            return true;
+        }
+        return false;
+    }
+
+    private void createChannelTable(Channel defaul) {
+        try {
+            database.createChannelTable(defaul.getChannelName(), "#SuperUser");
+        } catch (SQLException sql) {
+            thawLogger.log(Level.INFO, "Channels already registered");
+        }
+    }
+
+    private void initializeDatabase() {
+        try {
+            thawLogger.log(Level.INFO, "Initializing database");
+            database.initializeDB();
+        } catch (SQLException sql) {
+            //database already set up correctly
+            thawLogger.log(Level.INFO, "Database already set up");
+        }
+    }
+
+    private boolean createLogin(HumanUser superUser) {
+        try {
+            database.createLogin(superUser);
+        } catch (SQLException sql) {
+            //login already exists
+            thawLogger.log(Level.WARNING, "User " + superUser.getName() + " already in database created");
+        } catch (NoSuchAlgorithmException nsae) {
+            //We need to crash here
+            return true;
+        }
+        authorizedHumanUsers.add(superUser);
+        return false;
     }
 
     private void startNonSSLserver(Future<Void> fut, int bindPort, Router router) {
@@ -240,7 +229,7 @@ public class Server extends AbstractVerticle {
         router.route("/api/connectToServer").handler(routingContext -> Handlers.connectToServerHandle(routingContext, thawLogger, authorizedHumanUsers, connectedUsers, channels));
         router.route("/api/private/disconnectFromServer").handler(routingContext -> Handlers.disconnectFromServerHandle(routingContext, thawLogger, channels, connectedUsers));
         router.route("/api/createAccount").handler(routingContext -> Handlers.createAccountHandle(routingContext, thawLogger, authorizedHumanUsers, database));
-        router.route("/api/private/*").handler(routingContext -> Handlers.securityCheckHandle(routingContext, thawLogger, authorizedHumanUsers));
+        router.route("/api/private/*").handler(routingContext -> Handlers.securityCheckHandle(routingContext, thawLogger, authorizedHumanUsers, connectedUsers));
 
 
         // Post & get requests

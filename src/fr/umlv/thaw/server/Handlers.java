@@ -176,23 +176,23 @@ class Handlers {
         String hashedPass = Tools.toSHA256(password);
         HumanUser humanUser = HumanUserFactory.createHumanUser(userName, hashedPass);
         if (authorizedHumanUsers.contains(humanUser)) {
-            answerToRequest(response, 402, "User '" + userName + "' already exists", thawLogger);
+            answerToRequest(response, 401, "User '" + userName + "' already exists", thawLogger);
             return;
         }
         try {
             database.createLogin(humanUser);
         } catch (SQLException e) {
-            answerToRequest(response, 402, "User '" + userName + "' already exists", thawLogger);
+            answerToRequest(response, 401, "User '" + userName + "' already exists", thawLogger);
             return;
         } catch (NoSuchAlgorithmException e) {
-            e.printStackTrace();
+            return;
         }
         authorizedHumanUsers.add(humanUser);
         for (Channel chan : database.getChannelList()) {
             try {
                 database.addUserToChan(chan.getChannelName(), humanUser.getName(), chan.getCreatorName());
             } catch (SQLException sql) {
-                answerToRequest(response, 422, "User '" + userName + " cannot be added to the channel : " + chan.getChannelName(), thawLogger);
+                answerToRequest(response, 410, "User '" + userName + " cannot be added to the channel : " + chan.getChannelName(), thawLogger);
             }
         }
         answerToRequest(response, 200, "Account '" + userName + "' created", thawLogger);
@@ -204,12 +204,12 @@ class Handlers {
     // Check if the user is connected to the server
     static void securityCheckHandle(RoutingContext routingContext,
                                     ThawLogger thawLogger,
-                                    List<HumanUser> authorizedHumanUsers) {
+                                    List<HumanUser> authorizedHumanUsers, List<User> connectedUsers) {
         thawLogger.log(Level.INFO, "In security check handler");
         Session session = routingContext.session();
         HttpServerResponse response = routingContext.response();
         HumanUser humanUser = session.get("user");
-        if (humanUser == null || !authorizedHumanUsers.contains(humanUser)) {
+        if (humanUser == null || !authorizedHumanUsers.contains(humanUser) || !connectedUsers.contains(humanUser)) {
             answerToRequest(response, 403, "HumanUser does not have the access to private api ", thawLogger);
         } else {
             // Poursuis sur celui sur lequel il pointais avant d'arriver la
@@ -322,7 +322,7 @@ class Handlers {
         Channel channel = optchannel.get();
         HumanUser user = session.get("user");
         if (!channel.isUserCreator(user)) {
-            answerToRequest(response, 400, "You do not have the right to delete this channel", thawLogger);
+            answerToRequest(response, 403, "You do not have the right to delete this channel", thawLogger);
             return;
         }
         optchannel = findChannelInList(channels, "default");
