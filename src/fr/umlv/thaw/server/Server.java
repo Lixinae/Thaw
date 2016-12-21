@@ -83,10 +83,13 @@ public class Server extends AbstractVerticle {
 
     @Override
     public void start(Future<Void> fut) {
+
         try {
+            thawLogger.log(Level.INFO, "Initializing database");
             database.initializeDB();
         } catch (SQLException sql) {
             //database already set up correctly
+            thawLogger.log(Level.INFO, "Database already set up");
         }
 
 
@@ -123,15 +126,20 @@ public class Server extends AbstractVerticle {
             database.createChannelTable(channel.getChannelName(), "superUser");
             database.createChannelTable(channel2.getChannelName(), "test2");
         } catch (SQLException sql) {
-            System.out.println("Channels already registered");
+            thawLogger.log(Level.INFO, "Channels already registered");
         }
-        channels.addAll(database.getChannelList());
+        thawLogger.log(Level.INFO, "Loading database data ");
         try {
+            thawLogger.log(Level.INFO, "Loading authorized HumanUser list");
             authorizedHumanUsers.addAll(database.getAllUsersList());
         } catch (SQLException e) {
             // No human authorized -> Nobody can connect, so crash the server.
             return;
         }
+        thawLogger.log(Level.INFO, "Loading channel list");
+        channels.addAll(database.getChannelList());
+
+        thawLogger.log(Level.INFO, "Binding each user to his channel");
         //We add each users to every existing Channel
         for (Channel chan : database.getChannelList()) {
             try {
@@ -163,7 +171,7 @@ public class Server extends AbstractVerticle {
         superUser.joinChannel(defaul);
         test2.joinChannel(defaul);
 
-
+        thawLogger.log(Level.INFO, "Database loading is done");
 /////////////////////////////////////////////////////////////////////////////////
         final int bindPort = 8080;
         Router router = Router.router(vertx);
@@ -183,7 +191,7 @@ public class Server extends AbstractVerticle {
 
     private void startNonSSLserver(Future<Void> fut, int bindPort, Router router) {
         vertx.createHttpServer().requestHandler(router::accept).listen(bindPort);
-        thawLogger.log(Level.INFO, "Web server now listening");
+        thawLogger.log(Level.INFO, "Non SSL Web server now listening");
         fut.complete();
     }
 
