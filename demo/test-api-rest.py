@@ -66,7 +66,8 @@ def addChannel(machineUrl, newChannelName, creatorName):
     payload = {'newChannelName': newChannelName, 'creatorName': creatorName}
     return doPostRequestJson(url, payload)
 
-# Todo : Test it
+
+# Works
 def deleteChannel(machineUrl, targetChannelName, userName):
     querie = "/api/private/deleteChannel"
     url = machineUrl + querie
@@ -204,12 +205,4 @@ if __name__ == '__main__':
     print(getChannelsList(machineUrl))
 
     print("########\n")
-
-    #machineUrl = askMachineUrl()
-    #channelName = askChannelName()
-    #numberMessage = askNumberMessage()
-    
-    #l = fetchMessage(machineName,channelName,numberMessage)
-    #print (l.join("\n)"))
-
 

@@ -4,7 +4,6 @@ import fr.umlv.thaw.user.User;
 import fr.umlv.thaw.user.humanUser.HumanUser;
 import io.netty.util.internal.ConcurrentSet;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
@@ -79,13 +78,8 @@ public class ChannelImpl implements Channel {
     }
 
     @Override
-    public void moveUsersToAnotherChannel(Channel newChannel) {
-        List<User> tmpToRemove = new ArrayList<>();
-        users.forEach((k) -> {
-            newChannel.addUserToChan(k);
-            tmpToRemove.add(k);
-        });
-        tmpToRemove.forEach(users::remove);
+    public boolean areUsersConnected() {
+        return !users.isEmpty();
     }
 
 

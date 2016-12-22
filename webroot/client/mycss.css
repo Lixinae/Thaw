@@ -100,12 +100,6 @@ h2{
 	list-style:none;
 }
 
-#channels li:hover{
-	background-color: yellow;
-}
-
-
-
 .tchat{
 	display: inline-block;
 	border: blue thin solid;
@@ -158,8 +152,4 @@ textarea#newChannelText{
 
 #usersOnChan{
 	list-style:none;
-}
-
-#usersOnChan li:hover{
-	background-color: yellow;
 }

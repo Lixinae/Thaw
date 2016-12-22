@@ -54,9 +54,8 @@ public interface Channel {
     boolean isUserCreator(HumanUser user);
 
     /**
-     * Moves all users from the current to a new channel
      *
-     * @param newChannel The new channel where to move the users on the current channel
+     * @return True if users are connected to the channel, false otherwise
      */
-    void moveUsersToAnotherChannel(Channel newChannel);
+    boolean areUsersConnected();
 }

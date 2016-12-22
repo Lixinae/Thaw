@@ -356,21 +356,18 @@ class Handlers {
             answerToRequest(response, 403, "You do not have the right to delete this channel", thawLogger);
             return;
         }
-        optchannel = findChannelInList(channels, "default");
-        if (!optchannel.isPresent()) {
-            answerToRequest(response, 400, "Channel '" + channelName + "' does not exist", thawLogger);
-            return;
+        if (channel.areUsersConnected()) {
+            answerToRequest(response, 400, "Channel '" + channelName + "' failed to delete, users are still connected", thawLogger);
+        } else {
+            channels.remove(channel);
+            try {
+                database.removeUserAccessToChan(channel.getChannelName(), user.getName(), user.getName());
+            } catch (SQLException e) {
+                answerToRequest(response, 400, "Channel '" + channelName + "' failed to delete", thawLogger);
+                return;
+            }
+            answerToRequest(response, 200, "Channel '" + channelName + "' successfully deleted", thawLogger);
         }
-        Channel defaut = optchannel.get();
-        channel.moveUsersToAnotherChannel(defaut);
-        channels.remove(channel);
-        try {
-            database.removeUserAccessToChan(channel.getChannelName(), user.getName(), user.getName());
-        } catch (SQLException e) {
-            answerToRequest(response, 400, "Channel '" + channelName + "' failed to delete", thawLogger);
-            return;
-        }
-        answerToRequest(response, 200, "Channel '" + channelName + "' successfully deleted", thawLogger);
     }
 
 

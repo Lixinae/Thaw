@@ -23,9 +23,9 @@ function initialize(){
 
 function setReloadInterval(){
     // Intervals will be much lower once live
-    getListChannelsTimer = setInterval(getListChannels,2000);// 10 000 for debug
-    getListMessageTimer = setInterval(getListMessageForChannel,500); // 10 000 for debug
-    getListUsersForChanTimer = setInterval(getListUsersForChan,1000);
+    getListChannelsTimer = setInterval(getListChannels,10000);// 10 000 for debug
+    getListMessageTimer = setInterval(getListMessageForChannel,12000); // 10 000 for debug
+    getListUsersForChanTimer = setInterval(getListUsersForChan,15000);
 }
 
 /*Allow to get default message in a textarea that will disappear when we click in the zone*/
@@ -71,28 +71,34 @@ function addChannel(){
 
 // TODO
 function deleteChannel(){
-    //target =
-    var target = "";
-	$.post("/api/private/deleteChannel",
-	    JSON.stringify({channelName:target,user:username}))
-	    .done(function(response){
-            alert("success delete channel");
-        })
-        .fail(function(response){
-            alert("fail delete channel");
-        })
-        .always(function() {
+    $("li").click(function() {
+        var targetChannel = $(this).find('span').html();
+        $.post("/api/private/deleteChannel",
+            JSON.stringify({channelName:targetChannel,user:username}))
+            .done(function(response){
+                if(targetChannel == $("#currentChannel").html()){
+                    $("#currentChannel").html("default");
+                }
+                getListChannels();
+            })
+            .fail(function(response){
+                alert("fail delete channel");
+            })
+            .always(function() {
 
+            });
         });
 }
 
+// Compatibilite pour IE si besoin
+function getEventTarget(e) {
+	e = e || window.event;
+	return e.target || e.srcElement;
+}
 
-//TODO faire fonctionner selectChannel() une fois que l'on aura ajoute des images pour suppr un channel
 function selectChannel(){
-	var ul = $("#channels");
-	ul.click(function(event) {
-		var target = getEventTarget(event);
-        var targetChannel = target.innerHTML;
+	$("li").click(function() {
+        var targetChannel = $(this).find('span').html();
         var oldChannel = $("#currentChannel").html();
         var curUser = $("#currentUser").val();
         $.post("/api/private/connectToChannel",
@@ -155,7 +161,6 @@ function getListMessageForChannel(){
         });
 }
 
-
 function getListChannels(){
 	var listChannel = $(".listChannelsIntern");
 
@@ -163,9 +168,10 @@ function getListChannels(){
 	        .done(function(response){
 				listChannel.children().remove();
 				// To makes an on/off effect when loading
-				var string = "<ul id=\"channels\" onclick=\"selectChannel()\">"
+				var string = "<ul id=\"channels\">"
                 $.each(response,function(key,val){
-                    string = string +"<li>"+ val +"</li>";
+                    string = string +"<li><button onclick =\"selectChannel()\"> <span>"+val+"</span> </button> <button id=\"deleteButton\"onclick=\"deleteChannel();return false;\">Delete</button>"+"</li>";
+//                    string = string +"<li><span>"+ val +"</span><button onclick=\"deleteChannel();return false;\"> delete </button>"+"</li>";
                 });
                 string = string + "</ul>";
                 listChannel.append(string);
@@ -206,16 +212,16 @@ function getListUsersForChan(){
 }
 
 function disconnectFromServer(){
-        var currentChannel = $("#currentChannel").html();
-        var curUser = $("#currentUser").val();
-		$.post("/api/private/disconnectFromServer",
+    var currentChannel = $("#currentChannel").html();
+    var curUser = $("#currentUser").val();
+    $.post("/api/private/disconnectFromServer",
 	    JSON.stringify({userName : curUser, currentChannelName:currentChannel}))
 	    .done(function(response){
-	    //clear all the timer when logout
-	    window.clearInterval(getListChannelsTimer);
-	    window.clearInterval(getListMessageTimer);
-	    window.clearInterval(getListUsersForChanTimer);
-        window.location.href = "../index.html" ;
+	        //clear all the timer when logout
+            window.clearInterval(getListChannelsTimer);
+            window.clearInterval(getListMessageTimer);
+            window.clearInterval(getListUsersForChanTimer);
+            window.location.href = "../index.html" ;
         })
         .fail(function(response){
 
@@ -260,8 +266,3 @@ function correctMonth(date){
     return addZero(date.getMonth()+1);
 }
 
-// Compatibilite pour IE si besoin
-function getEventTarget(e) {
-	e = e || window.event;
-	return e.target || e.srcElement;
-}
