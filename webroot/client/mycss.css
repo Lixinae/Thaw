@@ -123,7 +123,6 @@ h2{
 }
 
 .textEntry{
-	border: orange thin solid;
 	margin:0 auto;
 	margin-top:0;
 	margin-bottom:10;
@@ -150,17 +149,38 @@ textarea#newChannelText{
 	list-style:none;
 }
 
+/*logout button*/
 #logout{
     border-radius: 8px;
     color: #FFFFFF;
     background-color : #E11D1D;
 }
+/*effect when the cursor is on the button*/
 #logout:hover {
     box-shadow: 0 12px 16px 0 rgba(0,0,0,0.24),0 17px 50px 0 rgba(0,0,0,0.19);
 }
 
+/*create_channel button*/
 #create_channel{
     float:none;
     height: 30px;
     width: 30px;
+}
+
+
+#chan {
+    border-radius: 6px;
+    background-color : #E5D3E5;
+}
+
+#sendMessageButton {
+    margin-left: 40%;
+    border-radius: 7px;
+    width : 20%;
+    background-color : #366FA8;
+    color: #FFFFFF;
+}
+
+#sendMessageButton:hover{
+    box-shadow: 0 12px 16px 0 rgba(0,0,0,0.24),0 17px 50px 0 rgba(0,0,0,0.19);
 }
