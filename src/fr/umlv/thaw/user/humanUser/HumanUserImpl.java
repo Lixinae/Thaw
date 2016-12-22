@@ -1,7 +1,6 @@
 package fr.umlv.thaw.user.humanUser;
 
 import fr.umlv.thaw.channel.Channel;
-import fr.umlv.thaw.message.Message;
 import fr.umlv.thaw.server.Tools;
 
 import java.util.Objects;
@@ -40,11 +39,6 @@ public class HumanUserImpl implements HumanUser {
 
     }
 
-    public boolean sendMessage(Channel chan, Message message) {
-        Objects.requireNonNull(chan);
-        Objects.requireNonNull(message);
-        return chan.addMessageToQueue(message);
-    }
 
     public boolean compareHash(String password) {
         return passwordHash.equals(Tools.toSHA256(password));

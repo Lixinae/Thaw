@@ -1,7 +1,5 @@
 package fr.umlv.thaw.channel;
 
-import fr.umlv.thaw.message.Message;
-import fr.umlv.thaw.message.MessageFactory;
 import fr.umlv.thaw.user.bot.Bot;
 import fr.umlv.thaw.user.bot.BotFactory;
 import fr.umlv.thaw.user.humanUser.HumanUser;
@@ -13,84 +11,7 @@ import java.nio.file.Paths;
 
 import static fr.umlv.thaw.server.Tools.toSHA256;
 
-/**
- * Project :Thaw
- * Created by Narex on 17/11/2016.
- */
 public class ChannelImplTest {
-    ///// ADD MESSAGE ////
-    @Test
-    public void addSingleMessageToQueue() throws Exception {
-        Channel ch = new ChannelImpl(HumanUserFactory.createHumanUser("Pierre", toSHA256("password")), "Marie");
-        HumanUser gege = HumanUserFactory.createHumanUser("Ggee", toSHA256("password"));
-        Message message = MessageFactory.createMessage(gege, 10, "Hey du gland!");
-        Assert.assertTrue(ch.addMessageToQueue(message));
-    }
-
-    @Test
-    public void addMultipleMessagesToQueue() throws Exception {
-        Channel ch = new ChannelImpl(HumanUserFactory.createHumanUser("Poney", toSHA256("password")), "Je sus ici");
-        HumanUser dede = HumanUserFactory.createHumanUser("dede", toSHA256("password"));
-        Message message = MessageFactory.createMessage(dede, 10, "Hey du gland!");
-        Message message1 = MessageFactory.createMessage(dede, 30, "Hey du glandos!");
-        Message message2 = MessageFactory.createMessage(dede, 50, "Hey bachi!");
-        Message message3 = MessageFactory.createMessage(dede, 60, "Hey dsfsdf");
-        Message message4 = MessageFactory.createMessage(dede, 70, "Okay");
-        Message message5 = MessageFactory.createMessage(dede, 80, "Hey du gland!");
-        Assert.assertTrue(ch.addMessageToQueue(message));
-        Assert.assertTrue(ch.addMessageToQueue(message1));
-        Assert.assertTrue(ch.addMessageToQueue(message2));
-        Assert.assertTrue(ch.addMessageToQueue(message3));
-        Assert.assertTrue(ch.addMessageToQueue(message4));
-        Assert.assertTrue(ch.addMessageToQueue(message5));
-    }
-
-    ///// DEL MESSAGES /////
-    @Test
-    public void delMessageFromQueue() throws Exception {
-        Channel ch = new ChannelImpl(HumanUserFactory.createHumanUser("Pierre", toSHA256("password")), "Marie");
-        HumanUser gege = HumanUserFactory.createHumanUser("Ggee", toSHA256("password"));
-        Message message = MessageFactory.createMessage(gege, 10, "Hey du gland!");
-        ch.addMessageToQueue(message);
-        Assert.assertEquals(1, ch.getListMessage().size());
-        ch.delMessageFromQueue(gege, 10);
-        Assert.assertEquals(0, ch.getListMessage().size());
-    }
-
-
-    @Test
-    public void delMultipleMessageFromQueue() throws Exception {
-        Channel ch = new ChannelImpl(HumanUserFactory.createHumanUser("Pierre", toSHA256("password")), "Marie");
-        HumanUser gege = HumanUserFactory.createHumanUser("Ggee", toSHA256("password"));
-        Message message = MessageFactory.createMessage(gege, 10, "Hey du gland!");
-        Message message1 = MessageFactory.createMessage(gege, 30, "Hey du glandos!");
-        Message message2 = MessageFactory.createMessage(gege, 50, "Hey bachi!");
-        Message message3 = MessageFactory.createMessage(gege, 60, "Hey dsfsdf");
-        Message message4 = MessageFactory.createMessage(gege, 70, "Okay");
-        Message message5 = MessageFactory.createMessage(gege, 80, "Hey du gland!");
-        Message message6 = MessageFactory.createMessage(gege, 90, "Hey du gland!");
-        Message message7 = MessageFactory.createMessage(gege, System.currentTimeMillis(), "Hey du gland!");
-        Message message8 = MessageFactory.createMessage(gege, System.currentTimeMillis(), "Hey du gland!");
-        Message message9 = MessageFactory.createMessage(gege, System.currentTimeMillis(), "Hey du gland!");
-        ch.addMessageToQueue(message);
-        ch.addMessageToQueue(message1);
-        ch.addMessageToQueue(message2);
-        ch.addMessageToQueue(message3);
-        ch.addMessageToQueue(message4);
-        ch.addMessageToQueue(message5);
-        ch.addMessageToQueue(message6);
-        ch.addMessageToQueue(message7);
-        ch.addMessageToQueue(message8);
-        ch.addMessageToQueue(message9);
-        Assert.assertEquals(10, ch.getListMessage().size());
-        ch.delMessageFromQueue(gege, 10);
-        Assert.assertEquals(9, ch.getListMessage().size());
-        ch.delMessageFromQueue(gege, 30);
-        ch.delMessageFromQueue(gege, 50);
-        ch.delMessageFromQueue(gege, 90);
-        Assert.assertEquals(6, ch.getListMessage().size());
-    }
-
 
     ////ADD USER/////
     @Test

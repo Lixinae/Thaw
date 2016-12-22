@@ -1,8 +1,5 @@
 package fr.umlv.thaw.user.bot;
 
-import fr.umlv.thaw.channel.Channel;
-import fr.umlv.thaw.message.Message;
-
 import java.nio.file.Path;
 import java.util.Objects;
 
@@ -28,12 +25,12 @@ public class BotImpl implements Bot {
                 '}';
     }
 
-    @Override
-    public boolean sendMessage(Channel chan, Message message) {
-        Objects.requireNonNull(chan);
-        Objects.requireNonNull(message);
-        return chan.addMessageToQueue(message);
-    }
+//    @Override
+//    public boolean sendMessage(Channel chan, Message message) {
+//        Objects.requireNonNull(chan);
+//        Objects.requireNonNull(message);
+//        return chan.addMessageToQueue(message);
+//    }
 
     @Override
     public String getName() {

@@ -1,6 +1,5 @@
 package fr.umlv.thaw.channel;
 
-import fr.umlv.thaw.message.Message;
 import fr.umlv.thaw.user.User;
 import fr.umlv.thaw.user.humanUser.HumanUser;
 
@@ -15,23 +14,6 @@ public interface Channel {
      * @return the creator name of the channel
      */
     String getCreatorName();
-
-    /**
-     * This method add a message that has been wrote by a user in a certain date
-     *
-     * @param message the message that must been add
-     * @return true if the message has been sent false otherwise
-     */
-    boolean addMessageToQueue(Message message);
-
-    /**
-     * Delete a message from the channel from the author at a certain instant
-     *
-     * @param usr  the user that sent the message at the given time
-     * @param date the date in which the message has been sent
-     * @return true if the message has been removed, false otherwise
-     */
-    boolean delMessageFromQueue(User usr, long date);
 
     /**
      * Add a user to the channel
@@ -65,12 +47,6 @@ public interface Channel {
      */
     boolean checkIfUserIsConnected(User user);
 
-    // Est utilisé uniquement dans le fichier de test !
-    /**
-     * @return the channel's messages as a List
-     */
-    List<Message> getListMessage();
-
     /**
      * @param user the user you want to check if he is creator
      * @return true if the given user is the creator of the channel
@@ -79,25 +55,8 @@ public interface Channel {
 
     /**
      * Moves all users from the current to a new channel
+     *
      * @param newChannel The new channel where to move the users on the current channel
      */
     void moveUsersToAnotherChannel(Channel newChannel);
-
-//    /**
-//     * Add a bot in the channel. That method could be called only by someone who
-//     * got enough privilege to add a bot in this channel
-//     *
-//     * @param bot the bot to add in the channel
-//     * @return true if the bot has been added, false otherwise
-//     */
-//    boolean addBot(Bot bot);
-//
-//    /**
-//     * Remove a bot from the channel. That method must be call by someone who
-//     * got enough privilege to remove a bot from the current channel.
-//     *
-//     * @param bot the bot that must been removed from the channel
-//     * @return true if the bot has been removed, false otherwise
-//     */
-//    boolean delBot(Bot bot);
 }

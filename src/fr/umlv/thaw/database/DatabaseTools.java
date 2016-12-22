@@ -120,13 +120,14 @@ class DatabaseTools {
 
     static boolean canUserViewChannel(String channelName, String userName, Connection co) throws SQLException {
         final String request = "SELECT * FROM chanviewer WHERE MEMBER LIKE ?  AND CHANNAME LIKE ? ;";
-        PreparedStatement prep = co.prepareStatement(request);
-        prep.setString(1, userName);
-        prep.setString(2, channelName);
-        if (prep.execute()) {
-            try (ResultSet tmp = prep.getResultSet()) {
-                if (tmp.next()) {
-                    return true;
+        try (PreparedStatement prep = co.prepareStatement(request)) {
+            prep.setString(1, userName);
+            prep.setString(2, channelName);
+            if (prep.execute()) {
+                try (ResultSet tmp = prep.getResultSet()) {
+                    if (tmp.next()) {
+                        return true;
+                    }
                 }
             }
         }
@@ -135,18 +136,17 @@ class DatabaseTools {
 
     static boolean userCanControlAccessToChan(String channelName, String user, Connection co) throws SQLException {
         final String request = "SELECT * FROM channels WHERE CHANNAME LIKE ?  AND OWNER LIKE ? ;";
-        PreparedStatement prep = co.prepareStatement(request);
-        prep.setString(1, channelName);
-        prep.setString(2, user);
-        if (prep.execute()) {
-            try (ResultSet tmp = prep.getResultSet()) {
-                if (tmp.next()) {
-                    return true;
+        try (PreparedStatement prep = co.prepareStatement(request)) {
+            prep.setString(1, channelName);
+            prep.setString(2, user);
+            if (prep.execute()) {
+                try (ResultSet tmp = prep.getResultSet()) {
+                    if (tmp.next()) {
+                        return true;
+                    }
                 }
             }
         }
         return false;
     }
-
-
 }

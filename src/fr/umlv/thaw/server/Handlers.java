@@ -38,7 +38,6 @@ class Handlers {
         HttpServerResponse response = routingContext.response();
         JsonObject json = routingContext.getBodyAsJson();
         Session session = routingContext.session();
-
         if (json == null) {
             answerToRequest(response, 400, "Wrong Json format", thawLogger);
         } else {
@@ -454,7 +453,7 @@ class Handlers {
             answerToRequest(response, 400, "Wrong JSON input", thawLogger);
             return;
         }
-        message = message.trim().replaceAll("<", "&lt;").replaceAll(">", "&gt;");
+
         Optional<Channel> channelOptional = findChannelInList(channels, channelName);
         if (!channelOptional.isPresent()) {
             answerToRequest(response, 400, "Channel: '" + channelName + "' doesn't exist", thawLogger);
@@ -468,12 +467,11 @@ class Handlers {
             return;
         }
 
-
+        message = message.trim().replaceAll("<", "&lt;").replaceAll(">", "&gt;");
         if (message.length() > 512) {
             message = message.substring(0, 512);
         }
         Message mes = MessageFactory.createMessage(humanUser, date, message);
-        humanUser.sendMessage(chan, mes);
         //To stock the message
         try {
             database.addMessageToChannelTable(chan.getChannelName(), mes);
@@ -513,24 +511,13 @@ class Handlers {
         Optional<Channel> optChan = findChannelInList(channels, channelName);
         if (optChan.isPresent()) {
             Channel channel = optChan.get();
-
-//            List<Message> tmpMess = channel.getListMessage();
-//            List<Message> returnListMessage = tmpMess.subList(Math.max(tmpMess.size() - numberOfMessageWanted, 0), tmpMess.size());
-//            answerToRequest(response, 200, returnListMessage, thawLogger);
-
             try {
-//                System.out.println(channel.getChannelName());
-//                System.out.println("truc " + database.getChannelList());
-                // SQL exeception sur database.messageList
                 List<Message> tmpMess = database.getMessagesList(channel.getChannelName());
-//                System.out.println("argh " + tmpMess);
                 List<Message> returnListMessage = tmpMess.subList(Math.max(tmpMess.size() - numberOfMessageWanted, 0), tmpMess.size());
                 answerToRequest(response, 200, returnListMessage, thawLogger);
             } catch (SQLException sql) {
                 answerToRequest(response, 400, "Problem for retrieving information at : " + channel.getChannelName() + " SQLException", thawLogger);
             }
-
-
         } else {
             answerToRequest(response, 400, "Channel: " + channelName + " doesn't exist", thawLogger);
         }
