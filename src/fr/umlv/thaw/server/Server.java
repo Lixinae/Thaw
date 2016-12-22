@@ -20,20 +20,14 @@ import io.vertx.ext.web.handler.CookieHandler;
 import io.vertx.ext.web.handler.SessionHandler;
 import io.vertx.ext.web.handler.StaticHandler;
 import io.vertx.ext.web.sstore.LocalSessionStore;
-import sun.security.tools.keytool.CertAndKeyGen;
-import sun.security.x509.X500Name;
 
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.security.*;
-import java.security.cert.CertificateException;
-import java.security.cert.X509Certificate;
+import java.security.NoSuchAlgorithmException;
 import java.sql.SQLException;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 import java.util.Objects;
 import java.util.logging.Level;
@@ -191,7 +185,11 @@ public class Server extends AbstractVerticle {
                     HttpServerOptions httpOpts = new HttpServerOptions();
                     Path path = Paths.get("./config/webserver/.keystore.jks");
                     if (Files.notExists(path)) {
-                        generateKeyPairAndCertificate(fut);
+                        System.err.println("Please generate a certificate using the foolowing command before : ");
+                        System.err.println("keytool -genkey -alias localhost -keyalg RSA -keystore .keystore.jks -validity 365 -keysize 2048");
+                        System.err.println("then stock it into ./config/webserver/");
+                        System.exit(0);
+                        // generateKeyPairAndCertificate(fut);
                     }
                     httpOpts.setKeyStoreOptions(new JksOptions().setPath("./config/webserver/.keystore.jks").setPassword("password"));
                     httpOpts.setSsl(true);
@@ -206,7 +204,7 @@ public class Server extends AbstractVerticle {
                 });
     }
 
-    private void generateKeyPairAndCertificate(Future<Void> fut) {
+    /*private void generateKeyPairAndCertificate(Future<Void> fut) {
         try {
             // Generate a self-signed key pair and certificate.
             KeyStore store = KeyStore.getInstance("JKS");
@@ -225,7 +223,7 @@ public class Server extends AbstractVerticle {
             thawLogger.log(Level.SEVERE, "Failed to generate a self-signed cert and other SSL configuration methods failed.");
             fut.fail(ex);
         }
-    }
+    }*/
 
     // All requests that the server can use
     private void listOfRequest(Router router) {
