@@ -5,13 +5,11 @@ import fr.umlv.thaw.channel.Channel;
 import fr.umlv.thaw.channel.ChannelFactory;
 import fr.umlv.thaw.message.Message;
 import fr.umlv.thaw.message.MessageFactory;
-import fr.umlv.thaw.server.Tools;
 import fr.umlv.thaw.user.humanUser.HumanUser;
 import fr.umlv.thaw.user.humanUser.HumanUserFactory;
 
 import java.nio.file.FileSystems;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.security.NoSuchAlgorithmException;
 import java.sql.*;
 import java.util.ArrayList;
@@ -52,97 +50,6 @@ public class DatabaseImpl implements Database {
     }
 
 
-    /*CONSTRUCTOR'S TOOLS*/
-
-    //TODO Ne pas oublier de virer le main une fois que l'on aura fait toutes
-    public static void main(String[] args) throws Exception {
-        String sep = FileSystems.getDefault().getSeparator();
-        DatabaseImpl myDB;
-        long dte = System.currentTimeMillis();
-        try {
-            myDB = new DatabaseImpl(Paths.get(".." + sep + "db"), "mafia");//Creation base du fichier mafia.db
-        } catch (SQLException sql) {
-            System.err.println("can't open the db ");
-            return;
-        }
-
-
-        String channelName = "Chan1";
-        //test de createLogin
-        try {
-
-            myDB.initializeDB();
-        } catch (SQLException sql) {
-            //nothing
-        }
-        HumanUser user1 = HumanUserFactory.createHumanUser("George", Tools.toSHA256("12345@A"));
-        HumanUser user2 = HumanUserFactory.createHumanUser("TotoLeBus", Tools.toSHA256("TotoLeBus"));
-        try {
-            myDB.createLogin(user1);
-            myDB.createLogin(user2);
-        } catch (SQLException sql) {
-            //ne rien faire car pas envie de planter sur une erreur
-        }
-        //La table chan1 étant supprimer à la fin, on peut la re créer sans risquer une erreur
-
-        myDB.createChannelTable(channelName, "George");
-
-        List<Channel> test = myDB.getChannelList();
-        System.out.println("Nombre de channel : " + test.size());
-        for (Channel chan : test) {
-            System.out.println("Channel : " + chan);
-        }
-        Message m1 = MessageFactory.createMessage(user1, System.currentTimeMillis(), "Bonjour mon message");
-
-        myDB.addMessageToChannelTable(channelName, m1);
-        System.out.println("Messages dans Chan1 : ");
-        System.out.println(myDB.getMessagesList(channelName));
-
-        Message m2 = MessageFactory.createMessage(user2, System.currentTimeMillis(), "J'i bien h@ck la secu >: )");
-        myDB.addMessageToChannelTable(channelName, m2);
-
-        myDB.addUserToChan(channelName, "TotoLeBus", "George");
-        Message m3 = MessageFactory.createMessage(user2, dte, "Avec les droits ça fonctionne mieux");
-        myDB.addMessageToChannelTable(channelName, m3);
-
-
-        System.out.println("Message dans Chan1 deuxième : ");
-        myDB.getMessagesList(channelName).forEach(System.out::println);
-
-        System.out.println("Apres chgmt de message de TotoLeBus : ");
-        System.out.println(myDB.getMessagesList(channelName));
-
-        myDB.removeUserAccessToChan(channelName, "TotoLeBus", "George");
-        System.out.println("TotoLeBus n'a plus acces a " + channelName);
-        System.out.println("Avant remove George de Chan1");
-
-        System.out.println("uti present : ");
-        System.out.println(myDB.getUsersListFromChan(channelName));
-
-        myDB.removeUserAccessToChan(channelName, "George", "George");
-
-        System.out.println("George has been removed from Chan1");
-        List<Channel> chans = myDB.getChannelList();
-        System.out.println("Nombre de channel present après suppresion de l'auteur : " + chans.size());
-
-        ResultSet rs = DatabaseTools.executeQuery("SELECT name FROM sqlite_master WHERE type='table';", myDB.state);
-
-        System.out.println("Liste des tables présentent : ");
-        while (rs.next()) {
-            System.out.println("name : " + rs.getString(1));
-        }
-        System.out.println("Liste d'utilisateur : ");
-        List<HumanUser> users = myDB.getAllUsersList();
-        users.forEach(l -> System.out.println("user : " + l));
-
-
-        //Ne pas oublier ensuite de fermer notre bdd et le ResultSet precedemment ouvert.
-        //toujours fermer la bdd en dernier sous peine d'erreur
-
-        rs.close();
-        myDB.close();
-    }
-
     /*
     * Public's method
     * */
@@ -168,6 +75,11 @@ public class DatabaseImpl implements Database {
     }
 
     @Override
+    /*
+    * For a security reason and to not make useless one line function, we create
+    * ourselves the request here. We also avoid the fact that the function
+    * can throw a SQLException if the channel already exist.
+    * */
     public void createChannelTable(String channelName, String owner) throws SQLException {
         Objects.requireNonNull(channelName);
         Objects.requireNonNull(owner);
@@ -180,7 +92,6 @@ public class DatabaseImpl implements Database {
 
         } catch (SQLException sql) {
             System.err.println("Table " + channelName + " already exist");
-            sql.printStackTrace();
             return;
         }
         updateChannelsTable(channelName, owner, co);
@@ -198,33 +109,40 @@ public class DatabaseImpl implements Database {
     }
 
     @Override
+    /*
+    * Because we must distinct each two cases (remove a user that is not the owner and remove the owner),
+     * wa can't really simplify that much the function and if we externalize the SQL request, we could hide
+     * the possible SQL Injection breach from FindBug (even if we got the control from the data).
+     * For the second case, because we must remove each users from the channels, we must find every
+     * user from a channel and remove them one by one before removing the channel entry in the channels table.
+    * */
     public void removeUserAccessToChan(String channelName, String userNametoKick, String authorityName) throws SQLException {
         Objects.requireNonNull(channelName);
         Objects.requireNonNull(userNametoKick);
         Objects.requireNonNull(authorityName);
         if (userCanControlAccessToChan(channelName, authorityName, co) && !userNametoKick.equals(authorityName)) {
-            final String query = "DELETE FROM CHANVIEWER WHERE "
+            final String removeUserAccesToChanRequest = "DELETE FROM CHANVIEWER WHERE "
                     + "CHANNAME LIKE ?"
                     + " AND MEMBER LIKE ? ;";
 
-            prep = co.prepareStatement(query);
+            prep = co.prepareStatement(removeUserAccesToChanRequest);
             prep.setString(1, channelName);
             prep.executeUpdate();
         } else if (userCanControlAccessToChan(channelName, authorityName, co) && userNametoKick.equals(authorityName)) {
             List<HumanUser> toEject = getUsersListFromChan(channelName);
-            final String query = "DELETE FROM CHANVIEWER WHERE "
+            final String removeUserAccesToChanRequest = "DELETE FROM CHANVIEWER WHERE "
                     + "CHANNAME LIKE ? "
                     + " AND MEMBER LIKE ? ;";
-            prep = co.prepareStatement(query);
+            prep = co.prepareStatement(removeUserAccesToChanRequest);
             for (HumanUser user : toEject) {
                 prep.setString(1, channelName);
                 prep.setString(2, user.getName());
                 prep.executeUpdate();
             }
-            final String query2 = "DELETE FROM CHANNELS WHERE "
+            final String removeChannelFromChannels = "DELETE FROM CHANNELS WHERE "
                     + "CHANNAME LIKE ?  "
                     + " AND OWNER LIKE ? ;";
-            prep = co.prepareStatement(query2);
+            prep = co.prepareStatement(removeChannelFromChannels);
             prep.setString(1, channelName);
             prep.setString(2, userNametoKick);
             prep.executeUpdate();
@@ -245,6 +163,17 @@ public class DatabaseImpl implements Database {
     }
 
     @Override
+    /*  To avoid the multiplication of temporary object such as
+    * hum,login and pswd, we must make 3 lines.
+    *   We must also not forget that we should close our ResulSet
+    * object after request, and because me need a login and a password
+    * that we retrieve from a request, our loop must done 4 differents
+    * operations.
+    *   Finally, we could get a list of empty user from our database
+    * and so must we return an emptyList to avoid any problem.
+    *   After that, if we get a result the userList object can
+    * can be returned without any trouble.
+    * */
     public List<HumanUser> getAllUsersList() throws SQLException {
         ResultSet rs = executeQuery("select * from users", state);
         List<HumanUser> userList = new ArrayList<>();
@@ -266,6 +195,13 @@ public class DatabaseImpl implements Database {
 
 
     @Override
+    /*
+    *   Mostly for the same reason as the function above, we can't really
+    * reduce the length of the method without taking any security risk or
+    * even without forgetting to close one of our PreparedStatement object.
+    *   And we can't really delegate more without making the code more
+    * complex.
+    * */
     public List<HumanUser> getUsersListFromChan(String channelName) throws SQLException {
         Objects.requireNonNull(channelName);
         final String query = "SELECT MEMBER FROM CHANVIEWER WHERE CHANNAME LIKE ? ;";
@@ -297,53 +233,66 @@ public class DatabaseImpl implements Database {
 
 
     @Override
+    /*
+    *   We need to close our local PreparedStatement with a
+    * try-with-resources and because we must construct a List,
+    * we must add and construct each message one by one.
+    *   We must also not forget to find the password associated
+    * with an user to construct our HumanUser and then the Message
+    * associated with the HumanUser.
+    * */
     public List<Message> getMessagesList(String channelName) throws SQLException {
-        boolean hasResult;
+        boolean hasResult;//useful to know if we have found a channel
         try (PreparedStatement p2 = co.prepareStatement(String.format("SELECT * FROM  \"%s\"", channelName))) {
-            final String request = "SELECT PSWD FROM users WHERE LOGIN LIKE ? ;";
+            final String request = "SELECT PSWD FROM users WHERE LOGIN LIKE ? ;";//the SQL request to retrieve the encrypted pasword from a user
             List<Message> msgs = new ArrayList<>();
             HumanUser tmpUser;
             Message tmpMessage;
             prep = co.prepareStatement(request);
-            hasResult = p2.execute();
+            hasResult = p2.execute();//if true we got a channel
             while (hasResult) {
+                //while we found a channel
                 try (ResultSet rs = p2.getResultSet()) {
-                    while (rs.next()) {
+                    while (rs.next()) {//we retrieve the messages one by one
                         String author = rs.getString("AUTHOR");
                         String message = rs.getString("MESSAGE");
                         long date = rs.getLong("DATE");
 
-                        prep.setString(1, author);
-                        if (prep.execute()) {
-                            try (ResultSet tmp = prep.getResultSet()) {
-                                tmpUser = HumanUserFactory.createHumanUser(author, tmp.getString("PSWD"));
-                                tmpMessage = MessageFactory.createMessage(tmpUser, date, message);
-                                msgs.add(tmpMessage);
+                        prep.setString(1, author);//to find the encrypted password of the HumanUser to constuct it after
+                        if (prep.execute()) {//if true then the request has work
+                            try (ResultSet tmp = prep.getResultSet()) {//we have retrieved the password of the user
+                                tmpUser = HumanUserFactory.createHumanUser(author, tmp.getString("PSWD"));//we can construct our HumanUser
+                                tmpMessage = MessageFactory.createMessage(tmpUser, date, message);//we construct a Message
+                                msgs.add(tmpMessage);//We add the Message to our List
                             }
                         }
                     }
                 }
-                hasResult = p2.getMoreResults();
+                hasResult = p2.getMoreResults();//if false we don't have any channel left
             }
-            return Collections.unmodifiableList(msgs);
+            return Collections.unmodifiableList(msgs);//return an unmodifiableList of message to avoid any modification
         }
     }
 
     @Override
+    /*
+    *   As always, to retrieve our results, we must works with rwo differents
+    * table and ensure that we close ours objects correctly.
+    * */
     public List<Channel> getChannelList() {
         ResultSet rs;
         Channel tmpChan;
         try {
             rs = executeQuery("SELECT * FROM CHANNELS;", state);
         } catch (SQLException sql) {
-            //no result have been found we must return an empty list
-            return new ArrayList<>();
+            return new ArrayList<>();//We haven't found any channel on the database, we must return an ArrayList that can be altered later if we added any channel
         }
-        List<Channel> channels = new ArrayList<>();
+        List<Channel> channels = new ArrayList<>();//There we know that we will get Channel to add
         try {
             final String request = "SELECT PSWD FROM users WHERE LOGIN LIKE ?;";
             prep = co.prepareStatement(request);
             while (rs.next()) {
+                //we retrieve the HumanUser
                 String channame = rs.getString("CHANNAME");
                 String owner = rs.getString("OWNER");
                 prep.setString(1, owner);
@@ -359,7 +308,7 @@ public class DatabaseImpl implements Database {
             }
             rs.close();
         } catch (SQLException sql) {
-            throw new AssertionError("A database error has been occurred");
+            throw new AssertionError("A database error has been occurred");//If any problem occurred during the exploration of our ResultSet
         }
         if (channels.isEmpty()) {
             return new ArrayList<>();
