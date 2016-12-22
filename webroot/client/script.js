@@ -169,6 +169,7 @@ function getListChannels(){
 				var string = "<ul id=\"channels\">"
                 $.each(response,function(key,val){
                     string = string +"<li><button id=\"chan\" onclick =\"selectChannel()\"><span>"+val+"</span></button><img id=\"deleteButton\"onclick=\"deleteChannel();return false;\" src=\"images/cross.png\">"+"</li>";
+                    string = string + "<br>";
                 });
                 string = string + "</ul>";
                 listChannel.append(string);
