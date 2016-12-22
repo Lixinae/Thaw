@@ -291,7 +291,7 @@ class Handlers {
                     createAndAddChannel(newChannelName, creator, channels, database);
                     answerToRequest(response, 200, "Channel " + newChannelName + " successfully created", thawLogger);
                 } catch (SQLException sql) {
-                    answerToRequest(response, 400, "A SQLExcpetion has been occured during the creation of the channel : " + newChannelName, thawLogger);
+                    answerToRequest(response, 400, "A SQLException has been occured during the creation of the channel : " + newChannelName, thawLogger);
                 }
             }
         }
@@ -321,7 +321,7 @@ class Handlers {
     // Todo A tester
     static void deleteChannelHandle(RoutingContext routingContext,
                                     ThawLogger thawLogger,
-                                    List<Channel> channels) {
+                                    List<Channel> channels, Database database) {
         thawLogger.log(Level.INFO, "In deleteChannel request");
         HttpServerResponse response = routingContext.response();
         JsonObject json = routingContext.getBodyAsJson();
@@ -330,7 +330,7 @@ class Handlers {
         if (json == null) {
             answerToRequest(response, 400, "Wrong Json format", thawLogger);
         } else {
-            analyzeDeleteChannelRequest(response, session, json, thawLogger, channels);
+            analyzeDeleteChannelRequest(response, session, json, thawLogger, channels, database);
         }
     }
 
@@ -338,7 +338,7 @@ class Handlers {
                                                     Session session,
                                                     JsonObject json,
                                                     ThawLogger thawLogger,
-                                                    List<Channel> channels) {
+                                                    List<Channel> channels, Database database) {
 
         String channelName = json.getString("channelName");
         if (verifyEmptyOrNull(channelName)) {
@@ -364,6 +364,12 @@ class Handlers {
         Channel defaut = optchannel.get();
         channel.moveUsersToAnotherChannel(defaut);
         channels.remove(channel);
+        try {
+            database.removeUserAccessToChan(channel.getChannelName(), user.getName(), user.getName());
+        } catch (SQLException e) {
+            answerToRequest(response, 400, "Channel '" + channelName + "' failed to delete", thawLogger);
+            return;
+        }
         answerToRequest(response, 200, "Channel '" + channelName + "' successfully deleted", thawLogger);
     }
 

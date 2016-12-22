@@ -130,11 +130,11 @@ def doPostRequestJson(url, payload):
     except:
         print("Can't reach target " + url)
         return
-    print(r.status_code)
     return r.json()
 
 
 def doGetRequest(url):
+    print('url : ', url)
     try:
         r = session.get(url)
     except :
@@ -143,12 +143,8 @@ def doGetRequest(url):
     print(r.status_code)
     return r.json()
 
-
 import datetime
-
-
 def outPutPrettily(messages):
-    # list(messages)
     messages = str(messages).replace("'", "\"")
     json_obj = json.loads(str(messages))
 
@@ -184,7 +180,7 @@ if __name__ == '__main__':
 
     print("########\n")
     print(deleteChannel(machineUrl, 'MonChannel', 'superUser'))
-
+    
     print("########\n")
     print(sendMessage(machineUrl, 'superUser', 'Another', "Message 2"))
 
@@ -203,7 +199,7 @@ if __name__ == '__main__':
 
     print("########\n")
     print(disconnectFromServer(machineUrl, 'Another', 'superUser'))
-
+    
     print("########\n")
     print(getChannelsList(machineUrl))
 
