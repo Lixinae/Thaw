@@ -46,7 +46,8 @@ table {
 }
 
 img {
-float:right;
+float:none;
+margin-left: 5%;
 }
 
 
@@ -88,7 +89,6 @@ h2{
 
 .listChannels{
 	display: inline-block;
-	border: blue thin solid;
 	margin: 0 auto;
 	width:32.2%;
 	padding:10px;
