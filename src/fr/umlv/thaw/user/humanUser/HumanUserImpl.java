@@ -14,6 +14,13 @@ public class HumanUserImpl implements HumanUser {
     private final String name;
     private final String passwordHash;
 
+    /**
+     * This constructor can throw {@link NullPointerException}
+     * if one of the parameter is null.
+     *
+     * @param nickname     the name of the user
+     * @param passwordHash the password that has been hashed
+     */
     HumanUserImpl(String nickname, String passwordHash) {
         this.name = Objects.requireNonNull(nickname);
         this.passwordHash = Objects.requireNonNull(passwordHash);
@@ -34,18 +41,21 @@ public class HumanUserImpl implements HumanUser {
         return chan.addUserToChan(this);
     }
 
+    @Override
     public boolean quitChannel(Channel chan) {
         Objects.requireNonNull(chan);
         return chan.removeUserFromChan(this);
 
     }
 
+    @Override
     public boolean sendMessage(Channel chan, Message message) {
         Objects.requireNonNull(chan);
         Objects.requireNonNull(message);
         return chan.addMessageToQueue(message);
     }
 
+    @Override
     public boolean compareHash(String password) {
         return passwordHash.equals(Tools.toSHA256(password));
     }

@@ -3,6 +3,10 @@ package fr.umlv.thaw.user;
 import fr.umlv.thaw.channel.Channel;
 import fr.umlv.thaw.message.Message;
 
+/**
+ * This interface represent a User that can be a
+ * human or a bot
+ */
 public interface User {
 
     /**
@@ -15,7 +19,6 @@ public interface User {
     boolean sendMessage(Channel chan, Message message);
 
     /**
-     *
      * @return the user name
      */
     String getName();
