@@ -48,14 +48,13 @@ table {
 img {
 float:right;
 }
-/* */
-/* */
-/* */
+
 
 
 body{
 	background-color:#D3D3E5;
 }
+
 
 h1{
 	font-family: "Times New Roman";
@@ -86,6 +85,7 @@ h2{
 	width:80%;
 }
 
+
 .listChannels{
 	display: inline-block;
 	border: blue thin solid;
@@ -93,7 +93,7 @@ h2{
 	width:32.2%;
 	padding:10px;
 	height:60%;
-	overflow:auto;/*Fait apparaitre scrollbar lorsque limite de taille atteinte*/
+	overflow:auto;/*make a scroll appear when bound are reached*/
 }
 
 #channels{
@@ -108,7 +108,7 @@ h2{
 	height:60%;
 	overflow:auto;
 	vertical-align: top;
-	overflow:auto;/*Fait apparaitre scrollbar lorsque limite de taille atteinte*/
+	overflow:auto;/*make a scroll appear when bound are reached*/
 	margin: 0 auto;
 }
 
@@ -119,12 +119,10 @@ h2{
 	width:32.2%;
 	padding:10px;
 	height:60%;
-	overflow:auto;/*Fait apparaitre scrollbar lorsque limite de taille atteinte*/
+	overflow:auto;/*make a scroll appear when bound are reached*/
 }
 
 .textEntry{
-/*La position est en relative par defaut donc pas de precision
-a donner a ce niveau la. Ne pas metttre la position en absolute*/
 	border: orange thin solid;
 	margin:0 auto;
 	margin-top:0;
@@ -133,7 +131,7 @@ a donner a ce niveau la. Ne pas metttre la position en absolute*/
 	max-width:30%;
 	height:25%;
 	padding:0.5%;
-	overflow:auto;/*Fait apparaitre scrollbar lorsque limite de taille atteinte*/
+	overflow:auto;/*make a scroll appear when bound are reached*/
 }
 
 
@@ -148,8 +146,15 @@ textarea#newChannelText{
 }
 
 
-
-
 #usersOnChan{
 	list-style:none;
+}
+
+#logout{
+    border-radius: 8px;
+    color: #FFFFFF;
+    background-color : #E11D1D;
+}
+#logout:hover {
+    box-shadow: 0 12px 16px 0 rgba(0,0,0,0.24),0 17px 50px 0 rgba(0,0,0,0.19);
 }
