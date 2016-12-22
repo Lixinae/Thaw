@@ -285,8 +285,8 @@ class Handlers {
         } else {
             HumanUser creator = session.get("user");
             newChannelName = newChannelName.trim();
-            if (newChannelName.length() > 80 || !newChannelName.matches("^[\\w| ]+$")) {
-                answerToRequest(response, 400, "The channelname exceed 80 characters or got not alphanumerics characters", thawLogger);
+            if (newChannelName.length() > 50 || !newChannelName.matches("^[\\w| ]+$")) {
+                answerToRequest(response, 400, "The channelname exceed 50 characters or got not alphanumerics characters", thawLogger);
             } else {
                 try {
                     createAndAddChannel(newChannelName, creator, channels, database);
