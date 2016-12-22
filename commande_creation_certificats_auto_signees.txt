@@ -3,7 +3,7 @@ Des démarches similaires pourraient se faire sous d'autres systèmes
 d'exploitation mais nous ne les décrirons pas ici.
     Afin d'effectuer cette démarche, nous supposons que vous possédez au
 moins la version 6 de Java (puisque des changements sur l'outil keytool
-ont été effectuées lors de cette version.
+ont été effectuées lors de cette version).
 
     1 - Depuis le terminal, placez-vous à la racine du projet.
 
