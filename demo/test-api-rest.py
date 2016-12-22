@@ -19,34 +19,8 @@ try:
 except ImportError:
     print ("error: no ssl support")
 
-# Exemple utilisation post / get en python
-# import requests
-# url = 'https://...'
-# payload = {'key1': 'value1', 'key2': 'value2'}
 
-# GET
-# r = requests.get(url)
-
-# GET with params in URL
-# r = requests.get(url, params=payload)
-
-# POST with form-encoded data
-# r = requests.post(url, data=payload)
-
-# POST with JSON 
-# import json
-# r = requests.post(url, data=json.dumps(payload))
-
-# Response, status etc
-# r.text
-# r.status_code
-
-# Get ou post avec authentification
-#  r = requests.get('https://my.website.com/rest/path', auth=('myusername', 'mybasicpass'))
-
-
-
-# Asks the user on which machine he wants to log on 
+# Asks the user on which machine he wants to log on
 def askMachineUrl():
     print("Format must be https://[adresse]:[port]")
     machineUrl = input("Enter a machine Url to read from : ")
@@ -71,6 +45,12 @@ def askChannelName(machineUrl):
         channelName = input("Enter a channel name to read from : ")    
     return channelName
 
+
+def createAccountOnServer(machineUrl, userName, password):
+    querie = "/api/createAccount"
+    url = machineUrl + querie
+    payload = {'userName': userName, 'password': password}
+    return doPostRequestJson(url, payload)
 
 # Works
 def connectToServer(machineUrl, userName, password):
@@ -133,81 +113,101 @@ def getListUserForChannel(machineUrl, channelName):
 
 
 # Works
-def disconnectFromServer(machineUrl, channelName):
+def disconnectFromServer(machineUrl, channelName, userName):
     querie = "/api/private/disconnectFromServer"
     url = machineUrl + querie
-    payload = {'currentChannelName': channelName}
+    payload = {'currentChannelName': channelName, 'userName': userName}
     return doPostRequestJson(url, payload)
 
-##def testSimplePost():
-##    payload = { 'username' : 'mouhahahaha' , 'another':'value' }
-##    url = "http://192.168.1.34:8080/api/testJson"
-##    headers = {'Content-type': 'application/json', 'Accept': 'text/plain'}
-##    print(json.dumps(payload))
-##    r = requests.post(url, data=json.dumps(payload),headers=headers)
-##    print(r.text)
-##    print(r.status_code)
-##    print(r.json())
 session = requests.session()
+session.verify = False
 def doPostRequestJson(url, payload):
     headers = {'Content-type': 'application/json', 'Accept': 'text/plain'}
-    print(url)
-    print(payload)
+    print('url : ', url)
+    print('data :', payload)
     try:
-        r = session.post(url, data=json.dumps(payload), headers=headers, verify=False)
+        r = session.post(url, data=json.dumps(payload), headers=headers)
     except:
         print("Can't reach target " + url)
         return
     print(r.status_code)
-    print(r.text)
-    return r.text      
+    return r.json()
 
 
 def doGetRequest(url):
     try:
-        r = session.get(url, verify=False)
+        r = session.get(url)
     except :
         print("Can't reach target "+url)
         return
     print(r.status_code)
-    print(r.json())
     return r.json()
 
 
+import datetime
+
+
+def outPutPrettily(messages):
+    # list(messages)
+    messages = str(messages).replace("'", "\"")
+    json_obj = json.loads(str(messages))
+
+    for k in json_obj:
+        print(datetime.datetime.fromtimestamp(k['date'] / 1e3).strftime('%Y-%m-%d %H:%M:%S'), k['sender']['name'], ":")
+        print(k['content'])
+
 requests.packages.urllib3.disable_warnings()   
 if __name__ == '__main__':
-    #testSimpleGet()
-    #testSimplePost()
-    ##    ip = socket.gethostbyname(socket.gethostname())
     ip = "localhost"
     machineUrl = "https://" + ip + ":8080"
 
+    print("########\n")
+    print(createAccountOnServer(machineUrl, 'superUser', "password"))
+
+    print("########\n")
+    print(connectToServer(machineUrl, 'superUser', "password"))
+    
     print("########")
     connectToServer(machineUrl, 'superUser', "password")
-    print("########")
-    connectToServer(machineUrl, 'superUser', "password")
-    print("########")
-    addChannel(machineUrl, 'Another', 'superUser')
-    print("########")
-    getChannelsList(machineUrl)
-    print("########")
-    connectToChannel(machineUrl, 'default', 'Another', 'superUser')
-    #deleteChannel(machineUrl,'Another','superUser')
-    print("########")
-    sendMessage(machineUrl, 'superUser', 'Another', "Message 2")
-    print("########")
-    sendMessage(machineUrl, 'superUser', 'Another', "Message 3")
-    print("########")
-    sendMessage(machineUrl, 'superUser', 'Another', "Message 4")
-    print("########")
-    getListMessageForChannel(machineUrl, 'Another', numberMessage=10)
-    print("########")
-    getChannelsList(machineUrl)
-    print("########")
-    disconnectFromServer(machineUrl, 'Another')
-    print("########")
-    getChannelsList(machineUrl)
-    print("########")
+
+    print("########\n")
+    print(addChannel(machineUrl, 'Another', 'superUser'))
+
+    print("########\n")
+    print(addChannel(machineUrl, 'MonChannel', 'superUser'))
+
+    print("########\n")
+    print(getChannelsList(machineUrl))
+
+    print("########\n")
+    print(connectToChannel(machineUrl, 'default', 'Another', 'superUser'))
+
+    print("########\n")
+    print(deleteChannel(machineUrl, 'MonChannel', 'superUser'))
+
+    print("########\n")
+    print(sendMessage(machineUrl, 'superUser', 'Another', "Message 2"))
+
+    print("########\n")
+    print(sendMessage(machineUrl, 'superUser', 'Another', "Message 3"))
+
+    print("########\n")
+    print(sendMessage(machineUrl, 'superUser', 'Another', "Message 4"))
+
+    print("########\n")
+    messages = getListMessageForChannel(machineUrl, 'Another', numberMessage=10)
+    outPutPrettily(messages)
+
+    print("########\n")
+    print(getChannelsList(machineUrl))
+
+    print("########\n")
+    print(disconnectFromServer(machineUrl, 'Another', 'superUser'))
+
+    print("########\n")
+    print(getChannelsList(machineUrl))
+
+    print("########\n")
 
     #machineUrl = askMachineUrl()
     #channelName = askChannelName()

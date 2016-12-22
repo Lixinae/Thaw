@@ -92,7 +92,7 @@ class Handlers {
             Channel chan = optChannel.get();
             User u = session.get("user");//NE PAS REMPLACER PAR userName POUR LE MOMENT
             chan.addUserToChan(u);
-            answerToRequest(response, 204, "HumanUser: '" + userName + "' authentication success, connected to 'default' channel", thawLogger);
+            answerToRequest(response, 200, "HumanUser: '" + userName + "' authentication success, connected to 'default' channel", thawLogger);
         }
 //        answerToRequest(response, 204, "HumanUser: '" + userName + "' authenticated", thawLogger);
     }
@@ -127,11 +127,6 @@ class Handlers {
         String currentChannel = json.getString("currentChannelName");
         String userName = json.getString("userName");
         Session session = routingContext.session();
-
-        if (session == null) {
-            answerToRequest(response, 400, "No session", thawLogger);
-            return;
-        }
         if (verifyEmptyOrNull(currentChannel, userName)) {
             answerToRequest(response, 400, "There is no channel defined or the userName is incorrect", thawLogger);
             return;
@@ -143,12 +138,17 @@ class Handlers {
         }
         Channel chan = optChannel.get();
         HumanUser user = session.get(userName);
+        if (user == null) {
+            answerToRequest(response, 400, "Session for user does not exist", thawLogger);
+            return;
+        }
         connectedUsers.remove(user);
         chan.removeUserFromChan(user);
         // Destroy the HumanUser associated with the given userName. We don't stock any other value per user.
         routingContext.session().remove(userName);
         thawLogger.log(Level.INFO, "User '" + user.getName() + "' disconnected from server");
-        response.putHeader("location", "/").setStatusCode(200).end();
+        String answer = Json.encodePrettily("Going back to login page");
+        response.putHeader("location", "/").setStatusCode(200).end(answer);
     }
 
 
