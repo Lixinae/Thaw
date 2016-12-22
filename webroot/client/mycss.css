@@ -102,7 +102,9 @@ h2{
 
 .tchat{
 	display: inline-block;
-	border: blue thin solid;
+	border: #368EA8 thin solid;
+	background-color: #368EA8;
+	border-radius : 20px;
 	width:35%;
 	padding:10px;
 	height:60%;
