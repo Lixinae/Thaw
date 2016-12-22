@@ -168,7 +168,7 @@ function getListChannels(){
 				// To makes an on/off effect when loading
 				var string = "<ul id=\"channels\">"
                 $.each(response,function(key,val){
-                    string = string +"<li><button id=\"chan\" onclick =\"selectChannel()\"><span>"+val+"</span></button><img id=\"deleteButton\"onclick=\"deleteChannel();return false;\" src=\"cross.png\">"+"</li>";
+                    string = string +"<li><button id=\"chan\" onclick =\"selectChannel()\"><span>"+val+"</span></button><img id=\"deleteButton\"onclick=\"deleteChannel();return false;\" src=\"images/cross.png\">"+"</li>";
                 });
                 string = string + "</ul>";
                 listChannel.append(string);
