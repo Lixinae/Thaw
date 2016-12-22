@@ -22,6 +22,21 @@ import java.util.Optional;
 import java.util.logging.Level;
 import java.util.stream.Collectors;
 
+/*
+*   To avoid stupid copy pasta for each methods, there is the list of reasons
+*  that force us to write method that can contains more than 8 lines
+*  even with delegation :
+*
+*   First, for a security reason, we must check every possible cases,
+*  and because of that, our functions will be more and more consequent,
+*  depending of the critical level of the method.
+*   In a second hand, we also need to check our parameters contract and
+*  that force us to write more and more test to be sure of the object
+*  that we manipulate.
+*   Finally, because we need to log  almost every events, we need to
+*  try every possible case and write something depending of the event.
+*
+* */
 class Handlers {
 
     // Order of handlers is same as the order of usage in the server
@@ -29,6 +44,8 @@ class Handlers {
     /*##############################################################*/
     /////////////////// Connect to server Handler ///////////////////
     /*##############################################################*/
+
+
     static void connectToServerHandle(RoutingContext routingContext,
                                       ThawLogger thawLogger,
                                       List<HumanUser> authorizedHumanUsers,
@@ -45,6 +62,7 @@ class Handlers {
             analyzeConnectToServerRequest(session, response, json, thawLogger, authorizedHumanUsers, connectedUsers, channels);
         }
     }
+
 
     private static void analyzeConnectToServerRequest(Session session,
                                                       HttpServerResponse response,
@@ -93,9 +111,8 @@ class Handlers {
             Channel chan = optChannel.get();
             User u = session.get("user");//NE PAS REMPLACER PAR userName POUR LE MOMENT
             chan.addUserToChan(u);
-            answerToRequest(response, 204, "HumanUser: '" + userName + "' authentication success, connected to 'default' channel", thawLogger);
+            answerToRequest(response, 200, "HumanUser: '" + userName + "' authentication success, connected to 'default' channel", thawLogger);
         }
-//        answerToRequest(response, 204, "HumanUser: '" + userName + "' authenticated", thawLogger);
     }
 
 
@@ -117,6 +134,7 @@ class Handlers {
             analyzeDisconnectFromServerRequest(routingContext, response, json, thawLogger, channels, connectedUsers);
         }
     }
+
 
     private static void analyzeDisconnectFromServerRequest(RoutingContext routingContext,
                                                            HttpServerResponse response,
@@ -223,9 +241,8 @@ class Handlers {
         if (humanUser == null || !authorizedHumanUsers.contains(humanUser) || !connectedUsers.contains(humanUser)) {
             answerToRequest(response, 403, "HumanUser does not have the access to private api ", thawLogger);
         } else {
-            // Poursuis sur celui sur lequel il pointais avant d'arriver la
+            // Continue to the route we were before the check
             routingContext.next();
-//            answerToRequest(response, 200, "All good", thawLogger);
         }
     }
 
@@ -513,24 +530,13 @@ class Handlers {
         Optional<Channel> optChan = findChannelInList(channels, channelName);
         if (optChan.isPresent()) {
             Channel channel = optChan.get();
-
-//            List<Message> tmpMess = channel.getListMessage();
-//            List<Message> returnListMessage = tmpMess.subList(Math.max(tmpMess.size() - numberOfMessageWanted, 0), tmpMess.size());
-//            answerToRequest(response, 200, returnListMessage, thawLogger);
-
             try {
-//                System.out.println(channel.getChannelName());
-//                System.out.println("truc " + database.getChannelList());
-                // SQL exeception sur database.messageList
                 List<Message> tmpMess = database.getMessagesList(channel.getChannelName());
-//                System.out.println("argh " + tmpMess);
                 List<Message> returnListMessage = tmpMess.subList(Math.max(tmpMess.size() - numberOfMessageWanted, 0), tmpMess.size());
                 answerToRequest(response, 200, returnListMessage, thawLogger);
             } catch (SQLException sql) {
                 answerToRequest(response, 400, "Problem for retrieving information at : " + channel.getChannelName() + " SQLException", thawLogger);
             }
-
-
         } else {
             answerToRequest(response, 400, "Channel: " + channelName + " doesn't exist", thawLogger);
         }

@@ -32,7 +32,11 @@ import java.util.List;
 import java.util.Objects;
 import java.util.logging.Level;
 
-
+/**
+ * One of ours principal classes.
+ * This class represent our server for
+ * our Thaw Application.
+ */
 public class Server extends AbstractVerticle {
 
     private static final int KB = 1024;
@@ -72,15 +76,21 @@ public class Server extends AbstractVerticle {
 
 
     @Override
+    /*
+    *   Because of the routines that we must set, we cannot
+    * produce less line for start without creating more
+    * methods that could throws exception.
+    *
+    * */
     public void start(Future<Void> fut) {
         initializeDatabase();
         // We need to keep at least one super user to create the default channel & have an account to use the test-api
+        // Because we block it in javascript, this user can only be used in the test api.
         String hashPassword = Tools.toSHA256("password2");
         HumanUser superUser = HumanUserFactory.createHumanUser("#SuperUser", hashPassword);
         if (createLogin(superUser)) {
             return;
         }
-        // Garder le channel default !
         Channel defaul = ChannelFactory.createChannel(superUser, "default");
         createChannelTable(defaul);
         thawLogger.log(Level.INFO, "Loading database data ");
@@ -112,6 +122,10 @@ public class Server extends AbstractVerticle {
         router.route().handler(StaticHandler.create());
     }
 
+    /*
+    *   Because we must initialize correctly each routine and
+    * log the potential warnings, we could not write less lines.
+    * */
     private void loadUserForChannels() {
         thawLogger.log(Level.INFO, "Binding each user to his channel");
         //We add each users to every existing Channel
@@ -160,6 +174,9 @@ public class Server extends AbstractVerticle {
         }
     }
 
+    /*To distinct each possible cases and avoid to throw too much
+    * SQLException, we must make a try catch and log what happened
+    * */
     private boolean createLogin(HumanUser superUser) {
         try {
             database.createLogin(superUser);
@@ -180,6 +197,11 @@ public class Server extends AbstractVerticle {
         fut.complete();
     }
 
+    /*
+    *   Because of the log and the necessity to secure the connection
+    * we cannot write less line and must also tell the user when we need
+    * that the certificate is created.
+    * */
     private void startSSLserver(Future<Void> fut, int bindPort, Router router) {
         vertx.executeBlocking(future -> {
                     HttpServerOptions httpOpts = new HttpServerOptions();
@@ -189,7 +211,6 @@ public class Server extends AbstractVerticle {
                         System.err.println("keytool -genkey -alias localhost -keyalg RSA -keystore .keystore.jks -validity 365 -keysize 2048");
                         System.err.println("then stock it into ./config/webserver/");
                         System.exit(0);
-                        // generateKeyPairAndCertificate(fut);
                     }
                     httpOpts.setKeyStoreOptions(new JksOptions().setPath("./config/webserver/.keystore.jks").setPassword("password"));
                     httpOpts.setSsl(true);
@@ -204,28 +225,11 @@ public class Server extends AbstractVerticle {
                 });
     }
 
-    /*private void generateKeyPairAndCertificate(Future<Void> fut) {
-        try {
-            // Generate a self-signed key pair and certificate.
-            KeyStore store = KeyStore.getInstance("JKS");
-            store.load(null, null);
-            CertAndKeyGen keypair = new CertAndKeyGen("RSA", "SHA256WithRSA", null);
-            X500Name x500Name = new X500Name("localhost", "IT", "unknown", "unknown", "unknown", "unknown");
-            keypair.generate(1024);
-            PrivateKey privKey = keypair.getPrivateKey();
-            X509Certificate[] chain = new X509Certificate[1];
-            chain[0] = keypair.getSelfCertificate(x500Name, new Date(), (long) 365 * 24 * 60 * 60);
-            store.setKeyEntry("selfsigned", privKey, "password".toCharArray(), chain);
-            try (FileOutputStream outputStream = new FileOutputStream("./config/webserver/.keystore.jks")) {
-                store.store(outputStream, "password".toCharArray());
-            }
-        } catch (KeyStoreException | IOException | NoSuchAlgorithmException | CertificateException | NoSuchProviderException | InvalidKeyException | SignatureException ex) {
-            thawLogger.log(Level.SEVERE, "Failed to generate a self-signed cert and other SSL configuration methods failed.");
-            fut.fail(ex);
-        }
-    }*/
 
-    // All requests that the server can use
+    /*
+    * Because we've got more than 8 requests that can be performed
+    * we can't write less lines.
+    * */
     private void listOfRequest(Router router) {
 
         // No need of post or get for these
