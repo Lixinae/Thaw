@@ -4,7 +4,7 @@ $(document).ready(function(){
 		});
 
 
-function connectToServer(userName,password){
+function connectToServer(){
 
     var userName = $('#userNameEntry').val();
     var password = $('#userPasswordEntry').val();
@@ -22,7 +22,7 @@ function connectToServer(userName,password){
 
         });
 }
-function createLogin(userName,password){
+function createLogin(){
     var userName = $('#userNameEntry').val();
     var password = $('#userPasswordEntry').val();
     var patt = new RegExp("^[a-zA-Z][\\w]+$")//pattern that will be use by the server,
@@ -33,7 +33,7 @@ function createLogin(userName,password){
         })
         .fail(function(response){
         if(! patt.test(userName)){
-        alert("username must contains only alphanumeric characters must begin with a letter and contains at least 2 characters);
+        alert("username must contains only alphanumeric characters must begin with a letter and contains at least 2 characters");
         }
             alert("Impossible to create login.");
         })
