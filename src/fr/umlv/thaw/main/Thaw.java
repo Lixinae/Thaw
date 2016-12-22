@@ -8,6 +8,11 @@ import io.vertx.core.Vertx;
 import java.nio.file.Paths;
 
 
+/**
+ * The main application of our program.
+ * This main is in charge of launching the routine
+ * for the programme.
+ */
 public class Thaw {
 
     public static void main(String[] args) throws Exception {
