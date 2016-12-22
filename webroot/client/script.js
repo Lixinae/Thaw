@@ -72,9 +72,10 @@ function addChannel(){
 // TODO
 function deleteChannel(){
     $("li").click(function() {
+        var curUser = $("#currentUser").val();
         var targetChannel = $(this).find('span').html();
         $.post("/api/private/deleteChannel",
-            JSON.stringify({channelName:targetChannel,user:username}))
+            JSON.stringify({channelName:targetChannel,user:curUser}))
             .done(function(response){
                 if(targetChannel == $("#currentChannel").html()){
                     $("#currentChannel").html("default");
