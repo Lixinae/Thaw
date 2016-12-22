@@ -1,0 +1,34 @@
+    Cette documentation s'addresse principalement aux usagers sous linux.
+Des démarches similaires pourraient se faire sous d'autres systèmes
+d'exploitation mais nous ne les décrirons pas ici.
+    Afin d'effectuer cette démarche, nous supposons que vous possédez au
+moins la version 6 de Java (puisque des changements sur l'outil keytool
+ont été effectuées lors de cette version.
+
+    1 - Depuis le terminal, placez-vous à la racine du projet.
+
+    2 - Tapez la commande suivante :
+        keytool -genkey -alias localhost -keyalg RSA -keystore .keystore.jks -validity 365 -keysize 2048
+
+    3 - On vous demandes alors de mettre un mot de passe.
+        Saisissez alors le mot de passe suivant : password
+        À la confirmation du mot de passe saissez encore le même mot de passe.
+
+    4 - Par la suite on vous demande de saisir diverses informations (tels que votre nom et prénom,
+        le nom de votre compagnie etc). Libre a vous de remplir ou non ces informations. Si vous
+        souhaitez ne pas saisir une information, appuyez simplement sur entrée.
+
+    5 - On vous demandes ensuite si vous êtes d'accord avec les informations remplies.
+        Si c'est le cas tapez o puis appuyez sur entrée. Sinon appuyez sur entrées et modifiez
+        les informations nécessaires.
+
+    6 - On vous demandes ensuite de saisir un autre mot de passe.
+        Contentez vous d'appuyez sur entrée puisque nous souhaitons avoir le même
+        mot de passe encore une fois.
+
+    7 - Vous vous retrouvez ensuite avec un fichier .keystore.jks .
+        Déplacez ce fichier dans le dossier config/webroot/ .
+        Un exemple en ligne de commande (en supposant que vous vous trouvez
+        à la racine du dossier du projet) serait :
+
+            cp .keystore.jks ./config/webserver/

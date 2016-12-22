@@ -1,0 +1,14 @@
+    De par la nature du certificat générée (certificat autosignée), il se peut
+très certainement que votre navigateur émette un avertissement de sécurité
+lorsque vous souhaiterez rejoindre l'application via l'addesse :
+ https://localhost:8080
+
+    Pour résoudre ce problème, il vous suffit d'ajouter une exception de
+sécurité pour ce certificat.
+    Sous firefox, par exemple, il vous suffit d'appuyez sur le boutton
+avancé et ajouter une exception.
+
+    Pour pourrez gardez cette exception en mémoire pour ne plus avoir ce
+dialogue lors de votre prochaine connexion.
+    Cependant, si le certificat venait à changer, vous devriez alors de
+nouveau ajouter l'exception de sécurité.
