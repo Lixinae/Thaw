@@ -284,8 +284,9 @@ class Handlers {
             answerToRequest(response, 400, "Channel " + newChannelName + " already exists", thawLogger);
         } else {
             HumanUser creator = session.get("user");
-            if (newChannelName.length() > 80) {
-                answerToRequest(response, 400, "The channelname exceed 80 characters", thawLogger);
+            newChannelName = newChannelName.trim();
+            if (newChannelName.length() > 80 || !newChannelName.matches("^[\\w| ]+$")) {
+                answerToRequest(response, 400, "The channelname exceed 80 characters or got not alphanumerics characters", thawLogger);
             } else {
                 try {
                     createAndAddChannel(newChannelName, creator, channels, database);
@@ -318,7 +319,6 @@ class Handlers {
     /////////////////// Delete Channel Handler ///////////////////
     /*############################################################*/
 
-    // Todo A tester
     static void deleteChannelHandle(RoutingContext routingContext,
                                     ThawLogger thawLogger,
                                     List<Channel> channels, Database database) {
