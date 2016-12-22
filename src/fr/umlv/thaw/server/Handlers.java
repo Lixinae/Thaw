@@ -268,11 +268,15 @@ class Handlers {
             answerToRequest(response, 400, "Channel " + newChannelName + " already exists", thawLogger);
         } else {
             HumanUser creator = session.get("user");
-            try {
-                createAndAddChannel(newChannelName, creator, channels, database);
-                answerToRequest(response, 200, "Channel " + newChannelName + " successfully created", thawLogger);
-            } catch (SQLException sql) {
-                answerToRequest(response, 400, "A SQLExcpetion has been occured during the creation of the channel : " + newChannelName, thawLogger);
+            if (newChannelName.length() > 80) {
+                answerToRequest(response, 400, "The channelname exceed 80 characters", thawLogger);
+            } else {
+                try {
+                    createAndAddChannel(newChannelName, creator, channels, database);
+                    answerToRequest(response, 200, "Channel " + newChannelName + " successfully created", thawLogger);
+                } catch (SQLException sql) {
+                    answerToRequest(response, 400, "A SQLExcpetion has been occured during the creation of the channel : " + newChannelName, thawLogger);
+                }
             }
         }
     }

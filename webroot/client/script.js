@@ -55,6 +55,9 @@ function addChannel(){
             getListChannel()
         })
         .fail(function(response){
+            if(newChannelName.length > 80){
+                alert("Channel's name cannot exceed 80 characters");
+            }
             alert("fail create channel");
         })
         .always(function() {
