@@ -3,7 +3,7 @@ var currentChannel = "default";
 var username = JSON.parse(sessionStorage.userName); //retrieve the login from the login page
 var getListChannelsTimer;
 var getListMessageTimer;
-
+var getListUsersForChanTimer;
 
 
 $(document).ready(function(){
@@ -25,7 +25,7 @@ function setReloadInterval(){
     // Intervals will be much lower once live
     getListChannelsTimer = setInterval(getListChannels,2000);// 10 000 for debug
     getListMessageTimer = setInterval(getListMessageForChannel,500); // 10 000 for debug
-    getListUsersForChan = setInterval(getListUsersForChan,1000);
+    getListUsersForChanTimer = setInterval(getListUsersForChan,1000);
 }
 
 /*Allow to get default message in a textarea that will disappear when we click in the zone*/
@@ -51,8 +51,8 @@ function addChannel(){
 	$.post("/api/private/addChannel",
 	    JSON.stringify({newChannelName:newChannelName,creatorName:username}))
 	    .done(function(response){
-	        $('#newChannelText').val('')
-            getListChannel()
+	        $('#newChannelText').val('');
+            getListChannels();
         })
         .fail(function(response){
             if(newChannelName.length > 80){
@@ -162,7 +162,7 @@ function getListChannels(){
 	$.get("/api/private/getListChannel")
 	        .done(function(response){
 				listChannel.children().remove();
-				// Provoque un effet "On/Off" au chargement
+				// To makes an on/off effect when loading
 				var string = "<ul id=\"channels\" onclick=\"selectChannel()\">"
                 $.each(response,function(key,val){
                     string = string +"<li>"+ val +"</li>";
@@ -214,7 +214,8 @@ function disconnectFromServer(){
 	    //clear all the timer when logout
 	    window.clearInterval(getListChannelsTimer);
 	    window.clearInterval(getListMessageTimer);
-        window.location.href = "../index.html";
+	    window.clearInterval(getListUsersForChanTimer);
+        window.location.href = "../index.html" ;
         })
         .fail(function(response){
 

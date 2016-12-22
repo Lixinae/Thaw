@@ -6,6 +6,10 @@ import java.security.NoSuchAlgorithmException;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
+/**
+ * This class represent some of our tools
+ * that will be used across our classes.
+ */
 public class Tools {
 
     /**

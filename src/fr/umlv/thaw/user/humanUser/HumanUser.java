@@ -3,6 +3,10 @@ package fr.umlv.thaw.user.humanUser;
 import fr.umlv.thaw.channel.Channel;
 import fr.umlv.thaw.user.User;
 
+/**
+ * This interface represent a human in our
+ * application.
+ */
 public interface HumanUser extends User {
 
     /**

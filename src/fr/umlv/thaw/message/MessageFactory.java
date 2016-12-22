@@ -3,8 +3,7 @@ package fr.umlv.thaw.message;
 import fr.umlv.thaw.user.User;
 
 /**
- * Project :Thaw
- * Created by Narex on 30/11/2016.
+ * This class is a static factory for Message
  */
 public class MessageFactory {
 
