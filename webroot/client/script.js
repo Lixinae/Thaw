@@ -197,6 +197,7 @@ function getListUsersForChan(){
             var string ="<ul id=\"usersOnChan\">";
             $.each(response,function(key,val){
                 string = string +"<li>"+ val+"</li>";
+                string = string + "<br>"
             });
             string = string + "</ul>";
             usersListOnChan.append(string);

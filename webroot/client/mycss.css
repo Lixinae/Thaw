@@ -115,7 +115,6 @@ h2{
 .listUsers{
 	display: inline-block;
 	position:relative;
-	border: blue thin solid;
 	width:32.2%;
 	padding:10px;
 	height:60%;
@@ -147,6 +146,7 @@ textarea#newChannelText{
 
 #usersOnChan{
 	list-style:none;
+	text-align:center;
 }
 
 /*logout button*/
