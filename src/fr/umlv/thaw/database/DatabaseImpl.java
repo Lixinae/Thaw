@@ -146,8 +146,10 @@ public class DatabaseImpl implements Database {
             prep.setString(1, channelName);
             prep.setString(2, userNametoKick);
             prep.executeUpdate();
-            prep = co.prepareStatement(String.format("DROP TABLE IF EXISTS %s", channelName));
-            prep.executeUpdate();
+            state.execute(String.format("DROP TABLE IF EXISTS %s", channelName));
+            /*prep = co.prepareStatement(String.format("DROP TABLE IF EXISTS %s", channelName));
+            prep.executeUpdate();*/
+
         }
     }
 
