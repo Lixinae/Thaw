@@ -341,7 +341,8 @@ class Handlers {
                                                     List<Channel> channels, Database database) {
 
         String channelName = json.getString("channelName");
-        if (verifyEmptyOrNull(channelName)) {
+        String userName = json.getString("user");
+        if (verifyEmptyOrNull(channelName, userName)) {
             answerToRequest(response, 400, "Wrong JSON input", thawLogger);
             return;
         }
@@ -351,7 +352,12 @@ class Handlers {
             return;
         }
         Channel channel = optchannel.get();
-        HumanUser user = session.get("user");
+        HumanUser user = session.get(userName);
+        if (user == null) {
+            answerToRequest(response, 400, "User session not found", thawLogger);
+            return;
+        }
+
         if (!channel.isUserCreator(user)) {
             answerToRequest(response, 403, "You do not have the right to delete this channel", thawLogger);
             return;
