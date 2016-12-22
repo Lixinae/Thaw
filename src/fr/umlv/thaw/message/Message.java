@@ -5,7 +5,9 @@ import fr.umlv.thaw.user.User;
 import java.util.Objects;
 
 /**
- * Project :Thaw
+ * This class represent a Message in our
+ * application that contains The User, the date,
+ * and the text.
  */
 public class Message {
 
@@ -13,6 +15,15 @@ public class Message {
     private final long date;
     private final String content;
 
+    /**
+     * The constructor of a Message. If sender
+     * or content is null, that could throw an
+     * Exception.
+     *
+     * @param sender  The User that write the message
+     * @param date    The date in whiche the message has been wrote
+     * @param content the text of the message
+     */
     Message(User sender, long date, String content) {
         this.sender = Objects.requireNonNull(sender);
         this.date = requiresStrictPositive(date);
@@ -68,14 +79,10 @@ public class Message {
             return true;
         if (o == null || getClass() != o.getClass())
             return false;
-
         Message message = (Message) o;
-
         if (date != message.date) return false;
         if (sender != null ? !sender.equals(message.sender) : message.sender != null) return false;
         return content != null ? content.equals(message.content) : message.content == null;
-//        return date == message.date && (sender != null ? sender.equals(message.sender) : message.sender == null && (content != null ? content.equals(message.content) : message.content == null));
-
     }
 
     @Override
