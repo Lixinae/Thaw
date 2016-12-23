@@ -1,13 +1,9 @@
 package fr.umlv.thaw.channel;
 
-import fr.umlv.thaw.user.bot.Bot;
-import fr.umlv.thaw.user.bot.BotFactory;
 import fr.umlv.thaw.user.humanUser.HumanUser;
 import fr.umlv.thaw.user.humanUser.HumanUserFactory;
 import org.junit.Assert;
 import org.junit.Test;
-
-import java.nio.file.Paths;
 
 import static fr.umlv.thaw.server.Tools.toSHA256;
 
@@ -25,10 +21,8 @@ public class ChannelImplTest {
     public void addMultipleUserToChan() throws Exception {
         Channel ch = new ChannelImpl(HumanUserFactory.createHumanUser("Pierre", toSHA256("password")), "Marie");
         HumanUser meme = HumanUserFactory.createHumanUser("Meme", toSHA256("password"));
-        Bot botImpl = BotFactory.createBot("gugu", Paths.get("test"));
         HumanUser lze = HumanUserFactory.createHumanUser("lze", toSHA256("password"));
         Assert.assertTrue(ch.addUserToChan(meme));
-        Assert.assertTrue(ch.addUserToChan(botImpl));
         Assert.assertTrue(ch.addUserToChan(lze));
     }
 
@@ -152,7 +146,6 @@ public class ChannelImplTest {
         Channel ch2 = new ChannelImpl(HumanUserFactory.createHumanUser("Didier", toSHA256("password")), "Et Michelle");
         Assert.assertNotEquals(ch, ch2);
     }
-
 
 
 }
