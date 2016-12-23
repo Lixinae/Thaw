@@ -1,0 +1,60 @@
+<html>
+<head>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" href="mycss.css" type="text/css" media="all"/>
+    <script src="../asset/jquery-3.1.1.js"></script>
+    <script src="script.js"></script>
+
+</head>
+<body>
+<div class="background">
+    <h1>THAW 1.0</h1>
+    <div class="infoOnUser">
+        <p> Welcome
+            <text id="currentUser"> BaseUserName</text>
+        </p>
+        <br>
+        <p> You are currently connected to
+            <text id="currentChannel"> Default</text>
+        </p>
+        <br>
+        <button name="button" id="logout" onclick="disconnectFromServer()"> Log out</button>
+    </div>
+    <div class="cadres">
+        <div class="listChannels">
+            <h2>Channels</h2>
+            <div class="listChannelsIntern">
+
+            </div>
+            <br>
+            <textarea id="newChannelText">enter new channel name here</textarea>
+            <img name="button" onclick="addChannel()" id="create_channel" src="./images/create_button.png">
+            <!--<button name="button" onclick="addChannel()">Create</button>-->
+        </div>
+        <div class="tchat" id="tchat">
+            <h2>Tchat</h2>
+            <div class="tchatIntern">
+
+            </div>
+
+        </div>
+
+        <div class="listUsers">
+            <h2>Users</h2>
+            <div class="listUsersIntern">
+
+            </div>
+        </div>
+    </div>
+
+    <div class="textEntry">
+        <h2>Text Entry</h2>
+        <textarea id="TextZone">
+                    Enter a message...
+                </textarea>
+        <button name="button" id="sendMessageButton" onclick="sendMessage()"> Send</button>
+    </div>
+
+</div>
+</body>
+</html>
