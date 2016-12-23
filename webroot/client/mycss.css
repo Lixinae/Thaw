@@ -175,6 +175,11 @@ textarea#newChannelText{
     background-color : #E5D3E5;
 }
 
+#deleteButton{
+    height: 20px;
+    width: 20px;
+}
+
 #sendMessageButton {
     margin-left: 40%;
     border-radius: 7px;
