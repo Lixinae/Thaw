@@ -113,12 +113,5 @@ public interface Database {
      */
     List<Channel> getChannelList();
 
-    /**
-     * Close the connections that may been opened by the database
-     * Must be called once after that we finished with the Database
-     *
-     * @throws SQLException if a database access error occurs
-     */
-    void close() throws SQLException;
 
 }
