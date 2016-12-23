@@ -215,7 +215,7 @@ class Handlers {
         authorizedHumanUsers.add(humanUser);
         for (Channel chan : database.getChannelList()) {
             try {
-                database.addUserToChan(chan.getChannelName(), humanUser.getName(), chan.getCreatorName());
+                database.addUserToChan(chan, humanUser, chan.getCreator());
             } catch (SQLException sql) {
                 answerToRequest(response, 410, "User '" + userName + " cannot be added to the channel : " + chan.getChannelName(), thawLogger);
             }
@@ -286,7 +286,8 @@ class Handlers {
                 answerToRequest(response, 400, "The channelName exceed 50 characters or got not alphanumerics characters", thawLogger);
             } else {
                 try {
-                    createAndAddChannel(newChannelName, creator, channels, database);
+                    Channel newChannel = ChannelFactory.createChannel(creator, newChannelName);
+                    createAndAddChannel(newChannel, channels, database);
                     answerToRequest(response, 200, "Channel " + newChannelName + " successfully created", thawLogger);
                 } catch (SQLException sql) {
                     answerToRequest(response, 400, "A SQLException has occurred during the creation of the channel : " + newChannelName, thawLogger);
@@ -295,17 +296,15 @@ class Handlers {
         }
     }
 
-    private static void createAndAddChannel(String newChannelName,
-                                            HumanUser creator,
+    private static void createAndAddChannel(Channel newChannel,
                                             List<Channel> channels,
                                             Database database) throws SQLException {
-        String creatorName = creator.getName();
-        Channel newChannel = ChannelFactory.createChannel(creator, newChannelName);
+        HumanUser creator = newChannel.getCreator();
         channels.add(newChannel);
-        database.createChannelTable(newChannelName, creator.getName());
+        database.createChannelTable(newChannel);
         for (HumanUser usr : database.getAllUsersList()) {
             if (!usr.equals(creator)) {
-                database.addUserToChan(newChannelName, usr.getName(), creatorName);
+                database.addUserToChan(newChannel, usr, creator);
             }
         }
     }
@@ -338,7 +337,7 @@ class Handlers {
                                                     List<Channel> channels, Database database) {
 
         String channelName = json.getString("channelName");
-        String userName = json.getString("user");
+        String userName = json.getString("userName");
         if (verifyEmptyOrNull(channelName, userName)) {
             answerToRequest(response, 400, "Wrong JSON input", thawLogger);
             return;
@@ -364,7 +363,7 @@ class Handlers {
         } else {
             channels.remove(channel);
             try {
-                database.removeUserAccessToChan(channel.getChannelName(), user.getName(), user.getName());
+                database.removeUserAccessToChan(channel, user, user);
             } catch (SQLException e) {
                 answerToRequest(response, 400, "Channel '" + channelName + "' failed to delete", thawLogger);
                 return;
@@ -493,7 +492,7 @@ class Handlers {
         Message mes = MessageFactory.createMessage(humanUser, date, message);
 
         try {
-            database.addMessageToChannelTable(chan.getChannelName(), mes);
+            database.addMessageToChannelTable(chan, mes);
         } catch (SQLException sql) {
             answerToRequest(response, 400, "Message from " + humanUser.getName() + " to the channel " + chan.getChannelName() + " hasn't been registered correctly", thawLogger);
             return;
@@ -530,7 +529,7 @@ class Handlers {
         if (optChan.isPresent()) {
             Channel channel = optChan.get();
             try {
-                List<Message> tmpMess = database.getMessagesList(channel.getChannelName());
+                List<Message> tmpMess = database.getMessagesList(channel);
                 List<Message> returnListMessage = tmpMess.subList(Math.max(tmpMess.size() - numberOfMessageWanted, 0), tmpMess.size());
                 answerToRequest(response, 200, returnListMessage, thawLogger);
             } catch (SQLException sql) {

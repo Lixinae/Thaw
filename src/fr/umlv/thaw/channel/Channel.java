@@ -11,9 +11,10 @@ import java.util.List;
 public interface Channel {
 
     /**
-     * @return the creator name of the channel
+     *
+     * @return the creator of the channel
      */
-    String getCreatorName();
+    HumanUser getCreator();
 
     /**
      * Add a user to the channel

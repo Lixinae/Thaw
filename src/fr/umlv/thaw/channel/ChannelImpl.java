@@ -26,15 +26,15 @@ public class ChannelImpl implements Channel {
     }
 
     @Override
-    public String getCreatorName() {
-        return creator.getName();
+    public HumanUser getCreator() {
+        return creator;
     }
 
     /*
-    * Because we want to do some security check,
-    * we must write more than 8 lines to test
-    * every possibility.
-    * */
+        * Because we want to do some security check,
+        * we must write more than 8 lines to test
+        * every possibility.
+        * */
     @Override
     public boolean addUserToChan(User user) {
         Objects.requireNonNull(user);

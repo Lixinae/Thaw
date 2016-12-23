@@ -79,9 +79,10 @@ public class DatabaseImpl implements Database {
     * ourselves the request here. We also avoid the fact that the function
     * can throw a SQLException if the channel already exist.
     * */
-    public void createChannelTable(String channelName, String owner) throws SQLException {
-        Objects.requireNonNull(channelName);
-        Objects.requireNonNull(owner);
+    public void createChannelTable(Channel channel) throws SQLException {
+        Objects.requireNonNull(channel);
+        String channelName = channel.getChannelName();
+        String owner = channel.getCreator().getName();
         try {
             prep = co.prepareStatement(String.format("create table if not exists '%s' (" +
                     "DATE INTEGER NOT NULL, " +
@@ -98,12 +99,15 @@ public class DatabaseImpl implements Database {
     }
 
     @Override
-    public void addUserToChan(String channel, String toAuthorized, String authority) throws SQLException {
+    public void addUserToChan(Channel channel, HumanUser toAuthorized, HumanUser authority) throws SQLException {
         Objects.requireNonNull(channel);
         Objects.requireNonNull(toAuthorized);
         Objects.requireNonNull(authority);
-        if (canUserControlAccessToChan(channel, authority, co) && !canUserViewChannel(channel, toAuthorized, co)) {
-            updateChanViewerTable(channel, toAuthorized, co);
+        String channelName = channel.getChannelName();
+        String ownerName = authority.getName();
+        String toAuthorizeName = toAuthorized.getName();
+        if (canUserControlAccessToChan(channelName, ownerName, co) && !canUserViewChannel(channelName, toAuthorizeName, co)) {
+            updateChanViewerTable(channelName, toAuthorizeName, co);
         }
     }
 
@@ -115,10 +119,13 @@ public class DatabaseImpl implements Database {
      * For the second case, because we must remove each users from the channels, we must find every
      * user from a channel and remove them one by one before removing the channel entry in the channels table.
     * */
-    public void removeUserAccessToChan(String channelName, String userNameToKick, String authorityName) throws SQLException {
-        Objects.requireNonNull(channelName);
-        Objects.requireNonNull(userNameToKick);
-        Objects.requireNonNull(authorityName);
+    public void removeUserAccessToChan(Channel channel, HumanUser toKick, HumanUser owner) throws SQLException {
+        Objects.requireNonNull(channel);
+        Objects.requireNonNull(toKick);
+        Objects.requireNonNull(owner);
+        String channelName = channel.getChannelName();
+        String userNameToKick = toKick.getName();
+        String authorityName = owner.getName();
         if (canUserControlAccessToChan(channelName, authorityName, co) && !userNameToKick.equals(authorityName)) {
             String removeUserAccessToChanRequest = "DELETE FROM CHANVIEWER WHERE "
                     + "CHANNAME LIKE ?"
@@ -153,9 +160,10 @@ public class DatabaseImpl implements Database {
     }
 
     @Override
-    public void addMessageToChannelTable(String channelName, Message msg) throws SQLException {
-        Objects.requireNonNull(channelName);
+    public void addMessageToChannelTable(Channel channel, Message msg) throws SQLException {
+        Objects.requireNonNull(channel);
         Objects.requireNonNull(msg);
+        String channelName = channel.getChannelName();
         if (canUserViewChannel(channelName, msg.getSender().getName(), co)) {
             prep = co.prepareStatement(String.format("insert into '%s' values (?, ?, ?)", channelName));
             insertDateMessageAuthor(msg.getDate(), msg.getContent(), msg.getSender().getName(), prep);
@@ -242,7 +250,9 @@ public class DatabaseImpl implements Database {
     * with an user to construct our HumanUser and then the Message
     * associated with the HumanUser.
     * */
-    public List<Message> getMessagesList(String channelName) throws SQLException {
+    public List<Message> getMessagesList(Channel channel) throws SQLException {
+        Objects.requireNonNull(channel);
+        String channelName = channel.getChannelName();
         boolean hasResult;//useful to know if we have found a channel
         try (PreparedStatement p2 = co.prepareStatement(String.format("SELECT * FROM  \"%s\"", channelName))) {
             String request = "SELECT PSWD FROM users WHERE LOGIN LIKE ? ;";//the SQL request to retrieve the encrypted password from a user

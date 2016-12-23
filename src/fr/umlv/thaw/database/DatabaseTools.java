@@ -181,7 +181,7 @@ class DatabaseTools {
      * This method update the chanviewer table by adding a new member to a given
      * channel. After that the user can get access to the channel.
      *
-     * @param channelName The name of the channel in which we wants to add the user
+     * @param channelName The channel name in which we wants to add the user
      * @param member      The member that we want to give access to the channel
      * @param co          The Connection that has been made with the database
      * @throws SQLException If we got a problem when trying to perform the request

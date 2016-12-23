@@ -110,9 +110,9 @@ public class Server extends AbstractVerticle {
         thawLogger.log(Level.INFO, "Binding each user to his channel");
         //We add each users to every existing Channel
         for (Channel chan : channels) {
-            for (User usr : authorizedHumanUsers) {
+            for (HumanUser usr : authorizedHumanUsers) {
                 try {
-                    database.addUserToChan(chan.getChannelName(), usr.getName(), chan.getCreatorName());
+                    database.addUserToChan(chan, usr, chan.getCreator());
                 } catch (SQLException sql) {
                     thawLogger.log(Level.WARNING, "Problem adding : " + usr.getName());
                 }
@@ -138,7 +138,7 @@ public class Server extends AbstractVerticle {
 
     private void createChannelTable(Channel general) {
         try {
-            database.createChannelTable(general.getChannelName(), "#SuperUser");
+            database.createChannelTable(general);
         } catch (SQLException sql) {
             thawLogger.log(Level.INFO, "Channels already registered");
         }

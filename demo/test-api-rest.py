@@ -20,46 +20,23 @@ except ImportError:
     print ("error: no ssl support")
 
 
-# Asks the user on which machine he wants to log on
-def askMachineUrl():
-    print("Format must be https://[adresse]:[port]")
-    machineUrl = input("Enter a machine Url to read from : ")
-    
-    return machineUrl
-
-# Asks the user the number of messages he wants to see on a particular channel
-def askNumberMessage():
-    numberMessage = ""
-    while True:
-        numberMessage = input("Enter the numberMessage you want to show : ")
-        if not numberMessage.isdigit():
-            continue
-        if int(numberMessage) > 0:
-            break
-    return int(numberMessage)
-
-# Asks the user from which channel the message should be retrieved
-def askChannelName(machineUrl):
-    channelName = ""
-    while channelName not in getChannelsList(machineUrl):
-        channelName = input("Enter a channel name to read from : ")    
-    return channelName
-
-
+# Test the create account api
 def createAccountOnServer(machineUrl, userName, password):
     querie = "/api/createAccount"
     url = machineUrl + querie
     payload = {'userName': userName, 'password': password}
     return doPostRequestJson(url, payload)
 
-# Works
+
+# Test connectToServer api
 def connectToServer(machineUrl, userName, password):
     querie = "/api/connectToServer"
     url = machineUrl + querie
     payload = {'userName': userName, 'password': password}
     return doPostRequestJson(url, payload)
 
-# Works
+
+# Test addChannel api
 def addChannel(machineUrl, newChannelName, creatorName):
     querie = "/api/private/addChannel"
     url = machineUrl + querie
@@ -67,21 +44,23 @@ def addChannel(machineUrl, newChannelName, creatorName):
     return doPostRequestJson(url, payload)
 
 
-# Works
+#Test deleteChannel api
 def deleteChannel(machineUrl, targetChannelName, userName):
     querie = "/api/private/deleteChannel"
     url = machineUrl + querie
     payload = {'channelName': targetChannelName, 'userName': userName}
     return doPostRequestJson(url, payload)
 
-# Works
+
+#Test connectToChannel api
 def connectToChannel(machineUrl, oldChannelName, channelName, userName):
     querie = "/api/private/connectToChannel"
     url = machineUrl + querie
     payload = {'channelName': channelName, 'userName': userName, 'oldChannelName': oldChannelName}
     return doPostRequestJson(url, payload)
 
-# Works
+
+#Test sendMessage api
 def sendMessage(machineUrl, userName, channelName, content):
     querie = "/api/private/sendMessage"
     url = machineUrl + querie
@@ -90,7 +69,7 @@ def sendMessage(machineUrl, userName, channelName, content):
 
 # Returns the list of all messages we want on a given channel
 # Default value for numberMessage is 10
-# Works
+# Test getListMessageForChannel api
 def getListMessageForChannel(machineUrl, channelName, numberMessage=10):
     querie = "/api/private/getListMessageForChannel";
     url = machineUrl + querie
@@ -99,13 +78,14 @@ def getListMessageForChannel(machineUrl, channelName, numberMessage=10):
 
 # Ask the server for all channel names
 # Return a list of all channel names
-# Works
+# Test getChannelsList api
 def getChannelsList(machineUrl):
     querie = "/api/private/getListChannel"
     url = machineUrl+querie
     return doGetRequest(url)
 
-# Works
+
+# Test getListUserForChannel api
 def getListUserForChannel(machineUrl, channelName):
     querie = "/api/private/getListUserForChannel"
     url = machineUrl + querie
@@ -113,7 +93,7 @@ def getListUserForChannel(machineUrl, channelName):
     return doPostRequestJson(url, payload)
 
 
-# Works
+# Test disconnectFromServer api
 def disconnectFromServer(machineUrl, channelName, userName):
     querie = "/api/private/disconnectFromServer"
     url = machineUrl + querie
@@ -122,6 +102,7 @@ def disconnectFromServer(machineUrl, channelName, userName):
 
 session = requests.session()
 session.verify = False
+
 def doPostRequestJson(url, payload):
     headers = {'Content-type': 'application/json', 'Accept': 'text/plain'}
     print('url : ', url)
@@ -145,6 +126,9 @@ def doGetRequest(url):
     return r.json()
 
 import datetime
+
+
+# Print all messages in something readable
 def outPutPrettily(messages):
     messages = str(messages).replace("'", "\"")
     json_obj = json.loads(str(messages))
@@ -177,7 +161,7 @@ if __name__ == '__main__':
     print(getChannelsList(machineUrl))
 
     print("########\n")
-    print(connectToChannel(machineUrl, 'default', 'Another', 'superUser'))
+    print(connectToChannel(machineUrl, 'general', 'Another', 'superUser'))
 
     print("########\n")
     print(deleteChannel(machineUrl, 'MonChannel', 'superUser'))

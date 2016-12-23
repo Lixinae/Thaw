@@ -33,11 +33,10 @@ public interface Database {
      * Create a channel with the given name and owner, if the
      * table doesn't exist yet
      *
-     * @param channelName the name of the channel
-     * @param owner       the owner of the channel
+     * @param channel The channel object you want to create in the database
      * @throws SQLException if a database error occurs
      */
-    void createChannelTable(String channelName, String owner) throws SQLException;
+    void createChannelTable(Channel channel) throws SQLException;
 
     /**
      * This method allow the authority to give access to the
@@ -49,7 +48,7 @@ public interface Database {
      * @param authority    the user that grant the access
      * @throws SQLException if a database access errors occurs
      */
-    void addUserToChan(String channel, String toAuthorized, String authority) throws SQLException;
+    void addUserToChan(Channel channel, HumanUser toAuthorized, HumanUser authority) throws SQLException;
 
     /**
      * This method allow the authority to remove access to the
@@ -59,22 +58,22 @@ public interface Database {
      * If the authority of the table have the right and wants to kick himself
      * then the channels will be drop to keep the database in a correct state
      *
-     * @param channel   the channel in which we want to add a user
-     * @param toKick    the user name that will loose access to channel
-     * @param authority the user that grant the access
+     * @param channel the channel in which we want to remove a user
+     * @param toKick  the user that will loose access to channel
+     * @param owner   the user that grants / removes the access
      * @throws SQLException if a database access occurs
      */
-    void removeUserAccessToChan(String channel, String toKick, String authority) throws SQLException;
+    void removeUserAccessToChan(Channel channel, HumanUser toKick, HumanUser owner) throws SQLException;
 
     /**
      * This method allows us to stock a message into a table that could be created
      * if he doesn't exist yet
      *
-     * @param channelName the table in which we must insert the message
-     * @param msg         the message to stock
+     * @param channel the table in which we must insert the message
+     * @param msg     the message to stock
      * @throws SQLException if a database access errors occurs
      */
-    void addMessageToChannelTable(String channelName, Message msg) throws SQLException;
+    void addMessageToChannelTable(Channel channel, Message msg) throws SQLException;
 
     /**
      * That function return a list of users that are
@@ -88,11 +87,11 @@ public interface Database {
     /**
      * This function retrieve the list of messages with every information
      *
-     * @param channelName channel in which we want to retrieve the messages
+     * @param channel channel in which we want to retrieve the messages
      * @return a String that represents the messages separate with '\n'.
      * @throws SQLException if an error occurs during database access
      */
-    List<Message> getMessagesList(String channelName) throws SQLException;
+    List<Message> getMessagesList(Channel channel) throws SQLException;
 
     /**
      * This method return a List of the channels name on the database

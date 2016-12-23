@@ -73,7 +73,7 @@ function deleteChannel(){
         var curUser = $("#currentUser").val();
         var targetChannel = $(this).find('span').html();
         $.post("/api/private/deleteChannel",
-            JSON.stringify({channelName:targetChannel,user:curUser}))
+            JSON.stringify({channelName:targetChannel,userName:curUser}))
             .done(function(response){
                 getListChannels();
             })
