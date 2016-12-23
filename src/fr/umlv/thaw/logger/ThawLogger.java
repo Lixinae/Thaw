@@ -34,7 +34,7 @@ public class ThawLogger {
         this.enabled = enabled;
     }
 
-    private String setNameWithCurrentDate() {
+    private static String setNameWithCurrentDate() {
         return "./logs/log_" + Date.from(Instant.now()).toString().replaceAll(" ", "__").replaceAll(":", "_") + ".log";
     }
 

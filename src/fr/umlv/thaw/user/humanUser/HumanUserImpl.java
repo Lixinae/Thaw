@@ -20,7 +20,7 @@ public class HumanUserImpl implements HumanUser {
      * @param passwordHash the password that has been hashed
      */
     HumanUserImpl(String nickname, String passwordHash) {
-        this.name = Objects.requireNonNull(nickname);
+        name = Objects.requireNonNull(nickname);
         this.passwordHash = Objects.requireNonNull(passwordHash);
     }
 

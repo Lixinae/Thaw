@@ -5,7 +5,9 @@ import fr.umlv.thaw.database.DatabaseFactory;
 import fr.umlv.thaw.server.Server;
 import io.vertx.core.Vertx;
 
+import java.io.IOException;
 import java.nio.file.Paths;
+import java.sql.SQLException;
 
 
 /**
@@ -15,7 +17,7 @@ import java.nio.file.Paths;
  */
 public class Thaw {
 
-    public static void main(String[] args) throws Exception {
+    public static void main(String[] args) throws SQLException, ClassNotFoundException, IOException {
 
         Database database = DatabaseFactory.createDatabase(Paths.get("./db"));
         database.initializeDB();
