@@ -505,7 +505,6 @@ class Handlers {
             answerToRequest(response, 400, "Message from " + humanUser.getName() + " to the channel " + chan.getChannelName() + " hasn't been registered correctly", thawLogger);
             return;
         }
-        // Todo : Analyser le message si un bot est connecté
 
 
         answerToRequest(response, 200, "Message: " + mes + " sent correctly to channel '" + channelName + '\'', thawLogger);
@@ -567,7 +566,6 @@ class Handlers {
     /////////////////// Get list user for channel Handler ///////////////////
     /*#######################################################################*/
 
-    // Fonctionne
     static void getListUserForChannelHandle(RoutingContext routingContext, ThawLogger thawLogger, List<Channel> channels) {
         thawLogger.log(Level.INFO, "In getListUserForChannel request");
         HttpServerResponse response = routingContext.response();
