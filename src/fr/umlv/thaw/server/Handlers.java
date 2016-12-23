@@ -15,7 +15,6 @@ import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.RoutingContext;
 import io.vertx.ext.web.Session;
 
-import java.security.NoSuchAlgorithmException;
 import java.sql.SQLException;
 import java.util.List;
 import java.util.Optional;
@@ -108,7 +107,7 @@ class Handlers {
                 return;
             }
             Channel chan = optChannel.get();
-            User u = session.get("user");//NE PAS REMPLACER PAR userName POUR LE MOMENT
+            User u = session.get("user");
             chan.addUserToChan(u);
             answerToRequest(response, 200, "HumanUser: '" + userName + "' authentication success, connected to 'default' channel", thawLogger);
         }
@@ -212,8 +211,6 @@ class Handlers {
         } catch (SQLException e) {
             answerToRequest(response, 401, "User '" + userName + "' already exists", thawLogger);
             return;
-        } catch (NoSuchAlgorithmException e) {
-            return;
         }
         authorizedHumanUsers.add(humanUser);
         for (Channel chan : database.getChannelList()) {
@@ -286,13 +283,13 @@ class Handlers {
             HumanUser creator = session.get("user");
             newChannelName = newChannelName.trim();
             if (newChannelName.length() > 50 || !newChannelName.matches("^[\\w| ]+$")) {
-                answerToRequest(response, 400, "The channelname exceed 50 characters or got not alphanumerics characters", thawLogger);
+                answerToRequest(response, 400, "The channelName exceed 50 characters or got not alphanumerics characters", thawLogger);
             } else {
                 try {
                     createAndAddChannel(newChannelName, creator, channels, database);
                     answerToRequest(response, 200, "Channel " + newChannelName + " successfully created", thawLogger);
                 } catch (SQLException sql) {
-                    answerToRequest(response, 400, "A SQLException has been occured during the creation of the channel : " + newChannelName, thawLogger);
+                    answerToRequest(response, 400, "A SQLException has occurred during the creation of the channel : " + newChannelName, thawLogger);
                 }
             }
         }
@@ -346,12 +343,12 @@ class Handlers {
             answerToRequest(response, 400, "Wrong JSON input", thawLogger);
             return;
         }
-        Optional<Channel> optchannel = findChannelInList(channels, channelName);
-        if (!optchannel.isPresent()) {
+        Optional<Channel> optChannel = findChannelInList(channels, channelName);
+        if (!optChannel.isPresent()) {
             answerToRequest(response, 400, "Channel '" + channelName + "' does not exist", thawLogger);
             return;
         }
-        Channel channel = optchannel.get();
+        Channel channel = optChannel.get();
         HumanUser user = session.get(userName);
         if (user == null) {
             answerToRequest(response, 400, "User session not found", thawLogger);
@@ -392,15 +389,15 @@ class Handlers {
         if (json == null) {
             answerToRequest(response, 400, "Wrong Json format", thawLogger);
         } else {
-            analyzeConnecToChannelRequest(response, session, json, thawLogger, channels);
+            analyzeConnectToChannelRequest(response, session, json, thawLogger, channels);
         }
     }
 
-    private static void analyzeConnecToChannelRequest(HttpServerResponse response,
-                                                      Session session,
-                                                      JsonObject json,
-                                                      ThawLogger thawLogger,
-                                                      List<Channel> channels) {
+    private static void analyzeConnectToChannelRequest(HttpServerResponse response,
+                                                       Session session,
+                                                       JsonObject json,
+                                                       ThawLogger thawLogger,
+                                                       List<Channel> channels) {
         String oldChannelName = json.getString("oldChannelName");
         String channelName = json.getString("channelName");
         String userName = json.getString("userName");
@@ -408,11 +405,11 @@ class Handlers {
             answerToRequest(response, 400, "Wrong JSON input", thawLogger);
             return;
         }
-        Optional<Channel> optchannel = findChannelInList(channels, channelName);
-        if (!optchannel.isPresent()) {
+        Optional<Channel> optChannel = findChannelInList(channels, channelName);
+        if (!optChannel.isPresent()) {
             answerToRequest(response, 400, "Channel :" + channelName + " does not exist", thawLogger);
         } else {
-            Channel chan = optchannel.get();
+            Channel chan = optChannel.get();
             HumanUser humanUser = session.get(userName);
             // Check if the user is already connected to the given channel
             if (chan.checkIfUserIsConnected(humanUser)) {
@@ -435,10 +432,8 @@ class Handlers {
         }
     }
 
-    private static boolean establishConnection(HumanUser humanUser,
-                                               Channel chan,
-                                               Channel oldChan) {
-        return humanUser.quitChannel(oldChan) && humanUser.joinChannel(chan);
+    private static boolean establishConnection(HumanUser humanUser, Channel chan, Channel oldChan) {
+        return oldChan.removeUserFromChan(humanUser) && chan.addUserToChan(humanUser);
     }
 
 
@@ -447,7 +442,6 @@ class Handlers {
     /////////////////// Send message Handler ///////////////////
     /*##########################################################*/
 
-    // Fonctionne
     static void sendMessageHandle(RoutingContext routingContext,
                                   ThawLogger thawLogger,
                                   List<Channel> channels,
@@ -463,7 +457,6 @@ class Handlers {
         }
     }
 
-    // TODO : Traitement des messages en cas de bot
     private static void analyzeSendMessageRequest(HttpServerResponse response,
                                                   Session session,
                                                   JsonObject json,
@@ -498,14 +491,13 @@ class Handlers {
             message = message.substring(0, 512);
         }
         Message mes = MessageFactory.createMessage(humanUser, date, message);
-        //To stock the message
+
         try {
             database.addMessageToChannelTable(chan.getChannelName(), mes);
         } catch (SQLException sql) {
             answerToRequest(response, 400, "Message from " + humanUser.getName() + " to the channel " + chan.getChannelName() + " hasn't been registered correctly", thawLogger);
             return;
         }
-        // Todo : Analyser le message si un bot est connecté
 
 
         answerToRequest(response, 200, "Message: " + mes + " sent correctly to channel '" + channelName + '\'', thawLogger);
@@ -567,7 +559,6 @@ class Handlers {
     /////////////////// Get list user for channel Handler ///////////////////
     /*#######################################################################*/
 
-    // Fonctionne
     static void getListUserForChannelHandle(RoutingContext routingContext, ThawLogger thawLogger, List<Channel> channels) {
         thawLogger.log(Level.INFO, "In getListUserForChannel request");
         HttpServerResponse response = routingContext.response();
@@ -575,11 +566,11 @@ class Handlers {
         if (json == null) {
             routingContext.response().setStatusCode(400).end();
         } else {
-            analyzegetListUserForChannelRequest(response, json, thawLogger, channels);
+            analyzeGetListUserForChannelRequest(response, json, thawLogger, channels);
         }
     }
 
-    private static void analyzegetListUserForChannelRequest(HttpServerResponse response, JsonObject json, ThawLogger thawLogger, List<Channel> channels) {
+    private static void analyzeGetListUserForChannelRequest(HttpServerResponse response, JsonObject json, ThawLogger thawLogger, List<Channel> channels) {
         String channelName = json.getString("channelName");
         if (!securityCheckGetListUserForChannel(response, channelName, thawLogger)) {
             return;
@@ -615,7 +606,7 @@ class Handlers {
     }
 
     /*######################################################################*/
-    /////////////////// Usefull methods for all handlers ///////////////////
+    /////////////////// Useful methods for all handlers ///////////////////
     /*######################################################################*/
 
 

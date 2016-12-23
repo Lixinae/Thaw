@@ -56,7 +56,7 @@ public class DatabaseImpl implements Database {
     @Override
     public void initializeDB() throws SQLException {
         String query = createUsersTableRequest();
-        exeUpda(query, state);
+        exeUpdate(query, state);
         createChannelsTable(state);
         createChanViewerTable(state);
     }
@@ -115,24 +115,24 @@ public class DatabaseImpl implements Database {
      * For the second case, because we must remove each users from the channels, we must find every
      * user from a channel and remove them one by one before removing the channel entry in the channels table.
     * */
-    public void removeUserAccessToChan(String channelName, String userNametoKick, String authorityName) throws SQLException {
+    public void removeUserAccessToChan(String channelName, String userNameToKick, String authorityName) throws SQLException {
         Objects.requireNonNull(channelName);
-        Objects.requireNonNull(userNametoKick);
+        Objects.requireNonNull(userNameToKick);
         Objects.requireNonNull(authorityName);
-        if (canUserControlAccessToChan(channelName, authorityName, co) && !userNametoKick.equals(authorityName)) {
-            String removeUserAccesToChanRequest = "DELETE FROM CHANVIEWER WHERE "
+        if (canUserControlAccessToChan(channelName, authorityName, co) && !userNameToKick.equals(authorityName)) {
+            String removeUserAccessToChanRequest = "DELETE FROM CHANVIEWER WHERE "
                     + "CHANNAME LIKE ?"
                     + " AND MEMBER LIKE ? ;";
 
-            prep = co.prepareStatement(removeUserAccesToChanRequest);
+            prep = co.prepareStatement(removeUserAccessToChanRequest);
             prep.setString(1, channelName);
             prep.executeUpdate();
-        } else if (canUserControlAccessToChan(channelName, authorityName, co) && userNametoKick.equals(authorityName)) {
+        } else if (canUserControlAccessToChan(channelName, authorityName, co) && userNameToKick.equals(authorityName)) {
             List<HumanUser> toEject = getUsersListFromChan(channelName);
-            String removeUserAccesToChanRequest = "DELETE FROM CHANVIEWER WHERE "
+            String removeUserAccessToChanRequest = "DELETE FROM CHANVIEWER WHERE "
                     + "CHANNAME LIKE ? "
                     + " AND MEMBER LIKE ? ;";
-            prep = co.prepareStatement(removeUserAccesToChanRequest);
+            prep = co.prepareStatement(removeUserAccessToChanRequest);
             for (HumanUser user : toEject) {
                 prep.setString(1, channelName);
                 prep.setString(2, user.getName());
@@ -143,7 +143,7 @@ public class DatabaseImpl implements Database {
                     + " AND OWNER LIKE ? ;";
             prep = co.prepareStatement(removeChannelFromChannels);
             prep.setString(1, channelName);
-            prep.setString(2, userNametoKick);
+            prep.setString(2, userNameToKick);
             prep.executeUpdate();
             state.executeUpdate(String.format("DROP TABLE IF EXISTS %s", channelName));
             /*prep = co.prepareStatement(String.format("DROP TABLE IF EXISTS %s", channelName));
@@ -245,7 +245,7 @@ public class DatabaseImpl implements Database {
     public List<Message> getMessagesList(String channelName) throws SQLException {
         boolean hasResult;//useful to know if we have found a channel
         try (PreparedStatement p2 = co.prepareStatement(String.format("SELECT * FROM  \"%s\"", channelName))) {
-            String request = "SELECT PSWD FROM users WHERE LOGIN LIKE ? ;";//the SQL request to retrieve the encrypted pasword from a user
+            String request = "SELECT PSWD FROM users WHERE LOGIN LIKE ? ;";//the SQL request to retrieve the encrypted password from a user
             List<Message> msgs = new ArrayList<>();
             HumanUser tmpUser;
             Message tmpMessage;
@@ -259,7 +259,7 @@ public class DatabaseImpl implements Database {
                         String message = rs.getString("MESSAGE");
                         long date = rs.getLong("DATE");
 
-                        prep.setString(1, author);//to find the encrypted password of the HumanUser to constuct it after
+                        prep.setString(1, author);//to find the encrypted password of the HumanUser to construct it after
                         if (prep.execute()) {//if true then the request has work
                             try (ResultSet tmp = prep.getResultSet()) {//we have retrieved the password of the user
                                 tmpUser = HumanUserFactory.createHumanUser(author, tmp.getString("PSWD"));//we can construct our HumanUser
@@ -277,7 +277,7 @@ public class DatabaseImpl implements Database {
 
     @Override
     /*
-    *   As always, to retrieve our results, we must works with rwo differents
+    *   As always, to retrieve our results, we must works with rwo different
     * table and ensure that we close ours objects correctly.
     * */
     public List<Channel> getChannelList() {

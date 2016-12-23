@@ -16,7 +16,7 @@ class DatabaseTools {
      * This method perform every actions registered
      * in the current database batch.
      *
-     * @param co   the connection opend in the database
+     * @param co   the connection open in the database
      * @param prep the PreparedStatement already used by the request
      * @throws SQLException if a database access errors occurs or if one of the task cannot be perform
      */
@@ -36,7 +36,7 @@ class DatabaseTools {
      * @throws SQLException if a database access error occurs or
      *                      if we got some problems with the given request
      */
-    static void exeUpda(String query, Statement state) throws SQLException {
+    static void exeUpdate(String query, Statement state) throws SQLException {
         Objects.requireNonNull(query);
         state.executeUpdate(query);
     }
@@ -82,11 +82,11 @@ class DatabaseTools {
      * given in parameter and can add it to the batch if we ask it.
      *
      * @param idx        the place in which we want to insert the String
-     * @param value      the String that must been insert into the PreparedStaement object
+     * @param value      the String that must been insert into the PreparedStatement object
      * @param addToBatch is it the last element to add ?
-     *                   If true, we add the given PreapredStatement into the batch as a
+     *                   If true, we add the given PreparedStatement into the batch as a
      *                   SQL Request to perform
-     * @param prep       The PreparedStatemet in which we want to add an element
+     * @param prep       The PreparedStatement in which we want to add an element
      * @throws SQLException If there is a problem with the Request such as a bad index
      */
     private static void setPrepStringValue(int idx, String value, boolean addToBatch, PreparedStatement prep) throws SQLException {
@@ -108,7 +108,7 @@ class DatabaseTools {
      * @param firstVal  The first String value to add into the PreparedStatement request
      * @param secondVal The second String value to add into the PreparedStatement request
      * @param prep      The PreparedStatement object in which wa have stocked our request
-     * @throws SQLException If a problem has happened during the writting of the request
+     * @throws SQLException If a problem has happened during the writing of the request
      */
     static void insertTwoValIntoTable(String firstVal, String secondVal, PreparedStatement prep) throws SQLException {
         setPrepStringValue(1, firstVal, false, prep);
@@ -124,7 +124,7 @@ class DatabaseTools {
      * @param message The message to stock
      * @param author  The author of the message
      * @param prep    The PreparedStatement object that stock the request
-     * @throws SQLException If an error happened during the writting of the request
+     * @throws SQLException If an error happened during the writing of the request
      */
     static void insertDateMessageAuthor(long date, String message, String author, PreparedStatement prep) throws SQLException {
         prep.setLong(1, date);
@@ -145,7 +145,7 @@ class DatabaseTools {
      */
     static void createChannelsTable(Statement state) throws SQLException {
         String query = createChannelsTableRequest();
-        exeUpda(query, state);
+        exeUpdate(query, state);
     }
 
     /**
@@ -157,13 +157,13 @@ class DatabaseTools {
      */
     static void createChanViewerTable(Statement state) throws SQLException {
         String query = createChanViewerTableRequest();
-        exeUpda(query, state);
+        exeUpdate(query, state);
     }
 
     /**
      * This method try to add a new channel into our channels table with the given owner.
      * We can only get every existing channels once in our table. So we shouldn't can't
-     * twice this method with the same channelname.
+     * twice this method with the same channelName.
      *
      * @param channelName The name of the Channel that we must add to our channels table
      * @param owner       The owner of the channel (that will be the only one to delete the channel)
@@ -244,7 +244,7 @@ class DatabaseTools {
      * @return true if the user can get access the channel, false otherwise
      * @throws SQLException If the request have failed or a database access error has been occurred.
      */
-    /*Because we must perform a check twice with the resut given by our PreparedStatement object,
+    /*Because we must perform a check twice with the result given by our PreparedStatement object,
         we must write more than 8 line. The try-with-resources in tmp is mandatory to don't forget
         to close our ResultSet object.
     */
@@ -277,7 +277,7 @@ class DatabaseTools {
      * @throws SQLException If the request have failed or a database access error has been occurred.
      */
     /*
-        Because we must perform a security check and a try-with-resources with our PreparedStement
+        Because we must perform a security check and a try-with-resources with our PreparedStatement
         object, we can't really write less than 8 lines.
     */
     static boolean canUserControlAccessToChan(String channelName, String user, Connection co) throws SQLException {

@@ -1,6 +1,5 @@
 package fr.umlv.thaw.user.humanUser;
 
-import fr.umlv.thaw.channel.Channel;
 import fr.umlv.thaw.server.Tools;
 
 import java.util.Objects;
@@ -34,19 +33,6 @@ public class HumanUserImpl implements HumanUser {
     public String getName() {
         return name;
     }
-
-    public boolean joinChannel(Channel chan) {
-        Objects.requireNonNull(chan);
-        return chan.addUserToChan(this);
-    }
-
-    @Override
-    public boolean quitChannel(Channel chan) {
-        Objects.requireNonNull(chan);
-        return chan.removeUserFromChan(this);
-
-    }
-
 
     @Override
     public boolean compareHash(String password) {

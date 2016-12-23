@@ -84,7 +84,7 @@ public class Server extends AbstractVerticle {
         }
         loadChannelList();
         loadUserForChannels();
-        superUser.joinChannel(general);
+        general.addUserToChan(superUser);
         thawLogger.log(Level.INFO, "Database loading is done");
 /////////////////////////////////////////////////////////////////////////////////
         final int bindPort = 8080;
@@ -92,10 +92,10 @@ public class Server extends AbstractVerticle {
         allRoutes(router);
         if (ssl) {
             // SSL requested, start a SSL HTTP server.
-            startSSLserver(fut, bindPort, router);
+            startSSLServer(fut, bindPort, router);
         } else {
             // No SSL requested, start a non-SSL HTTP server.
-            startNonSSLserver(fut, bindPort, router);
+            startNonSSLServer(fut, bindPort, router);
         }
     }
 
@@ -172,7 +172,7 @@ public class Server extends AbstractVerticle {
         authorizedHumanUsers.add(superUser);
     }
 
-    private void startNonSSLserver(Future<Void> fut, int bindPort, Router router) {
+    private void startNonSSLServer(Future<Void> fut, int bindPort, Router router) {
         vertx.createHttpServer().requestHandler(router::accept).listen(bindPort);
         thawLogger.log(Level.INFO, "Non SSL Web server now listening");
         fut.complete();
@@ -183,12 +183,12 @@ public class Server extends AbstractVerticle {
     * we cannot write less line and must also tell the user when we need
     * that the certificate is created.
     * */
-    private void startSSLserver(Future<Void> fut, int bindPort, Router router) {
+    private void startSSLServer(Future<Void> fut, int bindPort, Router router) {
         vertx.executeBlocking(future -> {
                     HttpServerOptions httpOpts = new HttpServerOptions();
                     Path path = Paths.get("./config/webserver/.keystore.jks");
                     if (Files.notExists(path)) {
-                        System.err.println("Please generate a certificate using the foolowing command before : ");
+                        System.err.println("Please generate a certificate using the following command before : ");
                         System.err.println("keytool -genkey -alias localhost -keyalg RSA -keystore .keystore.jks -validity 365 -keysize 2048");
                         System.err.println("then stock it into ./config/webserver/");
                         System.exit(0);
