@@ -37,9 +37,9 @@ public interface HumanUser extends User {
     boolean quitChannel(Channel chan);
 
     /**
-     * @param passworHash the password hash
+     * @param passwordHash the password hash
      * @return true if the hash given in argument is the same as the users one
      */
-    boolean compareHash(String passworHash);
+    boolean compareHash(String passwordHash);
 
 }

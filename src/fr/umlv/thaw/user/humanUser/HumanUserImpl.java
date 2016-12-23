@@ -60,8 +60,7 @@ public class HumanUserImpl implements HumanUser {
 
         HumanUserImpl humanUser = (HumanUserImpl) o;
 
-        if (!name.equals(humanUser.name)) return false;
-        return passwordHash.equals(humanUser.passwordHash);
+        return name.equals(humanUser.name) && passwordHash.equals(humanUser.passwordHash);
     }
 
     @Override

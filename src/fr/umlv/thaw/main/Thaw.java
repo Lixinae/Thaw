@@ -17,15 +17,10 @@ public class Thaw {
 
     public static void main(String[] args) throws Exception {
 
-
-        System.setProperty("vertx.disableFileCaching", "true");
-        Database database = DatabaseFactory.createDatabase(Paths.get("./db"), "database");
+        Database database = DatabaseFactory.createDatabase(Paths.get("./db"));
         database.initializeDB();
-        Server server = new Server(true, true, database);
+        Server server = new Server(database);
         Vertx vertx = Vertx.vertx();
         vertx.deployVerticle(server);
-
-//        vertx.deployVerticle(server, options);
-
     }
 }

@@ -9,7 +9,7 @@ import java.sql.SQLException;
  * DatabaseImpl
  */
 public class DatabaseFactory {
-    public static Database createDatabase(Path path, String dbName) throws SQLException, ClassNotFoundException {
-        return new DatabaseImpl(path, dbName);
+    public static Database createDatabase(Path path) throws SQLException, ClassNotFoundException {
+        return new DatabaseImpl(path, "database");
     }
 }

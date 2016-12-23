@@ -21,7 +21,7 @@ public class Message {
      * Exception.
      *
      * @param sender  The User that write the message
-     * @param date    The date in whiche the message has been wrote
+     * @param date    The date in which the message has been wrote
      * @param content the text of the message
      */
     Message(User sender, long date, String content) {
@@ -43,11 +43,11 @@ public class Message {
      * @return The User that have sent the message
      */
     public User getSender() {
-        return sender; // Sender non mutable -> pas besoin de copie defensive
+        return sender;
     }
 
     /**
-     * This method retrive the date in which the message has been sent.
+     * This method retrieve the date in which the message has been sent.
      *
      * @return the date of the Message as a long.
      */
@@ -80,9 +80,7 @@ public class Message {
         if (o == null || getClass() != o.getClass())
             return false;
         Message message = (Message) o;
-        if (date != message.date) return false;
-        if (sender != null ? !sender.equals(message.sender) : message.sender != null) return false;
-        return content != null ? content.equals(message.content) : message.content == null;
+        return date == message.date && (sender != null ? sender.equals(message.sender) : message.sender == null) && (content != null ? content.equals(message.content) : message.content == null);
     }
 
     @Override

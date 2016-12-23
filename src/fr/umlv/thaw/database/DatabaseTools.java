@@ -144,7 +144,7 @@ class DatabaseTools {
      * @throws SQLException If we got a problem during the creation of the table
      */
     static void createChannelsTable(Statement state) throws SQLException {
-        final String query = createChannelsTableRequest();
+        String query = createChannelsTableRequest();
         exeUpda(query, state);
     }
 
@@ -156,7 +156,7 @@ class DatabaseTools {
      * @throws SQLException If we got a problem during the creation of the table
      */
     static void createChanViewerTable(Statement state) throws SQLException {
-        final String query = createChanViewerTableRequest();
+        String query = createChanViewerTableRequest();
         exeUpda(query, state);
     }
 
@@ -171,7 +171,7 @@ class DatabaseTools {
      * @throws SQLException If we got a problem when trying to perform the request
      */
     static void updateChannelsTable(String channelName, String owner, Connection co) throws SQLException {
-        final String query = prepareInsertTwoValuesIntoTable("channels");
+        String query = prepareInsertTwoValuesIntoTable("channels");
         PreparedStatement prep = co.prepareStatement(query);
         insertTwoValIntoTable(channelName, owner, prep);
         executeRegisteredTask(co, prep);
@@ -187,7 +187,7 @@ class DatabaseTools {
      * @throws SQLException If we got a problem when trying to perform the request
      */
     static void updateChanViewerTable(String channelName, String member, Connection co) throws SQLException {
-        final String query = prepareInsertTwoValuesIntoTable("chanviewer");
+        String query = prepareInsertTwoValuesIntoTable("chanviewer");
         PreparedStatement prep = co.prepareStatement(query);
         insertTwoValIntoTable(channelName, member, prep);
         executeRegisteredTask(co, prep);
@@ -249,7 +249,7 @@ class DatabaseTools {
         to close our ResultSet object.
     */
     static boolean canUserViewChannel(String channelName, String userName, Connection co) throws SQLException {
-        final String request = "SELECT * FROM chanviewer WHERE MEMBER LIKE ?  AND CHANNAME LIKE ? ;";
+        String request = "SELECT * FROM chanviewer WHERE MEMBER LIKE ?  AND CHANNAME LIKE ? ;";
         try (PreparedStatement prep = co.prepareStatement(request)) {
             prep.setString(1, userName);
             prep.setString(2, channelName);
@@ -280,8 +280,8 @@ class DatabaseTools {
         Because we must perform a security check and a try-with-resources with our PreparedStement
         object, we can't really write less than 8 lines.
     */
-    static boolean userCanControlAccessToChan(String channelName, String user, Connection co) throws SQLException {
-        final String request = "SELECT * FROM channels WHERE CHANNAME LIKE ?  AND OWNER LIKE ? ;";
+    static boolean canUserControlAccessToChan(String channelName, String user, Connection co) throws SQLException {
+        String request = "SELECT * FROM channels WHERE CHANNAME LIKE ?  AND OWNER LIKE ? ;";
         try (PreparedStatement prep = co.prepareStatement(request)) {
             prep.setString(1, channelName);
             prep.setString(2, user);

@@ -10,7 +10,6 @@ import fr.umlv.thaw.user.humanUser.HumanUserFactory;
 
 import java.nio.file.FileSystems;
 import java.nio.file.Path;
-import java.security.NoSuchAlgorithmException;
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -56,7 +55,7 @@ public class DatabaseImpl implements Database {
 
     @Override
     public void initializeDB() throws SQLException {
-        final String query = createUsersTableRequest();
+        String query = createUsersTableRequest();
         exeUpda(query, state);
         createChannelsTable(state);
         createChanViewerTable(state);
@@ -64,11 +63,11 @@ public class DatabaseImpl implements Database {
 
 
     @Override
-    public void createLogin(HumanUser humanUser) throws NoSuchAlgorithmException, SQLException {
+    public void createLogin(HumanUser humanUser) throws SQLException {
         Objects.requireNonNull(humanUser);
         String login = humanUser.getName();
         String cryptPass = humanUser.getPasswordHash();
-        final String query = prepareInsertTwoValuesIntoTable("users");
+        String query = prepareInsertTwoValuesIntoTable("users");
         prep = co.prepareStatement(query);
         insertTwoValIntoTable(login, cryptPass, prep);
         executeRegisteredTask(co, prep);
@@ -103,7 +102,7 @@ public class DatabaseImpl implements Database {
         Objects.requireNonNull(channel);
         Objects.requireNonNull(toAuthorized);
         Objects.requireNonNull(authority);
-        if (userCanControlAccessToChan(channel, authority, co) && !canUserViewChannel(channel, toAuthorized, co)) {
+        if (canUserControlAccessToChan(channel, authority, co) && !canUserViewChannel(channel, toAuthorized, co)) {
             updateChanViewerTable(channel, toAuthorized, co);
         }
     }
@@ -120,17 +119,17 @@ public class DatabaseImpl implements Database {
         Objects.requireNonNull(channelName);
         Objects.requireNonNull(userNametoKick);
         Objects.requireNonNull(authorityName);
-        if (userCanControlAccessToChan(channelName, authorityName, co) && !userNametoKick.equals(authorityName)) {
-            final String removeUserAccesToChanRequest = "DELETE FROM CHANVIEWER WHERE "
+        if (canUserControlAccessToChan(channelName, authorityName, co) && !userNametoKick.equals(authorityName)) {
+            String removeUserAccesToChanRequest = "DELETE FROM CHANVIEWER WHERE "
                     + "CHANNAME LIKE ?"
                     + " AND MEMBER LIKE ? ;";
 
             prep = co.prepareStatement(removeUserAccesToChanRequest);
             prep.setString(1, channelName);
             prep.executeUpdate();
-        } else if (userCanControlAccessToChan(channelName, authorityName, co) && userNametoKick.equals(authorityName)) {
+        } else if (canUserControlAccessToChan(channelName, authorityName, co) && userNametoKick.equals(authorityName)) {
             List<HumanUser> toEject = getUsersListFromChan(channelName);
-            final String removeUserAccesToChanRequest = "DELETE FROM CHANVIEWER WHERE "
+            String removeUserAccesToChanRequest = "DELETE FROM CHANVIEWER WHERE "
                     + "CHANNAME LIKE ? "
                     + " AND MEMBER LIKE ? ;";
             prep = co.prepareStatement(removeUserAccesToChanRequest);
@@ -139,7 +138,7 @@ public class DatabaseImpl implements Database {
                 prep.setString(2, user.getName());
                 prep.executeUpdate();
             }
-            final String removeChannelFromChannels = "DELETE FROM CHANNELS WHERE "
+            String removeChannelFromChannels = "DELETE FROM CHANNELS WHERE "
                     + "CHANNAME LIKE ?  "
                     + " AND OWNER LIKE ? ;";
             prep = co.prepareStatement(removeChannelFromChannels);
@@ -166,10 +165,10 @@ public class DatabaseImpl implements Database {
 
     @Override
     /*  To avoid the multiplication of temporary object such as
-    * hum,login and pswd, we must make 3 lines.
-    *   We must also not forget that we should close our ResulSet
+    * humanUser,login and password, we must make 3 lines.
+    *   We must also not forget that we should close our ResultSet
     * object after request, and because me need a login and a password
-    * that we retrieve from a request, our loop must done 4 differents
+    * that we retrieve from a request, our loop must done 4 different
     * operations.
     *   Finally, we could get a list of empty user from our database
     * and so must we return an emptyList to avoid any problem.
@@ -177,26 +176,26 @@ public class DatabaseImpl implements Database {
     * can be returned without any trouble.
     * */
     public List<HumanUser> getAllUsersList() throws SQLException {
-        ResultSet rs = executeQuery("select * from users", state);
-        List<HumanUser> userList = new ArrayList<>();
-        HumanUser hum;
-        String login;
-        String pswd;
-        while (rs.next()) {
-            login = rs.getString("LOGIN");
-            pswd = rs.getString("PSWD");
-            hum = HumanUserFactory.createHumanUser(login, pswd);
-            userList.add(hum);
+        try (ResultSet rs = executeQuery("select * from users", state)) {
+            List<HumanUser> userList = new ArrayList<>();
+            HumanUser humanUser;
+            String login;
+            String password;
+            while (rs.next()) {
+                login = rs.getString("LOGIN");
+                password = rs.getString("PSWD");
+                humanUser = HumanUserFactory.createHumanUser(login, password);
+                userList.add(humanUser);
+            }
+            if (userList.isEmpty()) {
+                return Collections.emptyList();
+            }
+            return userList;
         }
-        rs.close();
-        if (userList.isEmpty()) {
-            return Collections.emptyList();
-        }
-        return userList;
     }
 
 
-    @Override
+
     /*
     *   Mostly for the same reason as the function above, we can't really
     * reduce the length of the method without taking any security risk or
@@ -204,12 +203,12 @@ public class DatabaseImpl implements Database {
     *   And we can't really delegate more without making the code more
     * complex.
     * */
-    public List<HumanUser> getUsersListFromChan(String channelName) throws SQLException {
+    private List<HumanUser> getUsersListFromChan(String channelName) throws SQLException {
         Objects.requireNonNull(channelName);
-        final String query = "SELECT MEMBER FROM CHANVIEWER WHERE CHANNAME LIKE ? ;";
+        String query = "SELECT MEMBER FROM CHANVIEWER WHERE CHANNAME LIKE ? ;";
         try (PreparedStatement p2 = co.prepareStatement(query)) {
             p2.setString(1, channelName);
-            final String request = "SELECT PSWD FROM users WHERE LOGIN LIKE ? ;";
+            String request = "SELECT PSWD FROM users WHERE LOGIN LIKE ? ;";
             List<HumanUser> users = new ArrayList<>();
             HumanUser tmpUser;
             String name;
@@ -246,7 +245,7 @@ public class DatabaseImpl implements Database {
     public List<Message> getMessagesList(String channelName) throws SQLException {
         boolean hasResult;//useful to know if we have found a channel
         try (PreparedStatement p2 = co.prepareStatement(String.format("SELECT * FROM  \"%s\"", channelName))) {
-            final String request = "SELECT PSWD FROM users WHERE LOGIN LIKE ? ;";//the SQL request to retrieve the encrypted pasword from a user
+            String request = "SELECT PSWD FROM users WHERE LOGIN LIKE ? ;";//the SQL request to retrieve the encrypted pasword from a user
             List<Message> msgs = new ArrayList<>();
             HumanUser tmpUser;
             Message tmpMessage;
@@ -291,17 +290,17 @@ public class DatabaseImpl implements Database {
         }
         List<Channel> channels = new ArrayList<>();//There we know that we will get Channel to add
         try {
-            final String request = "SELECT PSWD FROM users WHERE LOGIN LIKE ?;";
+            String request = "SELECT PSWD FROM users WHERE LOGIN LIKE ?;";
             prep = co.prepareStatement(request);
             while (rs.next()) {
                 //we retrieve the HumanUser
-                String channame = rs.getString("CHANNAME");
+                String chanName = rs.getString("CHANNAME");
                 String owner = rs.getString("OWNER");
                 prep.setString(1, owner);
                 if (prep.execute()) {
                     try (ResultSet tmp = prep.getResultSet()) {
                         while (tmp.next()) {
-                            tmpChan = ChannelFactory.createChannel(HumanUserFactory.createHumanUser(owner, tmp.getString(1)), channame);
+                            tmpChan = ChannelFactory.createChannel(HumanUserFactory.createHumanUser(owner, tmp.getString(1)), chanName);
                             channels.add(tmpChan);
                         }
                     }
@@ -316,11 +315,6 @@ public class DatabaseImpl implements Database {
             return new ArrayList<>();
         }
         return channels;
-    }
-
-    @Override
-    public void close() throws SQLException {
-        co.close();
     }
 
 

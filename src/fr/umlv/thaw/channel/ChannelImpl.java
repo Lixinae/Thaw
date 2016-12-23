@@ -100,8 +100,7 @@ public class ChannelImpl implements Channel {
 
         ChannelImpl channel = (ChannelImpl) o;
 
-        if (!channelName.equals(channel.channelName)) return false;
-        return creator.equals(channel.creator) && users.equals(channel.users);
+        return channelName.equals(channel.channelName) && creator.equals(channel.creator) && users.equals(channel.users);
     }
 
     @Override

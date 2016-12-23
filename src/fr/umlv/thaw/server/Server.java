@@ -4,7 +4,6 @@ package fr.umlv.thaw.server;
 import fr.umlv.thaw.channel.Channel;
 import fr.umlv.thaw.channel.ChannelFactory;
 import fr.umlv.thaw.database.Database;
-import fr.umlv.thaw.database.DatabaseFactory;
 import fr.umlv.thaw.logger.ThawLogger;
 import fr.umlv.thaw.user.User;
 import fr.umlv.thaw.user.humanUser.HumanUser;
@@ -25,7 +24,6 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.security.NoSuchAlgorithmException;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
@@ -50,25 +48,14 @@ public class Server extends AbstractVerticle {
 
     private final boolean ssl;
 
-    private Server() throws IOException, SQLException, ClassNotFoundException {
-        channels = new ArrayList<>();
-        authorizedHumanUsers = new ArrayList<>();
-        thawLogger = new ThawLogger(false);
-        ssl = false;
-        connectedUsers = new ArrayList<>();
-        database = DatabaseFactory.createDatabase(Paths.get("../db"), "database");
-    }
-
     /**
-     * @param enableLogger Enable the logger
-     * @param ssl          Enable ssl
      * @param database     The database in which we will makes our jobs
      * @throws IOException If the logger can't find or create the file
      */
-    public Server(boolean enableLogger, boolean ssl, Database database) throws IOException {
+    public Server(Database database) throws IOException {
         this.database = Objects.requireNonNull(database);
-        this.ssl = ssl;
-        thawLogger = new ThawLogger(enableLogger);// Enable or not the logs of the server
+        this.ssl = true;
+        thawLogger = new ThawLogger(true);// Enable or not the logs of the server
         connectedUsers = new ArrayList<>();
         channels = new ArrayList<>();// database.getChannelList();//We retrieve the channels that already existed
         authorizedHumanUsers = new ArrayList<>();// We retrieve the registered user
@@ -88,18 +75,16 @@ public class Server extends AbstractVerticle {
         // Because we block it in javascript, this user can only be used in the test api.
         String hashPassword = Tools.toSHA256("password2");
         HumanUser superUser = HumanUserFactory.createHumanUser("#SuperUser", hashPassword);
-        if (createLogin(superUser)) {
-            return;
-        }
-        Channel defaul = ChannelFactory.createChannel(superUser, "default");
-        createChannelTable(defaul);
+        createLogin(superUser);
+        Channel general = ChannelFactory.createChannel(superUser, "general");
+        createChannelTable(general);
         thawLogger.log(Level.INFO, "Loading database data ");
         if (loadAuthorizedHumanUsers()) {
             return;
         }
         loadChannelList();
         loadUserForChannels();
-        superUser.joinChannel(defaul);
+        superUser.joinChannel(general);
         thawLogger.log(Level.INFO, "Database loading is done");
 /////////////////////////////////////////////////////////////////////////////////
         final int bindPort = 8080;
@@ -156,9 +141,9 @@ public class Server extends AbstractVerticle {
         return false;
     }
 
-    private void createChannelTable(Channel defaul) {
+    private void createChannelTable(Channel general) {
         try {
-            database.createChannelTable(defaul.getChannelName(), "#SuperUser");
+            database.createChannelTable(general.getChannelName(), "#SuperUser");
         } catch (SQLException sql) {
             thawLogger.log(Level.INFO, "Channels already registered");
         }
@@ -177,18 +162,14 @@ public class Server extends AbstractVerticle {
     /*To distinct each possible cases and avoid to throw too much
     * SQLException, we must make a try catch and log what happened
     * */
-    private boolean createLogin(HumanUser superUser) {
+    private void createLogin(HumanUser superUser) {
         try {
             database.createLogin(superUser);
         } catch (SQLException sql) {
             //login already exists
             thawLogger.log(Level.WARNING, "User " + superUser.getName() + " already in database created");
-        } catch (NoSuchAlgorithmException nsae) {
-            //We need to crash here
-            return true;
         }
         authorizedHumanUsers.add(superUser);
-        return false;
     }
 
     private void startNonSSLserver(Future<Void> fut, int bindPort, Router router) {

@@ -5,7 +5,6 @@ import fr.umlv.thaw.channel.Channel;
 import fr.umlv.thaw.message.Message;
 import fr.umlv.thaw.user.humanUser.HumanUser;
 
-import java.security.NoSuchAlgorithmException;
 import java.sql.SQLException;
 import java.util.List;
 
@@ -26,10 +25,9 @@ public interface Database {
      * Try to add the given user into the database if he isn't in yet.
      *
      * @param humanUser the User to add
-     * @throws NoSuchAlgorithmException if we cannot use the SHA256 algorithm
-     * @throws SQLException             if a database error occurs
+     * @throws SQLException if a database error occurs
      */
-    void createLogin(HumanUser humanUser) throws NoSuchAlgorithmException, SQLException;
+    void createLogin(HumanUser humanUser) throws SQLException;
 
     /**
      * Create a channel with the given name and owner, if the
@@ -42,8 +40,8 @@ public interface Database {
     void createChannelTable(String channelName, String owner) throws SQLException;
 
     /**
-     * This method allow the autohority to give access to the
-     * channel at toAuthorized. It works only if authority as enought
+     * This method allow the authority to give access to the
+     * channel at toAuthorized. It works only if authority as enough
      * right on the channel.
      *
      * @param channel      the channel in which we want to add a user
@@ -54,8 +52,8 @@ public interface Database {
     void addUserToChan(String channel, String toAuthorized, String authority) throws SQLException;
 
     /**
-     * This method allow the autohority to remove access to the
-     * channel at toAurized. It works only if authority as enought
+     * This method allow the authority to remove access to the
+     * channel at toAuthorized. It works only if authority as enough
      * right on the channel.
      * <p>
      * If the authority of the table have the right and wants to kick himself
@@ -88,16 +86,6 @@ public interface Database {
     List<HumanUser> getAllUsersList() throws SQLException;
 
     /**
-     * This method retrieve the user from the channel.
-     *
-     * @param channel the channel name
-     * @return an Empty list if no users have been found
-     * otherwise this method return a List of HumanUser
-     * @throws SQLException if a database access errors occurs
-     */
-    List<HumanUser> getUsersListFromChan(String channel) throws SQLException;
-
-    /**
      * This function retrieve the list of messages with every information
      *
      * @param channelName channel in which we want to retrieve the messages
@@ -113,12 +101,5 @@ public interface Database {
      */
     List<Channel> getChannelList();
 
-    /**
-     * Close the connections that may been opened by the database
-     * Must be called once after that we finished with the Database
-     *
-     * @throws SQLException if a database access error occurs
-     */
-    void close() throws SQLException;
 
 }
