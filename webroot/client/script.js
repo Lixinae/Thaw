@@ -23,8 +23,8 @@ function initialize(){
 
 function setReloadInterval(){
     // Intervals will be much lower once live
-    getListChannelsTimer = setInterval(getListChannels,10000);// 10 000 for debug
-    getListMessageTimer = setInterval(getListMessageForChannel,12000); // 10 000 for debug
+    getListChannelsTimer = setInterval(getListChannels,8000);
+    getListMessageTimer = setInterval(getListMessageForChannel,5000);
     getListUsersForChanTimer = setInterval(getListUsersForChan,15000);
 }
 
@@ -69,7 +69,6 @@ function addChannel(){
 
 
 
-// TODO
 function deleteChannel(){
     $("li").click(function() {
         var curUser = $("#currentUser").val();
@@ -88,7 +87,7 @@ function deleteChannel(){
         });
 }
 
-// Compatibilite pour IE si besoin
+// For IE compatibility
 function getEventTarget(e) {
 	e = e || window.event;
 	return e.target || e.srcElement;
