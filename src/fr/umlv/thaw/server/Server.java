@@ -46,15 +46,15 @@ public class Server extends AbstractVerticle {
     private final ThawLogger thawLogger;
     private final Database database;
 
-    private final boolean ssl;
 
     /**
-     * @param database     The database in which we will makes our jobs
+     * The Server will only establish SSL connection
+     *
+     * @param database The database in which we will makes our jobs
      * @throws IOException If the logger can't find or create the file
      */
     public Server(Database database) throws IOException {
         this.database = Objects.requireNonNull(database);
-        this.ssl = true;
         thawLogger = new ThawLogger(true);// Enable or not the logs of the server
         connectedUsers = new ArrayList<>();
         channels = new ArrayList<>();// database.getChannelList();//We retrieve the channels that already existed
@@ -87,16 +87,11 @@ public class Server extends AbstractVerticle {
         general.addUserToChan(superUser);
         thawLogger.log(Level.INFO, "Database loading is done");
 /////////////////////////////////////////////////////////////////////////////////
-        final int bindPort = 8080;
+        int bindPort = 8080;
         Router router = Router.router(vertx);
         allRoutes(router);
-        if (ssl) {
-            // SSL requested, start a SSL HTTP server.
-            startSSLServer(fut, bindPort, router);
-        } else {
-            // No SSL requested, start a non-SSL HTTP server.
-            startNonSSLServer(fut, bindPort, router);
-        }
+        // SSL requested, start a SSL HTTP server.
+        startSSLServer(fut, bindPort, router);
     }
 
     private void allRoutes(Router router) {
@@ -172,11 +167,6 @@ public class Server extends AbstractVerticle {
         authorizedHumanUsers.add(superUser);
     }
 
-    private void startNonSSLServer(Future<Void> fut, int bindPort, Router router) {
-        vertx.createHttpServer().requestHandler(router::accept).listen(bindPort);
-        thawLogger.log(Level.INFO, "Non SSL Web server now listening");
-        fut.complete();
-    }
 
     /*
     *   Because of the log and the necessity to secure the connection
