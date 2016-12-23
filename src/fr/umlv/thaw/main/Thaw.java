@@ -5,7 +5,9 @@ import fr.umlv.thaw.database.DatabaseFactory;
 import fr.umlv.thaw.server.Server;
 import io.vertx.core.Vertx;
 
+import java.io.IOException;
 import java.nio.file.Paths;
+import java.sql.SQLException;
 
 
 /**
@@ -15,7 +17,7 @@ import java.nio.file.Paths;
  */
 public class Thaw {
 
-    public static void main(String[] args) throws Exception {
+    public static void main(String[] args) throws SQLException, ClassNotFoundException, IOException {
 
 
         System.setProperty("vertx.disableFileCaching", "true");
@@ -24,8 +26,5 @@ public class Thaw {
         Server server = new Server(true, true, database);
         Vertx vertx = Vertx.vertx();
         vertx.deployVerticle(server);
-
-//        vertx.deployVerticle(server, options);
-
     }
 }
