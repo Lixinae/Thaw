@@ -22,7 +22,6 @@ function initialize(){
 }
 
 function setReloadInterval(){
-    // Intervals will be much lower once live
     getListChannelsTimer = setInterval(getListChannels,8000);
     getListMessageTimer = setInterval(getListMessageForChannel,5000);
     getListUsersForChanTimer = setInterval(getListUsersForChan,15000);
@@ -184,7 +183,6 @@ function getListChannels(){
 }
 
 
-// Fonctionne
 function getListUsersForChan(){
 	var usersListOnChan = $(".listUsersIntern");
     var currentChannel = $("#currentChannel").html();
@@ -230,17 +228,15 @@ function disconnectFromServer(){
 	
 }
 
-//////// FONCTION OUTILS ALLEGEMENT CODE////////////
+//////// UTILITY METHODS////////////
 
-/*Fonction formattant une chaine de message en rajoutant
-les informations de date et les balises HTML necessaires au
-bon formattage.
+/*Data formatting.
 
-Format actuel :
-<p>hh:mm DD/MM/YYYY username : <br> monMessage <br>
+Actual Format :
+<p>hh:mm DD/MM/YYYY username : <br> my message <br>
 
-le split permet de recuperer les sauts de lignes et
-y inserer les balises html adequat pour le formattage
+we split to retrieve the line break and replace it
+with <br> tag
 */
 function chatMessageFormatting(username,msg,dateAsLong){
     var date = new Date(dateAsLong);
