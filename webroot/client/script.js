@@ -1,5 +1,5 @@
 
-var currentChannel = "default";
+var currentChannel = "general";
 var username = JSON.parse(sessionStorage.userName); //retrieve the login from the login page
 var getListChannelsTimer;
 var getListMessageTimer;

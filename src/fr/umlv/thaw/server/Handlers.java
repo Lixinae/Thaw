@@ -101,15 +101,15 @@ class Handlers {
         if (session.get("user") == null || !containsUser) {
             answerToRequest(response, 400, "HumanUser: '" + userName + "' authentication failed", thawLogger);
         } else {
-            Optional<Channel> optChannel = findChannelInList(channels, "default");
+            Optional<Channel> optChannel = findChannelInList(channels, "general");
             if (!optChannel.isPresent()) {
-                answerToRequest(response, 400, "Channel 'default' does not exist", thawLogger);
+                answerToRequest(response, 400, "Channel 'general' does not exist", thawLogger);
                 return;
             }
             Channel chan = optChannel.get();
             User u = session.get("user");
             chan.addUserToChan(u);
-            answerToRequest(response, 200, "HumanUser: '" + userName + "' authentication success, connected to 'default' channel", thawLogger);
+            answerToRequest(response, 200, "HumanUser: '" + userName + "' authentication success, connected to 'general' channel", thawLogger);
         }
     }
 
