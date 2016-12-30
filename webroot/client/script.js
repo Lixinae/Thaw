@@ -22,9 +22,9 @@ function initialize(){
 }
 
 function setReloadInterval(){
-    getListChannelsTimer = setInterval(getListChannels,8000);
-    getListMessageTimer = setInterval(getListMessageForChannel,5000);
-    getListUsersForChanTimer = setInterval(getListUsersForChan,15000);
+    getListChannelsTimer = setInterval(getListChannels,2000);
+    getListMessageTimer = setInterval(getListMessageForChannel,1200);
+    getListUsersForChanTimer = setInterval(getListUsersForChan,2500);
 }
 
 /*Allow to get default message in a textarea that will disappear when we click in the zone*/
